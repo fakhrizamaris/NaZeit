@@ -11,7 +11,9 @@ import SwiftUI
 struct KamBingApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ConnectAppleWatch()
+            YourTrip()  
+            Frame()
         }
     }
 }
