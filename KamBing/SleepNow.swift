@@ -1,277 +1,229 @@
-//
-//  SleepNow.swift
-//  KamBing
-//
-//  Created by Fakhri Djamaris on 13/04/26.
-//
+//  SleepNow.swift — KamBing
+//  Screen 3: In-flight Sleep Now. Dark navy gradient, glassmorphism card.
+//  Juga berisi CircadianStateBar (reusable di Screen 4, 5, adaptive).
 
 import SwiftUI
 
-// MARK: - Screen 3: Sleep Now (In-flight)
-// Tujuan screen ini: instruksi tunggal saat user sedang di pesawat.
-// Prinsip desain: 1 screen = 1 instruksi. Traveler yang kelelahan tidak boleh
-// dihadapkan pada pilihan — cukup satu tindakan yang jelas.
-// Data HRV rendah dari Apple Watch memicu instruksi "Sleep Now" ini.
-
-struct Screen3SleepNow: View {
-
-    // @State untuk toggle "Why?" explanation chip
-    @State private var showWhy: Bool = false
-
-    // @State untuk simulasi user dismiss/ignore instruksi
-    // Di implementasi nyata ini dikirim ke ViewModel untuk trigger adaptive flow
-    @State private var isDismissed: Bool = false
-
-    // Simulasi data real-time dari Apple Watch
-    // Di implementasi nyata: @EnvironmentObject WatchDataModel
-    let circadianLevel: Double = 0.25   // 25% = low — memicu instruksi tidur
-    let hoursToDestination: Int = 4
-    let currentHRV: Int = 40            // ms — di bawah threshold normal
-
-    var body: some View {
-        ZStack {
-            // ZStack dipakai sebagai root karena screen ini memiliki
-            // background layer (warna gelap malam) dan konten layer di atasnya.
-            // Tidak bisa hanya VStack karena background perlu full-screen.
-
-            Color(.systemBackground)
-                .ignoresSafeArea()
-            // .ignoresSafeArea() memastikan background warna memenuhi seluruh layar
-            // termasuk area di balik status bar dan home indicator.
-            // HIG: background konsisten dari tepi ke tepi, jangan ada gap putih.
-
-            VStack(spacing: 0) {
-
-                // MARK: Phase + Circadian State Bar
-                // Dua informasi kontekstual di atas: fase perjalanan dan state saat ini.
-                // Tanpa ini, user tidak tahu "kenapa saya dapat instruksi ini sekarang."
-                HStack(alignment: .center, spacing: 12) {
-
-                    // Phase label chip
-                    Text("In-flight")
-                        .font(.caption2)
-                        // .caption2 (11pt) — sekecil mungkin tapi masih terbaca.
-                        // Ini adalah metadata, bukan konten utama.
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color(.systemGray6))
-                        .clipShape(Capsule())
-                        // Capsule = pill shape, konvensi chip/badge di iOS.
-                        // User tahu ini adalah label, bukan tombol.
-
-                    Spacer()
-
-                    // Circadian State Bar
-                    // Komponen kustom ini adalah "jantung" dari app — menunjukkan
-                    // seberapa selaras jam internal tubuh user dengan zona waktu tujuan.
-                    // HIG: gunakan progress indicator untuk menampilkan nilai kontinu.
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("Circadian state")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-
-                        CircadianStateBar(level: circadianLevel)
-                        // Custom view — lihat implementasi di bawah.
-                        // Dipisahkan ke view tersendiri agar reusable di semua screen
-                        // (screen 4, 5 juga menggunakan bar yang sama).
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-                .padding(.bottom, 24)
-
-                Spacer()
-
-                // MARK: Main Instruction Card
-                // Satu kartu besar berisi instruksi tunggal — ini adalah core UI pattern.
-                // Kartu dipakai bukan full-screen text karena:
-                // 1. Memberi batas visual yang jelas antara instruksi dan metadata
-                // 2. User secara intuitif tahu "ini yang harus saya lakukan"
-                // 3. HIG: gunakan kartu untuk membundel konten yang terkait
-                VStack(spacing: 12) {
-
-                    // Ikon instruksi besar — ImageView dalam peran sebagai visual cue
-                    Text("💤")
-                        .font(.system(size: 56))
-                        // Size 56 cukup prominent sebagai focal point visual.
-                        // Ikon ini menyampaikan instruksi bahkan sebelum user membaca teks.
-                        // HIG: visual harus mempercepat pemahaman, bukan sekadar dekorasi.
-
-                    // Label — judul instruksi utama
-                    Text("Sleep now")
-                        .font(.title)
-                        // .title (28pt) adalah ukuran terbesar di hierarki konten —
-                        // ini adalah informasi paling penting yang harus dilihat pertama.
-                        .fontWeight(.bold)
-                        .foregroundStyle(.primary)
-
-                    // TextView — konteks pendukung
-                    Text("\(hoursToDestination) hrs to destination")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-
-                    // Label — alasan instruksi (koneksi ke data real-time)
-                    // Ini adalah kalimat paling kritis secara konsep —
-                    // membuktikan bahwa instruksi ini personal, bukan generik.
-                    Text("Based on your HRV · \(currentHRV)ms")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
-                .padding(28)
-                .frame(maxWidth: .infinity)
-                .background(Color(.secondarySystemBackground))
-                // .secondarySystemBackground = surface sedikit lebih gelap dari background utama.
-                // HIG: gunakan system colors berlapis untuk depth tanpa hardcode hex.
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                // cornerRadius 20 untuk kartu besar — lebih besar dari button (14)
-                // mengikuti proporsi HIG: element lebih besar = radius lebih besar.
-                .padding(.horizontal, 24)
-
-                Spacer()
-
-                // MARK: "Why?" Expandable Chip — TextView pendukung
-                // User boleh tahu alasan ilmiahnya, tapi ini opsional.
-                // Tidak ditaruh di kartu utama agar tidak mengganggu simplicity.
-                // HIG: progressive disclosure — tampilkan detail hanya jika diminta.
-                VStack(spacing: 8) {
-                    Button {
-                        withAnimation(.spring(duration: 0.3)) {
-                            showWhy.toggle()
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(showWhy ? "Hide explanation" : "Why sleep now?")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                            Image(systemName: showWhy ? "chevron.up" : "chevron.down")
-                                .font(.caption2)
-                        }
-                        .foregroundStyle(.secondary)
-                    }
-
-                    if showWhy {
-                        // TextView — penjelasan panjang yang bisa expand
-                        Text("Your HRV is low (\(currentHRV)ms), indicating your body is in a rest-ready state. Sleeping now aligns with your destination's night cycle, advancing your circadian clock by up to 3 hours.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            // .center sesuai layout mid-fi — semua teks instruksi center-aligned.
-                            .padding(.horizontal, 32)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                            // Transisi opacity + slide memberi kesan "membuka" konten
-                            // — lebih natural daripada pop. HIG: animasi harus bermakna.
-                    }
-                }
-                .padding(.bottom, 16)
-
-                // MARK: Navigation Dots — progress indicator posisi screen
-                // Titik-titik ini menunjukkan user sedang di instruksi ke berapa.
-                // HIG: Page Control digunakan untuk konten yang bisa di-swipe secara lateral.
-                // Di sini kita pakai dots manual karena navigasi kita adalah Push, bukan swipe.
-                HStack(spacing: 8) {
-                    Circle().fill(Color.accentColor).frame(width: 6, height: 6)
-                    Circle().fill(Color(.systemGray4)).frame(width: 6, height: 6)
-                    Circle().fill(Color(.systemGray4)).frame(width: 6, height: 6)
-                }
-                .padding(.bottom, 20)
-
-                // MARK: Action Buttons — Followed vs Dismiss (branching point)
-                // Dua tombol: confirm (followed) dan dismiss (trigger adaptive flow).
-                // Ini adalah titik percabangan utama — jika dismiss, app recalculate.
-                VStack(spacing: 10) {
-
-                    // Primary action: konfirmasi user akan tidur
-                    NavigationLink {
-                        Screen4GetSunlight()
-                        // Push ke screen 4 — user mengikuti instruksi, flow normal.
-                    } label: {
-                        Text("Got it — I'll sleep now")
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
-                    }
-
-                    // Secondary action: tidak bisa / tidak mau tidur
-                    // Ini memicu adaptive flow — Screen NEW C (instruksi adjusted)
-                    NavigationLink {
-                        ScreenNewC_InFlightDeviated()
-                        // Push ke screen adaptive — app recalculate instruksi.
-                        // Tidak ada "kamu gagal" — hanya instruksi baru yang disesuaikan.
-                    } label: {
-                        Text("Can't sleep right now")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
-            }
-        }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        // navigationTitle kosong — screen instruksi tidak perlu judul di nav bar.
-        // Judul efektif sudah ada di kartu instruksi (Sleep Now).
-        // HIG: kurangi chrome yang tidak menambah informasi.
-    }
-}
-
-// MARK: - Reusable CircadianStateBar Component
-// View ini dipisahkan agar bisa digunakan di Screen 3, 4, 5 tanpa duplikasi kode.
-// HIG: komponen UI yang konsisten di seluruh app membantu user membangun mental model.
+// MARK: - Reusable CircadianStateBar
+// Dipisah ke view sendiri agar Screen 3, 4, 5 dan adaptive screens
+// semuanya menggunakan komponen yang identik — konsistensi (HIG).
 struct CircadianStateBar: View {
-    let level: Double // 0.0 – 1.0
+    let level: Double           // 0.0 = misaligned, 1.0 = aligned
+    var compact: Bool = false   // compact mode untuk header chip
 
-    // Warna berubah sesuai level — merah = misaligned, hijau = aligned
-    private var barColor: Color {
-        switch level {
-        case 0..<0.35: return .red.opacity(0.8)
-        case 0.35..<0.65: return .orange.opacity(0.8)
-        default: return .green.opacity(0.8)
-        }
-    }
+    @State private var animated: Double = 0
 
     private var stateLabel: String {
-        switch level {
-        case 0..<0.35: return "Low"
-        case 0.35..<0.65: return "Medium"
-        default: return "Aligned"
-        }
+        level < 0.35 ? "Misaligned" : level < 0.65 ? "Adjusting" : "Aligned"
+    }
+    private var stateColor: Color {
+        level < 0.35 ? .red.opacity(0.85) : level < 0.65 ? .adaptOrange : .circadianTeal
     }
 
     var body: some View {
-        HStack(spacing: 6) {
-            // GeometryReader tidak dipakai — pakai frame fixed width agar predictable.
+        HStack(spacing: compact ? 6 : 8) {
+            // Track + fill dengan gradient red→orange→green
+            // Gradient selalu penuh, tapi di-mask sesuai level — menunjukkan
+            // posisi user di spektrum alignment circadian.
             ZStack(alignment: .leading) {
-                // Track (background bar)
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(Color(.systemGray5))
-                    .frame(width: 60, height: 6)
-
-                // Fill (progress)
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(barColor)
-                    .frame(width: 60 * level, height: 6)
-                    // Lebar proporsional dengan level circadian.
-                    // Animation tidak ditambahkan di sini — perubahan nilai akan
-                    // dianimasikan oleh parent view yang memanggil withAnimation.
+                Capsule()
+                    .fill(Color(.systemGray5).opacity(0.6))
+                    .frame(width: compact ? 52 : 64, height: compact ? 4 : 5)
+                Capsule()
+                    .fill(LinearGradient(
+                        colors: [Color.red.opacity(0.8), Color.adaptOrange, Color.circadianTeal],
+                        startPoint: .leading, endPoint: .trailing))
+                    .frame(width: max(compact ? 4 : 5, (compact ? 52 : 64) * animated), height: compact ? 4 : 5)
             }
 
             Text(stateLabel)
-                .font(.caption2)
-                .foregroundStyle(barColor)
+                .font(compact ? .system(size: 10, weight: .medium) : .caption2)
+                .fontWeight(.medium)
+                .foregroundStyle(stateColor)
         }
+        .onAppear {
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) { animated = level }
+        }
+        .onChange(of: level) { _, new in
+            withAnimation(.spring(response: 0.6)) { animated = new }
+        }
+    }
+}
+
+// MARK: - Screen 3: Sleep Now (In-flight)
+struct Screen3SleepNow: View {
+    @EnvironmentObject var appState: AppState
+    @State private var showWhy = false
+    @State private var appeared = false
+
+    var body: some View {
+        ZStack {
+            // Dark navy — warna malam, mendukung instruksi "tidur"
+            // Warna background mengkomunikasikan konteks tanpa kata-kata (HIG).
+            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.06,green:0.04,blue:0.22)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+
+            // Stars decoration — subtle dots untuk nuansa langit malam
+            StarsBackground()
+
+            VStack(spacing: 0) {
+
+                // MARK: Phase chip + Circadian state bar
+                HStack(alignment: .center, spacing: 10) {
+                    Label("In-flight", systemImage: "airplane")
+                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.white.opacity(0.70))
+                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .background(.white.opacity(0.10)).clipShape(Capsule())
+
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 3) {
+                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.white.opacity(0.45))
+                        CircadianStateBar(level: appState.circadianLevel, compact: true)
+                    }
+                }
+                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 20)
+
+                Spacer()
+
+                // MARK: Main Instruction Card — glassmorphism
+                VStack(spacing: 14) {
+                    // Emoji icon besar — ImageView equivalent
+                    // Size 64 membuat instruksi terbaca bahkan sebelum membaca teks.
+                    Text("💤")
+                        .font(.system(size: 64))
+                        .scaleEffect(appeared ? 1.0 : 0.7)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.1), value: appeared)
+
+                    Text("Sleep now")
+                        .font(.title).fontWeight(.bold).foregroundStyle(.white)
+
+                    Text("\(appState.inputMethod == .watch ? "4" : "4") hrs to destination")
+                        .font(.subheadline).foregroundStyle(.white.opacity(0.65))
+
+                    // Data attribution — koneksi ke real-time state
+                    HStack(spacing: 4) {
+                        Image(systemName: "applewatch").font(.caption2)
+                        Text(appState.inputMethod == .watch
+                             ? "Based on your HRV · \(appState.currentHRV)ms"
+                             : "Based on your sleep schedule")
+                            .font(.caption)
+                    }
+                    .foregroundStyle(.white.opacity(0.45))
+                    .padding(.horizontal, 14).padding(.vertical, 6)
+                    .background(.white.opacity(0.08)).clipShape(Capsule())
+                }
+                .instructionCard()
+                .padding(.horizontal, 24)
+
+                Spacer()
+
+                // MARK: Why chip — progressive disclosure (HIG)
+                // Detail ilmiah tersembunyi agar tidak overwhelm user kelelahan.
+                // Tap untuk expand — hanya jika user ingin tahu lebih.
+                WhyChip(isShown: $showWhy, explanation:
+                    "Your HRV is low (\(appState.currentHRV)ms), indicating your body is rest-ready. Sleeping now advances your circadian clock toward the destination time zone by up to 3 hours.")
+                    .padding(.bottom, 16)
+
+                // Navigation dots — progress indicator (manual, bukan PageControl,
+                // karena navigasi kita Push bukan swipe lateral)
+                NavDots(total: 3, current: 0)
+                    .padding(.bottom, 20)
+
+                // MARK: Dual CTA — branching point
+                // Primary: followed → flow normal
+                // Secondary: deviated → adaptive flow (ScreenNewC)
+                VStack(spacing: 10) {
+                    NavigationLink {
+                        Screen4GetSunlight().environmentObject(appState)
+                    } label: {
+                        PrimaryBtn(title: "Got it — I'll sleep now")
+                    }
+
+                    NavigationLink {
+                        ScreenNewC_InFlightDeviated().environmentObject(appState)
+                    } label: {
+                        Text("Can't sleep right now")
+                            .font(.subheadline).foregroundStyle(.white.opacity(0.50))
+                            .frame(maxWidth: .infinity).padding(.vertical, 12)
+                    }
+                }
+                .padding(.horizontal, 24).padding(.bottom, 32)
+            }
+        }
+        .navigationTitle("").navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .onAppear { withAnimation { appeared = true } }
+    }
+}
+
+// MARK: - Shared helper views
+
+// WhyChip — expandable explanation chip, dipakai di Screen 3, 4, 5, adaptive
+struct WhyChip: View {
+    @Binding var isShown: Bool
+    let explanation: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Button {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { isShown.toggle() }
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "info.circle").font(.caption2)
+                    Text(isShown ? "Hide explanation" : "Why this instruction?")
+                        .font(.caption).fontWeight(.medium)
+                    Image(systemName: isShown ? "chevron.up" : "chevron.down").font(.caption2)
+                }
+                .foregroundStyle(.white.opacity(0.55))
+            }
+            if isShown {
+                Text(explanation)
+                    .font(.caption).foregroundStyle(.white.opacity(0.55))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+}
+
+// NavDots — dots indicator posisi dalam flow instruksi
+struct NavDots: View {
+    let total: Int; let current: Int
+    var body: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<total, id: \.self) { i in
+                Circle()
+                    .fill(i == current ? Color.white : Color.white.opacity(0.25))
+                    .frame(width: i == current ? 7 : 5, height: i == current ? 7 : 5)
+                    .animation(.spring(response: 0.3), value: current)
+            }
+        }
+    }
+}
+
+// StarsBackground — decorative dots untuk nuansa langit malam
+private struct StarsBackground: View {
+    let stars: [(CGFloat, CGFloat, CGFloat)] = (0..<40).map { _ in
+        (CGFloat.random(in: 0...1), CGFloat.random(in: 0...0.6), CGFloat.random(in: 1...3))
+    }
+    var body: some View {
+        GeometryReader { geo in
+            ForEach(stars.indices, id: \.self) { i in
+                Circle()
+                    .fill(.white.opacity(Double.random(in: 0.1...0.4)))
+                    .frame(width: stars[i].2, height: stars[i].2)
+                    .position(x: stars[i].0 * geo.size.width,
+                              y: stars[i].1 * geo.size.height)
+            }
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
     }
 }
 
 #Preview {
-    NavigationStack {
-        Screen3SleepNow()
-    }
+    NavigationStack { Screen3SleepNow().environmentObject(AppState()) }
 }

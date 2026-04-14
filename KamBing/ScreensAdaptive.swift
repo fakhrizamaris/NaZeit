@@ -5,243 +5,172 @@
 //  Created by Fakhri Djamaris on 13/04/26.
 //
 
+//  ScreensAdaptive.swift — KamBing
+//  Adaptive recalculation flow — triggered saat user deviate dari instruksi.
+//  Tone: non-judgmental. "No problem — here's the updated plan."
+//  Visual signature: orange accent untuk membedakan dari instruksi normal.
+
 import SwiftUI
 
 // MARK: - Screen NEW C: In-Flight Deviation
-// Dipicu ketika user menekan "Can't sleep right now" di Screen 3.
-// Prinsip: app tidak menyerah dan tidak menegur — langsung kasih instruksi alternatif
-// yang masih bisa menyelamatkan sebagian adaptasi circadian.
-// Tone: "No problem, here's what you CAN do instead."
-
+// Dipicu dari "Can't sleep right now" di Screen 3.
 struct ScreenNewC_InFlightDeviated: View {
-
-    @State private var showWhy: Bool = false
-
-    // Data dari adaptive engine — waktu arrival digeser karena user tidak tidur
-    let adjustedSleepWindow: String = "23:00 – 00:00"
+    @EnvironmentObject var appState: AppState
+    @State private var showWhy  = false
+    @State private var appeared = false
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            // Tetap dark navy — masih in-flight, hanya instruksi berubah
+            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.10,green:0.05,blue:0.22)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+
+            StarsBackground()
 
             VStack(spacing: 0) {
 
-                // MARK: Phase + Recalculated Badge
-                // Badge "⟳ Plan adjusted" adalah elemen paling penting secara konsep —
-                // ini yang membuktikan app kita ADAPTIF, bukan hanya reminder statis.
-                HStack(alignment: .center, spacing: 8) {
-
-                    Text("In-flight")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color(.systemGray6))
-                        .clipShape(Capsule())
-
+                // MARK: Phase chip + Adjusted badge
+                // Label (SwiftUI) dipakai di badge — ini satu-satunya tempat
+                // Label tepat digunakan (SF Symbol + teks selalu tampil bersama, HIG).
+                HStack(spacing: 10) {
+                    Label("In-flight", systemImage: "airplane")
+                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.white.opacity(0.65))
+                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .background(.white.opacity(0.10)).clipShape(Capsule())
                     Spacer()
-
-                    // Recalculated badge — menggunakan Label (SwiftUI) yang sesungguhnya:
-                    // kombinasi SF Symbol + teks. Ini adalah satu-satunya tempat di app
-                    // di mana SwiftUI Label (bukan Text) paling tepat digunakan.
                     Label("Plan adjusted", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.caption2)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.orange)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color.orange.opacity(0.12))
-                        .clipShape(Capsule())
-                        // Label = SF Symbol + Text dalam satu komponen.
-                        // HIG: gunakan Label ketika icon dan teks selalu muncul bersama
-                        // dan memiliki makna yang saling melengkapi.
+                        .font(.caption2).fontWeight(.semibold).foregroundStyle(Color.adaptOrange)
+                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .background(Color.adaptOrange.opacity(0.15)).clipShape(Capsule())
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
+                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
 
-                // MARK: Gentle Acknowledgment — bukan scolding
-                // Satu baris teks yang mengakui situasi user tanpa menghakimi.
-                // HIG: error/deviation messages harus konstruktif, bukan menyalahkan user.
+                // MARK: Gentle acknowledgment — bukan scolding
+                // HIG: pesan error/deviation harus konstruktif, bukan menyalahkan.
                 Text("Still awake? No problem.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.subheadline).foregroundStyle(.white.opacity(0.55))
                     .padding(.bottom, 16)
 
                 Spacer()
 
-                // MARK: Adjusted Instruction Card
-                // Format identik dengan Screen 3 — user langsung tahu ini instruksi.
-                // Yang berbeda: ikon berubah dari 💤 ke 🌑, dan ada keterangan "adjusted."
-                VStack(spacing: 12) {
-
+                // MARK: Adjusted instruction card — orange border signature
+                VStack(spacing: 14) {
                     Text("🌑")
-                        .font(.system(size: 56))
+                        .font(.system(size: 64))
+                        .scaleEffect(appeared ? 1.0 : 0.6)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
 
                     Text("Dim lights now")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.primary)
+                        .font(.title).fontWeight(.bold).foregroundStyle(.white)
 
                     Text("Prepare body for sleep soon")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.subheadline).foregroundStyle(.white.opacity(0.65))
 
-                    VStack(spacing: 4) {
-                        // Adjusted window label — menunjukkan perubahan plan secara eksplisit
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.caption2)
-                                .foregroundStyle(.orange)
-                            Text("Sleep window: \(adjustedSleepWindow)")
-                                .font(.caption)
-                                .foregroundStyle(.orange)
+                    // Adjusted detail — orange indicator
+                    VStack(spacing: 5) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "arrow.triangle.2.circlepath").font(.caption2)
+                            Text("Sleep window: 23:00 – 00:00").font(.caption).fontWeight(.medium)
                         }
+                        .foregroundStyle(Color.adaptOrange)
+                        .padding(.horizontal, 12).padding(.vertical, 5)
+                        .background(Color.adaptOrange.opacity(0.12)).clipShape(Capsule())
+
                         Text("Based on circadian delay")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                            .font(.caption).foregroundStyle(.white.opacity(0.40))
                     }
                 }
-                .padding(28)
-                .frame(maxWidth: .infinity)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-                    // Border oranye tipis membedakan kartu "adjusted" dari kartu instruksi normal.
-                    // User yang perhatian akan menyadari perbedaan ini.
-                )
+                .instructionCard(isAdjusted: true)
                 .padding(.horizontal, 24)
 
                 Spacer()
 
-                // MARK: "Why adjusted?" Chip
-                VStack(spacing: 8) {
-                    Button {
-                        withAnimation(.spring(duration: 0.3)) { showWhy.toggle() }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(showWhy ? "Hide explanation" : "Why adjusted?")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                            Image(systemName: showWhy ? "chevron.up" : "chevron.down")
-                                .font(.caption2)
-                        }
-                        .foregroundStyle(.secondary)
-                    }
+                // Why adjusted chip
+                WhyChip(isShown: $showWhy, explanation:
+                    "Since you're not sleeping, dimming lights still helps melatonin production begin. Your sleep window is shifted to give your body more time to prepare.")
+                    .padding(.bottom, 24)
 
-                    if showWhy {
-                        Text("Since you're not sleeping, dimming lights will still reduce light exposure and help melatonin production begin. Your sleep window has been shifted to give your body more time to prepare.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-                }
-                .padding(.bottom, 16)
-
-                // MARK: Single CTA — kembali ke flow normal
                 NavigationLink {
-                    Screen4GetSunlight()
-                    // Setelah instruksi adjusted diikuti, lanjut ke Screen 4 seperti biasa.
-                    // Navigation stack tetap linear — tidak ada dead end.
+                    Screen4GetSunlight().environmentObject(appState)
                 } label: {
-                    Text("Got it")
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
+                    PrimaryBtn(title: "Got it", color: Color.adaptOrange)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
+                .padding(.horizontal, 24).padding(.bottom, 32)
             }
         }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("").navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .onAppear { withAnimation { appeared = true } }
     }
 }
 
 
 // MARK: - Screen NEW A: Watch Detects Misalignment
-// Dipicu secara otomatis oleh Apple Watch ketika sleep data menunjukkan
-// user tidur di luar jendela yang direkomendasikan (misal: tidur jam 01:30,
-// padahal rekomendasi jam 22:30).
-// Ini adalah layar "transisi" — singkat, informatif, langsung ke instruksi baru.
-
+// Transisi screen — singkat, informatif.
+// Animasi loading dots → button muncul setelah recalculation selesai.
 struct ScreenNewA_WatchDetects: View {
-
-    // Animasi loading dots untuk "Recalculating..."
-    @State private var dotCount: Int = 0
-    @State private var isRecalculating: Bool = true
-
-    // Data deteksi dari Apple Watch
-    let detectedSleepTime: String = "01:30 AM"
-    let recommendedSleepTime: String = "22:30"
+    @EnvironmentObject var appState: AppState
+    @State private var dotCount      = 0
+    @State private var isRecalculating = true
+    @State private var appeared      = false
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            LinearGradient(colors: [Color(red:0.10,green:0.05,blue:0.20),
+                                    Color(red:0.06,green:0.03,blue:0.16)],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
 
-            VStack(spacing: 24) {
-
+            VStack(spacing: 28) {
                 Spacer()
 
-                // MARK: Watch Icon — ImageView
-                // Menampilkan ikon Apple Watch untuk mengkomunikasikan bahwa
-                // data ini BERASAL dari watch, bukan dari input manual user.
-                // Kritis untuk membangun kepercayaan: "app tahu karena watch-mu memberi tahu."
-                Image(systemName: "applewatch")
-                    .font(.system(size: 48, weight: .thin))
-                    .foregroundStyle(.primary)
-                    .symbolEffect(.pulse)
-                    // .pulse — sama dengan Screen 1, tapi di sini artinya "sedang membaca data."
-                    // Konsistensi penggunaan animasi = konsistensi makna. HIG: animasi harus
-                    // memiliki makna yang konsisten di seluruh app.
-
-                // MARK: Detection Info — Labels
-                VStack(spacing: 8) {
-                    Text("Sleep detected at \(detectedSleepTime)")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.center)
-
-                    Text("That's later than recommended (\(recommendedSleepTime))")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        // Faktual, bukan menghakimi. HIG: system messages harus deskriptif,
-                        // bukan accusatory.
+                // MARK: Apple Watch icon — ImageView
+                // .pulse animation sama dengan Screen 1 — konsistensi makna:
+                // "watch sedang aktif membaca data." (HIG: animasi bermakna konsisten)
+                ZStack {
+                    Circle()
+                        .fill(Color.adaptOrange.opacity(0.12))
+                        .frame(width: 96)
+                    Image(systemName: "applewatch")
+                        .font(.system(size: 44, weight: .thin))
+                        .foregroundStyle(Color.adaptOrange)
+                        .symbolEffect(.pulse)
                 }
-                .padding(.horizontal, 32)
 
-                // MARK: Recalculating Indicator
-                // TextView dinamis yang menunjukkan proses recalculation sedang berjalan.
-                // Ini penting untuk transparency — user tahu app sedang bekerja untuk mereka.
+                // MARK: Detection info — faktual, tidak menghakimi
+                VStack(spacing: 10) {
+                    Text("Sleep detected at 01:30 AM")
+                        .font(.headline).fontWeight(.semibold).foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                    Text("That's later than your recommended window (22:30)")
+                        .font(.subheadline).foregroundStyle(.white.opacity(0.55))
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 36)
+
+                // MARK: Recalculating indicator dengan animated dots
+                // Timer digunakan untuk mensimulasikan proses recalculation.
+                // Di implementasi nyata: tunggu response dari circadian engine.
                 if isRecalculating {
-                    HStack(spacing: 4) {
-                        Text("Recalculating your plan")
-                            .font(.subheadline)
-                            .foregroundStyle(.orange)
-                        Text(String(repeating: ".", count: dotCount))
-                            .font(.subheadline)
-                            .foregroundStyle(.orange)
-                            .frame(width: 20, alignment: .leading)
-                            // Fixed width agar teks tidak bergerak saat dot bertambah.
+                    HStack(spacing: 5) {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.subheadline).foregroundStyle(Color.adaptOrange)
+                            .rotationEffect(.degrees(isRecalculating ? 360 : 0))
+                            .animation(.linear(duration: 1).repeatForever(autoreverses: false),
+                                       value: isRecalculating)
+                        Text("Recalculating your plan" + String(repeating: ".", count: dotCount))
+                            .font(.subheadline).foregroundStyle(Color.adaptOrange)
+                            .frame(width: 240, alignment: .leading)
+                            // Fixed width mencegah layout shift saat dots bertambah.
                     }
                     .onAppear {
-                        // Animasi dots: 0 → 1 → 2 → 3 → 0, repeat
-                        Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { timer in
+                        Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { t in
                             dotCount = (dotCount + 1) % 4
-                            // Setelah 2 detik, stop animasi dan navigasi ke Screen B
                             if dotCount == 0 {
-                                timer.invalidate()
+                                t.invalidate()
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                    isRecalculating = false
+                                    withAnimation(.spring(response: 0.5)) { isRecalculating = false }
                                 }
                             }
                         }
@@ -250,236 +179,226 @@ struct ScreenNewA_WatchDetects: View {
 
                 Spacer()
 
-                // MARK: CTA — Lihat instruksi yang sudah di-adjust
-                // Button muncul setelah animasi recalculating selesai.
-                // Tidak langsung auto-navigate karena:
-                // HIG: jangan pernah melakukan navigasi otomatis tanpa user gesture —
-                // user harus selalu merasa in control dari setiap perpindahan screen.
+                // MARK: CTA — muncul setelah recalculation selesai
+                // Tidak auto-navigate karena HIG: user harus in control setiap perpindahan.
                 if !isRecalculating {
-                    NavigationLink {
-                        ScreenNewB_RecalculatedInstruction()
-                    } label: {
-                        Text("See updated plan")
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
+                    VStack(spacing: 12) {
+                        // Small confirmation summary
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(.circadianTeal)
+                            Text("New plan ready").font(.caption).fontWeight(.medium).foregroundStyle(.white.opacity(0.70))
+                        }
+                        .font(.caption2)
+
+                        NavigationLink {
+                            ScreenNewB_RecalculatedInstruction().environmentObject(appState)
+                        } label: {
+                            PrimaryBtn(title: "See updated plan →", color: Color.adaptOrange)
+                        }
                     }
                     .padding(.horizontal, 24)
-                    .transition(.opacity)
-                    // .transition(.opacity) agar button muncul dengan fade — tidak pop tiba-tiba.
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
+
+                if !isRecalculating { Spacer(minLength: 32) } else { Color.clear.frame(height: 120) }
             }
-            .padding(.bottom, 32)
         }
         .navigationTitle("Plan updated")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 }
 
 
 // MARK: - Screen NEW B: Recalculated Instruction
-// Instruksi yang sudah disesuaikan setelah app mendeteksi misalignment.
-// Format IDENTIK dengan Screen 4 — hanya ada tambahan badge "⟳ Adjusted"
-// dan konten instruksi yang telah digeser waktunya.
-// Konsistensi format = user tidak bingung, langsung tahu ini instruksi yang harus diikuti.
-
+// Format IDENTIK dengan Screen 4 — hanya ada:
+// 1. Banner "Plan updated" oranye di atas
+// 2. Badge "⟳ Adjusted · was 7 AM" di dalam kartu
+// 3. Orange border pada kartu
+// Konsistensi format = user langsung tahu ini instruksi, tidak perlu re-learn.
 struct ScreenNewB_RecalculatedInstruction: View {
+    @EnvironmentObject var appState: AppState
+    @State private var showWhy  = false
+    @State private var appeared = false
 
-    @State private var showWhy: Bool = false
-
-    // Instruksi yang sudah di-adjust (geser dari 7 AM ke 9 AM karena tidur telat)
-    let originalTime: String = "7 AM"
-    let adjustedTime: String = "9 AM"
-    let circadianLevel: Double = 0.30   // Lebih rendah dari normal karena tidur telat
+    let originalTime = "7 AM"
+    let adjustedTime = "9 AM"
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            LinearGradient(colors: [Color(red:0.99,green:0.82,blue:0.35),
+                                    Color(red:0.97,green:0.65,blue:0.18),
+                                    Color(red:0.90,green:0.52,blue:0.10)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+
+            SunRaysDecoration()
 
             VStack(spacing: 0) {
 
-                // MARK: Phase + Recalculated Badge (sama dengan Screen NEW C)
-                HStack(alignment: .center, spacing: 8) {
-
-                    Text("Day 1 · 09:00 AM")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color(.systemGray6))
-                        .clipShape(Capsule())
-
+                // Phase chip + State bar
+                HStack(alignment: .center, spacing: 10) {
+                    Label("Day 1 · 09:00 AM", systemImage: "sun.horizon.fill")
+                        .font(.caption2).fontWeight(.semibold)
+                        .foregroundStyle(Color(red:0.55,green:0.35,blue:0.0).opacity(0.85))
+                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .background(.black.opacity(0.08)).clipShape(Capsule())
                     Spacer()
-
-                    // State bar — lebih rendah karena adaptasi terganggu
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("Circadian state")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                        CircadianStateBar(level: circadianLevel)
+                    VStack(alignment: .trailing, spacing: 3) {
+                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.black.opacity(0.40))
+                        CircadianStateBar(level: 0.30, compact: true)
+                        // Level lebih rendah dari Screen 4 normal karena tidur telat.
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-                .padding(.bottom, 8)
+                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
 
-                // MARK: "Plan updated" banner — KUNCI VISUAL ADAPTIVE FLOW
-                // Banner full-width ini adalah differentiator utama.
-                // User yang melihat banner ini langsung tahu: "instruksi ini
-                // dibuatkan khusus untuk situasiku, bukan jadwal generik."
+                // MARK: Plan updated banner — KUNCI VISUAL ADAPTIVE FLOW
+                // Banner ini adalah diferensiator utama: user tahu instruksi ini
+                // dibuatkan khusus untuk situasinya, bukan jadwal generik.
                 HStack(spacing: 6) {
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                        .font(.caption2)
-                        .foregroundStyle(.orange)
-                    Text("Plan updated based on last night")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.orange)
+                    Image(systemName: "arrow.triangle.2.circlepath").font(.caption)
+                    Text("Plan updated based on last night").font(.caption).fontWeight(.medium)
                     Spacer()
-                    Text("was \(originalTime)")
-                        .font(.caption2)
-                        .foregroundStyle(Color.orange.opacity(0.7))
+                    Text("was \(originalTime)").font(.caption2).foregroundStyle(Color.adaptOrange.opacity(0.75))
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Color.orange.opacity(0.08))
-                // Background oranye sangat muda — visible tapi tidak overwhelming.
-                // Strikethrough tidak dipakai karena mengacaukan readability di mobile.
-                .padding(.horizontal, 24)
-                .padding(.bottom, 16)
+                .foregroundStyle(Color.adaptOrange)
+                .padding(.horizontal, 14).padding(.vertical, 8)
+                .background(Color.adaptOrange.opacity(0.12))
+                .overlay(Rectangle().frame(height: 0.5).foregroundStyle(Color.adaptOrange.opacity(0.3)),
+                         alignment: .bottom)
+                .padding(.horizontal, 24).padding(.bottom, 14)
 
                 Spacer()
 
-                // MARK: Adjusted Instruction Card
-                // Konten sama dengan Screen 4 tapi waktu sudah digeser.
-                // Border oranye tipis membedakan dari instruksi normal.
-                VStack(spacing: 12) {
-
+                // Adjusted instruction card — same format as Screen 4 + orange border
+                VStack(spacing: 14) {
                     Text("☀️")
-                        .font(.system(size: 56))
+                        .font(.system(size: 64))
+                        .scaleEffect(appeared ? 1.0 : 0.6)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
+                        .shadow(color: Color.bgMorning.opacity(0.6), radius: 20)
 
                     Text("Get sunlight at \(adjustedTime)")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.primary)
+                        .font(.title).fontWeight(.bold)
+                        .foregroundStyle(Color(red:0.35,green:0.20,blue:0.0))
 
                     Text("Go outside for 20 min")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.subheadline).foregroundStyle(Color(red:0.45,green:0.28,blue:0.0).opacity(0.75))
 
-                    VStack(spacing: 4) {
-                        // Badge adjusted — menunjukkan perubahan eksplisit
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.caption2)
-                                .foregroundStyle(.orange)
-                            Text("Adjusted · was \(originalTime)")
-                                .font(.caption)
-                                .foregroundStyle(.orange)
+                    VStack(spacing: 6) {
+                        // Adjusted badge
+                        HStack(spacing: 5) {
+                            Image(systemName: "arrow.triangle.2.circlepath").font(.caption2)
+                            Text("Adjusted · was \(originalTime)").font(.caption).fontWeight(.medium)
                         }
+                        .foregroundStyle(Color.adaptOrange)
+                        .padding(.horizontal, 12).padding(.vertical, 5)
+                        .background(Color.adaptOrange.opacity(0.10)).clipShape(Capsule())
+
                         Text("Based on your actual sleep · HRV")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                            .font(.caption).foregroundStyle(Color(red:0.45,green:0.28,blue:0.0).opacity(0.60))
                     }
                 }
-                .padding(28)
-                .frame(maxWidth: .infinity)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-                    // Border oranye = visual marker bahwa ini instruksi yang sudah di-recalculate.
-                    // Konsisten dengan Screen NEW C — user yang sudah lihat C akan langsung
-                    // recognize pola ini sebagai "adjusted instruction."
-                )
+                .padding(28).frame(maxWidth: .infinity)
+                .background(.white.opacity(0.35), in: RoundedRectangle(cornerRadius: 24))
+                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.adaptOrange.opacity(0.45), lineWidth: 1.5))
+                .shadow(color: Color.adaptOrange.opacity(0.15), radius: 20, y: 8)
                 .padding(.horizontal, 24)
 
                 Spacer()
 
-                // MARK: "Why adjusted?" Chip
+                // Why adjusted chip
                 VStack(spacing: 8) {
                     Button {
-                        withAnimation(.spring(duration: 0.3)) { showWhy.toggle() }
+                        withAnimation(.spring(response: 0.4)) { showWhy.toggle() }
                     } label: {
-                        HStack(spacing: 4) {
-                            Text(showWhy ? "Hide explanation" : "Why adjusted?")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                            Image(systemName: showWhy ? "chevron.up" : "chevron.down")
-                                .font(.caption2)
+                        HStack(spacing: 5) {
+                            Image(systemName: "info.circle").font(.caption2)
+                            Text(showWhy ? "Hide" : "Why adjusted?").font(.caption).fontWeight(.medium)
+                            Image(systemName: showWhy ? "chevron.up" : "chevron.down").font(.caption2)
                         }
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color(red:0.35,green:0.20,blue:0.0).opacity(0.65))
                     }
-
                     if showWhy {
-                        Text("Because you slept later than recommended, your circadian phase shifted. Getting sunlight at 9 AM (instead of 7 AM) still helps reset your clock, just 2 hours later than the optimal window.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
+                        Text("Because you slept later, your circadian phase shifted. Sunlight at 9 AM (instead of 7 AM) still resets your clock — just 2 hours later than the optimal window.")
+                            .font(.caption).foregroundStyle(Color(red:0.40,green:0.25,blue:0.0).opacity(0.65))
+                            .multilineTextAlignment(.center).padding(.horizontal, 32)
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
                 .padding(.bottom, 16)
 
-                // MARK: Up Next — tetap ada meskipun instruksi adjusted
-                HStack {
-                    Image(systemName: "clock.arrow.circlepath")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                    Text("Up next: Eat at 13:00 (was 12:00)")
-                        // Waktu makan juga ikut bergeser — menunjukkan recalculation
-                        // bukan hanya satu instruksi, tapi seluruh jadwal.
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                // Up next — waktu juga ikut bergeser (seluruh jadwal di-recalculate)
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.arrow.circlepath").font(.caption)
+                    Text("Up next: Eat at 13:00 (was 12:00)").font(.caption).fontWeight(.medium)
                     Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                    Image(systemName: "chevron.right").font(.caption2)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(.horizontal, 24)
-                .padding(.bottom, 12)
+                .foregroundStyle(Color(red:0.40,green:0.25,blue:0.0).opacity(0.60))
+                .padding(.horizontal, 14).padding(.vertical, 10)
+                .background(.black.opacity(0.06)).clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 24).padding(.bottom, 12)
 
-                // MARK: CTA — lanjut ke progress tracker
+                // CTA — kembali ke main flow (Screen 6)
                 NavigationLink {
-                    Screen6YourAdaptation()
-                    // Kembali ke progress tracker — flow menyatu kembali ke main flow.
-                    // Adaptive branch selesai, user kembali ke journey normal.
+                    Screen6YourAdaptation().environmentObject(appState)
                 } label: {
-                    Text("Got it — I'll do this now")
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
+                    HStack(spacing: 8) {
+                        Text("Got it — I'll do this now")
+                        Image(systemName: "arrow.right").fontWeight(.semibold)
+                    }
+                    .font(.body).fontWeight(.semibold).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity).padding(.vertical, 16)
+                    .background(LinearGradient(colors: [Color(red:0.75,green:0.40,blue:0.0),
+                                                         Color(red:0.60,green:0.28,blue:0.0)],
+                                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                                in: RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: .black.opacity(0.20), radius: 10, y: 5)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
+                .padding(.horizontal, 24).padding(.bottom, 32)
             }
         }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("").navigationBarTitleDisplayMode(.inline)
+        .onAppear { withAnimation { appeared = true } }
     }
 }
 
-#Preview("Screen NEW C") {
-    NavigationStack { ScreenNewC_InFlightDeviated() }
+// SunRaysDecoration dipakai di Screen 4 dan Screen NEW B (keduanya morning context)
+private struct SunRaysDecoration: View {
+    var body: some View {
+        GeometryReader { geo in
+            ForEach(0..<8) { i in
+                Rectangle()
+                    .fill(LinearGradient(colors: [.white.opacity(0.10), .clear],
+                                         startPoint: .top, endPoint: .bottom))
+                    .frame(width: 2, height: geo.size.height * 0.35)
+                    .rotationEffect(.degrees(Double(i) * 45))
+                    .position(x: geo.size.width * 0.5, y: geo.size.height * 0.12)
+            }
+        }
+        .ignoresSafeArea().allowsHitTesting(false)
+    }
 }
 
-#Preview("Screen NEW A") {
-    NavigationStack { ScreenNewA_WatchDetects() }
+private struct StarsBackground: View {
+    let stars: [(CGFloat, CGFloat, CGFloat)] = (0..<40).map { _ in
+        (CGFloat.random(in: 0...1), CGFloat.random(in: 0...0.6), CGFloat.random(in: 1...3))
+    }
+    var body: some View {
+        GeometryReader { geo in
+            ForEach(stars.indices, id: \.self) { i in
+                Circle()
+                    .fill(.white.opacity(Double.random(in: 0.08...0.35)))
+                    .frame(width: stars[i].2)
+                    .position(x: stars[i].0 * geo.size.width,
+                              y: stars[i].1 * geo.size.height)
+            }
+        }
+        .ignoresSafeArea().allowsHitTesting(false)
+    }
 }
 
-#Preview("Screen NEW B") {
-    NavigationStack { ScreenNewB_RecalculatedInstruction() }
-}
+#Preview("NEW C") { NavigationStack { ScreenNewC_InFlightDeviated().environmentObject(AppState()) } }
+#Preview("NEW A") { NavigationStack { ScreenNewA_WatchDetects().environmentObject(AppState()) } }
+#Preview("NEW B") { NavigationStack { ScreenNewB_RecalculatedInstruction().environmentObject(AppState()) } }

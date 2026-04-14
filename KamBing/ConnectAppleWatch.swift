@@ -1,150 +1,142 @@
+//  ConnectAppleWatch.swift — KamBing
+//  Screen 1A: Path Apple Watch — HiFi dark, animasi pulse rings, glassmorphism chips.
+
 import SwiftUI
 
-// MARK: - Screen 1: Connect Apple Watch
-// Tujuan screen ini: onboarding pertama — user mensync Apple Watch
-// agar app mendapat data HRV, heart rate, dan sleep pattern secara real-time.
-// Semua instruksi adaptasi circadian bergantung pada data ini.
-
 struct ConnectAppleWatch: View {
-
-    // @State dipakai karena isSynced adalah UI state lokal screen ini.
-    // Tidak perlu dikirim ke screen lain, cukup trigger perubahan tampilan Button.
-    @State private var isSynced: Bool = false
+    @EnvironmentObject var appState: AppState
+    @State private var isSynced    = false
+    @State private var isAnimating = false
 
     var body: some View {
+        ZStack {
+            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.06,green:0.04,blue:0.20)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
 
-        // NavigationStack menggantikan NavigationView (deprecated iOS 16+).
-        // Dipakai karena flow kita adalah Push — screen 1 → screen 2 → dst.
-        // NavigationStack menyimpan navigation path secara eksplisit dan lebih predictable.
-        NavigationStack {
-
-            // VStack dipilih bukan HStack atau ZStack karena semua elemen
-            // tersusun secara vertikal dari atas ke bawah, sesuai layout mid-fi.
             VStack(spacing: 0) {
-
                 Spacer()
-                    // Spacer() tanpa nilai di atas mendorong konten ke tengah secara dinamis.
-                    // Tidak hardcode padding atas agar layout tetap benar di semua ukuran iPhone.
 
-                // MARK: App Logo / Nama App
-                // Text digunakan bukan Label karena Logo adalah teks murni tanpa icon sistem.
-                // Di HIG, Label (SwiftUI) = kombinasi teks + SF Symbol.
-                // Untuk teks tunggal standalone, Text lebih tepat.
-                Text("CIRCADIAN")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    // .rounded dipilih karena memberikan kesan friendly dan modern,
-                    // sesuai tone app yang bersifat personal health companion.
-                    .foregroundStyle(.secondary)
-                    // .secondary bukan hardcode warna — otomatis adapt ke light/dark mode.
-                    // Sesuai HIG: branding tidak boleh lebih dominan dari konten utama.
-                    .tracking(4)
-                    // Letter spacing lebar untuk efek wordmark premium, umum di health apps.
-                    .padding(.bottom, 48)
+                // MARK: Animated Watch Icon dengan pulse rings
+                AnimatedWatchIcon(isAnimating: isAnimating, isSynced: isSynced)
+                .padding(.bottom, 44)
 
-                // MARK: ImageView — Ilustrasi Apple Watch
-                // Image() = ImageView di UIKit. Dipakai untuk menampilkan ikon Apple Watch
-                // karena HIG menyatakan visual imagery mempercepat pemahaman konteks
-                // tanpa perlu user membaca — kritis saat traveler sedang kelelahan.
-                Image(systemName: "applewatch")
-                    // SF Symbol dipakai bukan custom asset karena:
-                    // 1. Konsisten dengan Apple ecosystem (HIG: prefer system symbols)
-                    // 2. Otomatis scale dengan Dynamic Type
-                    // 3. Mendukung light/dark mode tanpa extra asset
-                    .font(.system(size: 72, weight: .thin))
-                    // weight: .thin memberi kesan elegan dan tidak overwhelming.
-                    // Size 72 cukup prominent tanpa mendominasi layar.
-                    .foregroundStyle(.primary)
-                    .symbolEffect(.pulse)
-                    // .pulse memberikan animasi berulang halus yang mengkomunikasikan
-                    // bahwa app sedang "menunggu koneksi" — feedback visual tanpa teks tambahan.
-                    // Sesuai HIG: gunakan animasi yang bermakna, bukan dekoratif.
-                    .padding(.bottom, 32)
-
-                // MARK: Label — Judul Utama
-                // Text dipakai sebagai pengganti UILabel karena di SwiftUI,
-                // Text adalah komponen teks statis non-interaktif.
-                // Sesuai HIG: Label/Text untuk informasi yang tidak perlu diedit user.
-                Text("Connect Apple Watch")
-                    .font(.title2)
-                    // .title2 (22pt) dipilih bukan .title (28pt) agar tidak terlalu dominan.
-                    // Hierarki tipografi: judul < nama app. Sesuai HIG Typography guidelines.
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
+                // MARK: Labels
+                Text(isSynced ? "Watch connected!" : "Connect Apple Watch")
+                    .font(.title2).fontWeight(.bold).foregroundStyle(.white)
+                    .contentTransition(.opacity)
+                    .animation(.easeInOut(duration: 0.3), value: isSynced)
                     .padding(.bottom, 8)
 
-                // MARK: TextView — Deskripsi Pendukung (multi-line)
-                // Text multi-line ini berperan sebagai TextView di UIKit.
-                // Dipakai untuk konten yang bisa berkembang (3 data points) dan perlu
-                // dibaca sekilas — bukan untuk diinteraksikan.
-                Text("Syncing HRV · Heart rate · Sleep patterns")
-                    .font(.subheadline)
-                    // .subheadline (15pt) menjaga hierarki visual di bawah judul.
-                    .foregroundStyle(.secondary)
-                    // .secondary memberi visual weight lebih rendah dari judul — user tahu
-                    // ini supporting info, bukan instruksi utama.
-                    .multilineTextAlignment(.center)
-                    // .center sesuai dengan layout mid-fi di mana semua elemen centered.
-                    .padding(.horizontal, 32)
-                    // Padding horizontal mencegah teks terlalu melebar ke pinggir layar.
-                    // HIG merekomendasikan minimum 16pt margin dari tepi — kita pakai 32 untuk
-                    // kenyamanan baca.
-                    .padding(.bottom, 48)
+                Text("We'll read your biometric data in real-time")
+                    .font(.subheadline).foregroundStyle(.white.opacity(0.50))
+                    .padding(.bottom, 36)
 
-                // MARK: Button — Primary CTA "Sync Now"
-                // Button adalah satu-satunya primary action di screen ini.
-                // HIG mewajibkan satu primary action yang jelas per screen untuk menghindari
-                // cognitive overload — traveler jet lag tidak perlu berpikir "mana yang harus saya tekan."
-                Button {
-                    // Action: trigger sync Apple Watch.
-                    // Di implementasi nyata, ini memanggil HealthKit authorization.
-                    isSynced = true
-                } label: {
-                    Text(isSynced ? "Connected ✓" : "Sync now")
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        // maxWidth: .infinity membuat button melebar mengisi lebar container,
-                        // sesuai HIG yang merekomendasikan full-width button untuk primary action
-                        // agar mudah di-tap (target area besar).
-                        .padding(.vertical, 16)
-                        .background(
-                            isSynced ? Color.green : Color.accentColor,
-                            in: RoundedRectangle(cornerRadius: 14)
-                            // cornerRadius 14 sesuai dengan konvensi Apple button (bukan pill shape).
-                            // HIG: gunakan cornerRadius yang proporsional dengan tinggi button.
-                        )
+                // Data chips — TextView showing what data is collected
+                VStack(spacing: 8) {
+                    WatchDataChip(icon: "heart.fill",    label: "Heart rate",   color: Color(red:0.9,green:0.3,blue:0.4))
+                    WatchDataChip(icon: "waveform.path", label: "HRV",          color: .circadianTeal)
+                    WatchDataChip(icon: "moon.zzz.fill", label: "Sleep stages", color: Color(red:0.55,green:0.4,blue:0.95))
                 }
-                .padding(.horizontal, 24)
-                // Padding 24 mengikuti HIG yang menyarankan button tidak menempel ke tepi layar.
-                .padding(.bottom, 16)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 44)
 
-                // MARK: NavigationLink — Push ke Screen 2
-                // NavigationLink embedded di bawah button sebagai skip option.
-                // Push transition dipakai karena flow adalah sequential/hierarkis
-                // (HIG: gunakan Push untuk navigasi forward dalam hierarki yang jelas).
-                NavigationLink {
-                    YourTrip()
+                // MARK: Primary Button — Sync Now
+                Button {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                        isSynced = true
+                        appState.circadianLevel = 0.45
+                        appState.currentHRV     = 52
+                        appState.sleepHours     = 7.2
+                    }
                 } label: {
-                    Text("Continue →")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 8) {
+                        if isSynced { Image(systemName: "checkmark").fontWeight(.semibold) }
+                        Text(isSynced ? "Data synced" : "Sync now")
+                    }
+                    .font(.body).fontWeight(.semibold).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity).padding(.vertical, 16)
+                    .background(
+                        LinearGradient(colors: isSynced
+                            ? [Color.green.opacity(0.8), Color.green.opacity(0.55)]
+                            : [Color.accentColor, Color.accentColor.opacity(0.72)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: (isSynced ? Color.green : Color.accentColor).opacity(0.35), radius: 10, y: 5)
+                    .animation(.spring(response: 0.4), value: isSynced)
+                }
+                .padding(.horizontal, 24).padding(.bottom, 14)
+                .disabled(isSynced)
+
+                // Continue link — hanya aktif setelah sync
+                NavigationLink {
+                    YourTrip().environmentObject(appState)
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Continue to trip setup")
+                        Image(systemName: "arrow.right").font(.footnote)
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(isSynced ? 0.80 : 0.30))
                 }
                 .disabled(!isSynced)
-                // .disabled mencegah user skip tanpa sync — sesuai prinsip HIG bahwa
-                // setiap langkah onboarding yang kritis tidak boleh bisa di-bypass sembarangan.
+                .animation(.easeInOut, value: isSynced)
 
                 Spacer()
             }
-            .navigationTitle("")
-            // navigationTitle kosong di screen onboarding karena navigation bar
-            // di screen pertama biasanya tidak perlu judul (HIG: kurangi chrome yang tidak perlu).
-            .navigationBarHidden(true)
-            // Hidden di screen 1 karena ini adalah root screen — tidak ada "back" yang perlu ditampilkan.
+        }
+        .navigationTitle("").navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .onAppear { isAnimating = true }
+    }
+}
+
+struct AnimatedWatchIcon: View {
+    var isAnimating: Bool
+    var isSynced: Bool
+    
+    var body: some View {
+        ZStack {
+            ForEach(0..<3) { i in
+                let size: CGFloat = CGFloat(100 + i * 36)
+                let delay: Double = Double(i) * 0.38
+                let tScale: CGFloat = CGFloat(1.5 + Double(i) * 0.3)
+                
+                Circle()
+                    .stroke(Color.circadianTeal.opacity(isAnimating ? 0 : 0.25), lineWidth: 1.5)
+                    .frame(width: size)
+                    .scaleEffect(isAnimating ? tScale : 1.0)
+                    .animation(.easeOut(duration: 1.8).repeatForever(autoreverses: false).delay(delay), value: isAnimating)
+            }
+            ZStack {
+                Circle()
+                    .fill(isSynced ? Color.green.opacity(0.22) : Color.circadianTeal.opacity(0.14))
+                    .frame(width: 96)
+                    .animation(.spring(response: 0.4), value: isSynced)
+                Image(systemName: isSynced ? "checkmark.circle.fill" : "applewatch")
+                    .font(.system(size: 44, weight: .thin))
+                    .symbolRenderingMode(isSynced ? .palette : .hierarchical)
+                    .foregroundStyle(isSynced ? Color.green : Color.circadianTeal, Color.white)
+                    .contentTransition(.symbolEffect(.replace))
+            }
         }
     }
 }
 
+private struct WatchDataChip: View {
+    let icon: String; let label: String; let color: Color
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon).font(.caption).foregroundStyle(color).frame(width: 18)
+            Text(label).font(.subheadline).foregroundStyle(.white.opacity(0.78))
+            Spacer()
+            Image(systemName: "checkmark").font(.caption2).foregroundStyle(color.opacity(0.7))
+        }
+        .padding(.horizontal, 18).padding(.vertical, 11)
+        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
 #Preview {
-    ConnectAppleWatch()
+    NavigationStack { ConnectAppleWatch().environmentObject(AppState()) }
 }

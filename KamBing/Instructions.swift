@@ -5,369 +5,281 @@
 //  Created by Fakhri Djamaris on 13/04/26.
 //
 
+//  Instructions.swift — KamBing
+//  Screen 4: Get Sunlight (warm morning gradient)
+//  Screen 5: Avoid Bright Light (dark evening gradient)
+//  Background warna berubah sesuai waktu — mengkomunikasikan konteks visual.
+
 import SwiftUI
 
-// MARK: - Screen 4: Get Sunlight (Post-arrival, Day 1 Morning)
-// Tujuan screen ini: instruksi pertama setelah landing.
-// Paparan cahaya matahari pagi adalah signal terkuat untuk mereset circadian clock.
-// Waktu dan durasi instruksi ini dikalkulasi dari data Apple Watch + jam tiba.
-// Struktur view IDENTIK dengan Screen 3 — konsistensi pattern adalah prinsip HIG utama.
-
+// MARK: - Screen 4: Get Sunlight
 struct Screen4GetSunlight: View {
-
-    @State private var showWhy: Bool = false
-
-    // Simulasi data dari adaptive engine
-    // Di implementasi nyata: @EnvironmentObject CircadianViewModel
-    let circadianLevel: Double = 0.45   // medium — sedang dalam proses adaptasi
-    let recommendedTime: String = "7:00 AM"
-    let durationMinutes: Int = 20
-    let upNextInstruction: String = "Eat at 12:00"
+    @EnvironmentObject var appState: AppState
+    @State private var showWhy  = false
+    @State private var appeared = false
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            // Warm golden gradient — mengkomunikasikan "pagi / cahaya matahari"
+            // tanpa satu kata pun (HIG: visual mempercepat pemahaman konteks).
+            LinearGradient(colors: [Color(red:0.99,green:0.82,blue:0.35),
+                                    Color(red:0.97,green:0.65,blue:0.18),
+                                    Color(red:0.90,green:0.52,blue:0.10)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+
+            // Sun rays decoration
+            SunRaysDecoration()
 
             VStack(spacing: 0) {
 
-                // MARK: Phase + Date + Circadian State Bar
-                // Tiga metadata sekaligus: fase, tanggal, dan state.
-                // Dibundel dalam satu HStack agar tidak memakan terlalu banyak vertical space.
-                HStack(alignment: .center, spacing: 8) {
-
-                    // Phase chip
-                    Text("Day 1 · 07:40 AM")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color(.systemGray6))
-                        .clipShape(Capsule())
-
+                // Phase chip + state bar
+                // CircadianStateBar di sini onDark = false karena background terang
+                HStack(alignment: .center, spacing: 10) {
+                    Label("Day 1 · 07:40 AM", systemImage: "sun.horizon.fill")
+                        .font(.caption2).fontWeight(.semibold)
+                        .foregroundStyle(Color(red:0.55,green:0.35,blue:0.0).opacity(0.85))
+                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .background(.black.opacity(0.08)).clipShape(Capsule())
                     Spacer()
-
-                    // Reusable CircadianStateBar (defined in Screen3_SleepNow.swift)
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("Circadian state")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                        CircadianStateBar(level: circadianLevel)
+                    VStack(alignment: .trailing, spacing: 3) {
+                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.black.opacity(0.40))
+                        CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-                .padding(.bottom, 24)
+                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 20)
 
                 Spacer()
 
-                // MARK: Main Instruction Card
-                // Format identik Screen 3 — user tidak perlu re-learn cara membaca instruksi.
-                // Hanya ikon, judul, dan detail yang berubah. Layout tetap sama.
-                // HIG: konsistensi mengurangi cognitive load (user sudah tahu pola ini).
-                VStack(spacing: 12) {
-
+                // Main Instruction Card — glassmorphism di atas warm background
+                VStack(spacing: 14) {
                     Text("☀️")
-                        .font(.system(size: 56))
+                        .font(.system(size: 64))
+                        .scaleEffect(appeared ? 1.0 : 0.6)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
+                        .shadow(color: Color.bgMorning.opacity(0.6), radius: 20)
 
                     Text("Get sunlight")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.primary)
+                        .font(.title).fontWeight(.bold)
+                        .foregroundStyle(Color(red:0.35,green:0.20,blue:0.0))
 
-                    Text("Go outside for \(durationMinutes) min")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text("Go outside for 20 min")
+                        .font(.subheadline).foregroundStyle(Color(red:0.45,green:0.28,blue:0.0).opacity(0.75))
 
-                    // Tiga baris info: durasi, alasan, dan jam optimal
-                    VStack(spacing: 4) {
-                        Text("Best before \(recommendedTime)")
-                            .font(.caption)
-                            .foregroundStyle(.orange)
-                            // Oranye untuk urgency time-sensitive — bukan merah (tidak bahaya),
-                            // bukan abu (tidak biasa). HIG: warna menyampaikan makna.
-                        Text("Resets your body clock")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                        Text("Based on your circadian phase")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                    VStack(spacing: 5) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "clock.badge.exclamationmark").font(.caption2)
+                            Text("Best before 7:00 AM")
+                                .font(.caption).fontWeight(.medium)
+                        }
+                        .foregroundStyle(Color(red:0.60,green:0.30,blue:0.0))
+                        .padding(.horizontal, 12).padding(.vertical, 5)
+                        .background(.black.opacity(0.06)).clipShape(Capsule())
+
+                        Text("Resets your body clock · Based on your circadian phase")
+                            .font(.caption).foregroundStyle(Color(red:0.45,green:0.28,blue:0.0).opacity(0.65))
+                            .multilineTextAlignment(.center)
                     }
                 }
-                .padding(28)
-                .frame(maxWidth: .infinity)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+                // Card background — lightly tinted untuk kontras di warm background
+                .padding(28).frame(maxWidth: .infinity)
+                .background(.white.opacity(0.35), in: RoundedRectangle(cornerRadius: 24))
+                .overlay(RoundedRectangle(cornerRadius: 24).stroke(.white.opacity(0.5), lineWidth: 1))
+                .shadow(color: .black.opacity(0.10), radius: 20, y: 8)
                 .padding(.horizontal, 24)
 
                 Spacer()
 
-                // MARK: "Why?" Chip — Progressive Disclosure
+                // Why chip — warna gelap untuk kontras di background terang
                 VStack(spacing: 8) {
                     Button {
-                        withAnimation(.spring(duration: 0.3)) {
-                            showWhy.toggle()
-                        }
+                        withAnimation(.spring(response: 0.4)) { showWhy.toggle() }
                     } label: {
-                        HStack(spacing: 4) {
-                            Text(showWhy ? "Hide explanation" : "Why sunlight?")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                            Image(systemName: showWhy ? "chevron.up" : "chevron.down")
-                                .font(.caption2)
+                        HStack(spacing: 5) {
+                            Image(systemName: "info.circle").font(.caption2)
+                            Text(showWhy ? "Hide" : "Why sunlight?").font(.caption).fontWeight(.medium)
+                            Image(systemName: showWhy ? "chevron.up" : "chevron.down").font(.caption2)
                         }
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color(red:0.35,green:0.20,blue:0.0).opacity(0.65))
                     }
-
                     if showWhy {
-                        Text("Morning light suppresses melatonin and signals your brain that it's daytime in the new time zone. This is the fastest way to shift your circadian clock forward.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
+                        Text("Morning light suppresses melatonin and signals your brain it's daytime in the new time zone — the fastest way to shift your circadian clock forward.")
+                            .font(.caption).foregroundStyle(Color(red:0.40,green:0.25,blue:0.0).opacity(0.70))
+                            .multilineTextAlignment(.center).padding(.horizontal, 32)
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
                 .padding(.bottom, 16)
 
-                // MARK: Navigation Dots
-                HStack(spacing: 8) {
-                    Circle().fill(Color(.systemGray4)).frame(width: 6, height: 6)
-                    Circle().fill(Color.accentColor).frame(width: 6, height: 6)
-                    // Dot kedua aktif — user ada di instruksi ke-2 dari 3
-                    Circle().fill(Color(.systemGray4)).frame(width: 6, height: 6)
+                NavDots(total: 3, current: 1).padding(.bottom, 20)
+
+                // Up next chip
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.arrow.circlepath").font(.caption)
+                    Text("Up next: Eat at 12:00").font(.caption).fontWeight(.medium)
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.caption2)
                 }
-                .padding(.bottom, 20)
+                .foregroundStyle(Color(red:0.40,green:0.25,blue:0.0).opacity(0.65))
+                .padding(.horizontal, 14).padding(.vertical, 10)
+                .background(.black.opacity(0.06)).clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 24).padding(.bottom, 12)
 
-                // MARK: Up Next Preview + CTA
-                // "Up next" chip memberikan preview instruksi berikutnya.
-                // HIG: beri user visibility ke depan agar mereka merasa in control.
-                // Ini juga memperkuat "entire travel journey" di app statement.
-                VStack(spacing: 10) {
-
-                    // Up next chip — label informatif, bukan button
-                    HStack {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                        Text("Up next: \(upNextInstruction)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color(.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .padding(.horizontal, 24)
-
-                    // Primary CTA — lanjut ke screen 5
-                    NavigationLink {
-                        Screen5AvoidBrightLight()
-                    } label: {
+                NavigationLink {
+                    Screen5AvoidBrightLight().environmentObject(appState)
+                } label: {
+                    HStack(spacing: 8) {
                         Text("Done — mark as complete")
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
+                        Image(systemName: "checkmark").fontWeight(.semibold)
                     }
-                    .padding(.horizontal, 24)
+                    .font(.body).fontWeight(.semibold).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity).padding(.vertical, 16)
+                    .background(LinearGradient(colors: [Color(red:0.75,green:0.40,blue:0.0),
+                                                         Color(red:0.60,green:0.28,blue:0.0)],
+                                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                                in: RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: .black.opacity(0.20), radius: 10, y: 5)
                 }
-                .padding(.bottom, 32)
+                .padding(.horizontal, 24).padding(.bottom, 32)
             }
         }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("").navigationBarTitleDisplayMode(.inline)
+        .onAppear { withAnimation { appeared = true } }
     }
 }
 
-
-// MARK: - Screen 5: Avoid Bright Light (Post-arrival, Day 1 Evening)
-// Tujuan screen ini: instruksi malam hari — paparan cahaya terang sebelum tidur
-// akan menunda produksi melatonin dan memperlambat adaptasi circadian.
-// Ini adalah titik percabangan paling kritis — jika user ignore, adaptive flow terpicu.
-
+// MARK: - Screen 5: Avoid Bright Light (evening — titik percabangan paling kritis)
 struct Screen5AvoidBrightLight: View {
-
-    @State private var showWhy: Bool = false
-
-    let circadianLevel: Double = 0.55   // medium-high — mendekati malam, seharusnya turun
-    let dimUntilTime: String = "22:00"
-    let sleepTarget: String = "22:30"
+    @EnvironmentObject var appState: AppState
+    @State private var showWhy  = false
+    @State private var appeared = false
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            // Dark purple-evening gradient — malam hari, jam 8 PM
+            LinearGradient(colors: [Color(red:0.14,green:0.06,blue:0.25),
+                                    Color(red:0.08,green:0.04,blue:0.20),
+                                    Color(red:0.05,green:0.03,blue:0.18)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+
+            // Moon decoration
+            MoonDecoration()
 
             VStack(spacing: 0) {
 
-                // MARK: Phase + Circadian State Bar
-                HStack(alignment: .center, spacing: 8) {
-                    Text("Day 1 · 08:40 PM")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color(.systemGray6))
-                        .clipShape(Capsule())
-
+                HStack(alignment: .center, spacing: 10) {
+                    Label("Day 1 · 08:40 PM", systemImage: "moon.fill")
+                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.white.opacity(0.65))
+                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .background(.white.opacity(0.10)).clipShape(Capsule())
                     Spacer()
-
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("Circadian state")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                        CircadianStateBar(level: circadianLevel)
+                    VStack(alignment: .trailing, spacing: 3) {
+                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.white.opacity(0.40))
+                        CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-                .padding(.bottom, 24)
+                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 20)
 
                 Spacer()
 
-                // MARK: Main Instruction Card
-                // Ikon bulan gelap (🌑) menggantikan matahari — perubahan ikon yang
-                // intuitif mengkomunikasikan transisi siang → malam tanpa kata-kata.
-                // HIG: gunakan visual yang memanfaatkan pengetahuan user yang sudah ada.
-                VStack(spacing: 12) {
-
+                VStack(spacing: 14) {
                     Text("🌑")
-                        .font(.system(size: 56))
+                        .font(.system(size: 64))
+                        .scaleEffect(appeared ? 1.0 : 0.6)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
 
                     Text("Avoid bright light")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.primary)
+                        .font(.title).fontWeight(.bold).foregroundStyle(.white)
 
-                    Text("Dim screens until \(dimUntilTime)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text("Dim screens until 22:00")
+                        .font(.subheadline).foregroundStyle(.white.opacity(0.65))
 
-                    VStack(spacing: 4) {
-                        Text("Prevents clock from shifting back")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                    VStack(spacing: 5) {
+                        Text("Prevents your clock from shifting back")
+                            .font(.caption).foregroundStyle(.white.opacity(0.55))
                         Text("Based on your circadian phase")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                            .font(.caption).foregroundStyle(.white.opacity(0.40))
                     }
                 }
-                .padding(28)
-                .frame(maxWidth: .infinity)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .instructionCard()
                 .padding(.horizontal, 24)
 
                 Spacer()
 
-                // MARK: "Why?" Chip
-                VStack(spacing: 8) {
-                    Button {
-                        withAnimation(.spring(duration: 0.3)) {
-                            showWhy.toggle()
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(showWhy ? "Hide explanation" : "Why avoid light?")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                            Image(systemName: showWhy ? "chevron.up" : "chevron.down")
-                                .font(.caption2)
-                        }
-                        .foregroundStyle(.secondary)
-                    }
+                WhyChip(isShown: $showWhy, explanation:
+                    "Light after 8 PM in your new time zone tells your brain it's still daytime, delaying melatonin and pushing your sleep window later — the opposite of what we need.")
+                    .padding(.bottom, 16)
 
-                    if showWhy {
-                        Text("Light exposure after 8 PM in your new time zone tells your brain it's still daytime, delaying melatonin production and pushing your sleep window later — the opposite of what we want.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 32)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
+                NavDots(total: 3, current: 2).padding(.bottom, 20)
+
+                // Up next chip
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.arrow.circlepath").font(.caption)
+                    Text("Up next: Sleep at 22:30").font(.caption).fontWeight(.medium)
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.caption2)
                 }
-                .padding(.bottom, 16)
+                .foregroundStyle(.white.opacity(0.50))
+                .padding(.horizontal, 14).padding(.vertical, 10)
+                .background(.white.opacity(0.08)).clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 24).padding(.bottom, 12)
 
-                // MARK: Navigation Dots
-                HStack(spacing: 8) {
-                    Circle().fill(Color(.systemGray4)).frame(width: 6, height: 6)
-                    Circle().fill(Color(.systemGray4)).frame(width: 6, height: 6)
-                    Circle().fill(Color.accentColor).frame(width: 6, height: 6)
-                    // Dot ketiga aktif — instruksi terakhir hari ini
-                }
-                .padding(.bottom, 20)
-
-                // MARK: Up Next + Dual CTA (branching point)
-                // Dua tombol — ini adalah titik percabangan terpenting di seluruh app:
-                // "Done" = flow normal ke progress tracker
-                // "Can't do this" = trigger adaptive flow (Screen A → B)
+                // MARK: Dual CTA — titik percabangan utama (followed vs deviated)
                 VStack(spacing: 10) {
-
-                    HStack {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                        Text("Up next: Sleep at \(sleepTarget)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color(.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .padding(.horizontal, 24)
-
-                    // Primary: instruksi diikuti
                     NavigationLink {
-                        Screen6YourAdaptation()
+                        Screen6YourAdaptation().environmentObject(appState)
                     } label: {
-                        Text("Done — lights dimmed")
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 14))
+                        PrimaryBtn(title: "Done — lights dimmed ✓")
                     }
-                    .padding(.horizontal, 24)
 
-                    // Secondary: instruksi tidak diikuti → adaptive flow
-                    // NavigationLink bukan Button karena kita push ke screen adaptive,
-                    // bukan sekadar mengubah state lokal.
+                    // Secondary: trigger adaptive flow → ScreenNewA
                     NavigationLink {
-                        ScreenNewA_WatchDetects()
-                        // Adaptive screen: Watch detects misalignment → recalculate
+                        ScreenNewA_WatchDetects().environmentObject(appState)
                     } label: {
                         Text("I can't avoid light right now")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+                            .font(.subheadline).foregroundStyle(.white.opacity(0.45))
+                            .frame(maxWidth: .infinity).padding(.vertical, 12)
                     }
                 }
-                .padding(.bottom, 32)
+                .padding(.horizontal, 24).padding(.bottom, 32)
             }
         }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("").navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .onAppear { withAnimation { appeared = true } }
     }
 }
 
-#Preview("Screen 4") {
-    NavigationStack { Screen4GetSunlight() }
+// MARK: - Decorations
+
+private struct SunRaysDecoration: View {
+    var body: some View {
+        GeometryReader { geo in
+            ForEach(0..<8) { i in
+                Rectangle()
+                    .fill(LinearGradient(colors: [Color.white.opacity(0.12), .clear],
+                                         startPoint: .top, endPoint: .bottom))
+                    .frame(width: 2, height: geo.size.height * 0.4)
+                    .rotationEffect(.degrees(Double(i) * 45))
+                    .position(x: geo.size.width * 0.5, y: geo.size.height * 0.12)
+            }
+        }
+        .ignoresSafeArea().allowsHitTesting(false)
+    }
 }
 
-#Preview("Screen 5") {
-    NavigationStack { Screen5AvoidBrightLight() }
+private struct MoonDecoration: View {
+    var body: some View {
+        GeometryReader { geo in
+            Circle()
+                .fill(Color(red:0.85,green:0.82,blue:0.95).opacity(0.06))
+                .frame(width: 200).blur(radius: 30)
+                .position(x: geo.size.width * 0.82, y: geo.size.height * 0.12)
+        }
+        .ignoresSafeArea().allowsHitTesting(false)
+    }
 }
+
+#Preview("Screen 4") { NavigationStack { Screen4GetSunlight().environmentObject(AppState()) } }
+#Preview("Screen 5") { NavigationStack { Screen5AvoidBrightLight().environmentObject(AppState()) } }
