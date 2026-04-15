@@ -168,10 +168,6 @@ struct Screen7FullyAdapted: View {
         ZStack {
             // Deep green gradient — warna sukses, berbeda dari semua screen sebelumnya.
             // User secara intuitif membaca warna hijau = berhasil (HIG: warna bermakna).
-            LinearGradient(colors: [Color(red:0.04,green:0.22,blue:0.14),
-                                    Color(red:0.06,green:0.30,blue:0.18)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
 
             // Particle burst decoration
             if particlesOn { SuccessParticles() }
@@ -208,12 +204,12 @@ struct Screen7FullyAdapted: View {
                 // MARK: Labels
                 VStack(spacing: 8) {
                     Text("Fully adapted!")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.white)
+                        .font(.title).fontWeight(.bold).foregroundStyle(.black)
                         .opacity(showText ? 1 : 0).offset(y: showText ? 0 : 12)
                         .animation(.spring(response: 0.5).delay(0.25), value: showText)
 
                     Text("Body clock is in sync with local time zone")
-                        .font(.subheadline).foregroundStyle(.white.opacity(0.65))
+                        .font(.subheadline).foregroundStyle(.black.opacity(0.65))
                         .multilineTextAlignment(.center)
                         .opacity(showText ? 1 : 0).offset(y: showText ? 0 : 8)
                         .animation(.spring(response: 0.5).delay(0.35), value: showText)
@@ -224,9 +220,9 @@ struct Screen7FullyAdapted: View {
                         Divider().frame(height: 12)
                         Label("\(appState.inputMethod == .watch ? "Watch" : "Manual") tracking", systemImage: "checkmark.circle").font(.caption2)
                     }
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(.black.opacity(0.55))
                     .padding(.horizontal, 16).padding(.vertical, 8)
-                    .background(.white.opacity(0.10)).clipShape(Capsule())
+                    .background(.black.opacity(0.10)).clipShape(Capsule())
                     .opacity(showText ? 1 : 0).offset(y: showText ? 0 : 6)
                     .animation(.spring(response: 0.5).delay(0.45), value: showText)
                 }

@@ -33,10 +33,10 @@ struct ManualSetup: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(red:0.06,green:0.04,blue:0.22),
-                                    Color(red:0.10,green:0.06,blue:0.28)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+//            LinearGradient(colors: [Color(red:0.06,green:0.04,blue:0.22),
+//                                    Color(red:0.10,green:0.06,blue:0.28)],
+//                           startPoint: .topLeading, endPoint: .bottomTrailing)
+//                .ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
@@ -48,9 +48,9 @@ struct ManualSetup: View {
                             .foregroundStyle(Color(red:0.7,green:0.5,blue:1.0))
                             .padding(.bottom, 4)
                         Text("Manual setup")
-                            .font(.title2).fontWeight(.bold).foregroundStyle(.white)
+                            .font(.title2).fontWeight(.bold).foregroundStyle(.black)
                         Text("Tell us about your typical sleep schedule")
-                            .font(.subheadline).foregroundStyle(.white.opacity(0.50))
+                            .font(.subheadline).foregroundStyle(.black.opacity(0.50))
                     }
                     .padding(.horizontal, 28).padding(.top, 24).padding(.bottom, 32)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
@@ -113,7 +113,7 @@ struct ManualSetup: View {
                     SectionCard(title: "Calculated sleep", icon: "clock.fill", iconColor: .circadianTeal) {
                         HStack {
                             Text(String(format: "%.1f hours", sleepDuration))
-                                .font(.title3).fontWeight(.semibold).foregroundStyle(.white)
+                                .font(.title3).fontWeight(.semibold).foregroundStyle(.black)
                             Spacer()
                             // Visual quality indicator
                             Text(sleepDuration >= 7 ? "Good" : sleepDuration >= 6 ? "Fair" : "Low")
@@ -160,13 +160,13 @@ private struct SectionCard<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: icon).font(.caption).foregroundStyle(iconColor)
-                Text(title).font(.footnote).fontWeight(.semibold).foregroundStyle(.white.opacity(0.60))
+                Text(title).font(.footnote).fontWeight(.semibold).foregroundStyle(.black.opacity(0.60))
             }
             content()
         }
         .padding(18)
-        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.10), lineWidth: 0.5))
+        .background(.black.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(.black.opacity(0.10), lineWidth: 0.5))
     }
 }
 
@@ -177,10 +177,10 @@ private struct TimeRow: View {
 
     var body: some View {
         HStack {
-            Text(label).font(.body).foregroundStyle(.white)
+            Text(label).font(.body).foregroundStyle(.black)
             Spacer()
             Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                .font(.footnote).foregroundStyle(.white.opacity(0.50))
+                .font(.footnote).foregroundStyle(.black.opacity(0.50))
         }
     }
 }

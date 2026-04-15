@@ -21,12 +21,6 @@ struct Screen4GetSunlight: View {
     var body: some View {
         ZStack {
             // Warm golden gradient — mengkomunikasikan "pagi / cahaya matahari"
-            // tanpa satu kata pun (HIG: visual mempercepat pemahaman konteks).
-            LinearGradient(colors: [Color(red:0.99,green:0.82,blue:0.35),
-                                    Color(red:0.97,green:0.65,blue:0.18),
-                                    Color(red:0.90,green:0.52,blue:0.10)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
 
             // Sun rays decoration
             SunRaysDecoration()
@@ -83,8 +77,8 @@ struct Screen4GetSunlight: View {
                 }
                 // Card background — lightly tinted untuk kontras di warm background
                 .padding(28).frame(maxWidth: .infinity)
-                .background(.white.opacity(0.35), in: RoundedRectangle(cornerRadius: 24))
-                .overlay(RoundedRectangle(cornerRadius: 24).stroke(.white.opacity(0.5), lineWidth: 1))
+                .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 24))
+                .overlay(RoundedRectangle(cornerRadius: 24).stroke(.black.opacity(0.5), lineWidth: 1))
                 .shadow(color: .black.opacity(0.10), radius: 20, y: 8)
                 .padding(.horizontal, 24)
 
@@ -157,11 +151,11 @@ struct Screen5AvoidBrightLight: View {
     var body: some View {
         ZStack {
             // Dark purple-evening gradient — malam hari, jam 8 PM
-            LinearGradient(colors: [Color(red:0.14,green:0.06,blue:0.25),
-                                    Color(red:0.08,green:0.04,blue:0.20),
-                                    Color(red:0.05,green:0.03,blue:0.18)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+//            LinearGradient(colors: [Color(red:0.14,green:0.06,blue:0.25),
+//                                    Color(red:0.08,green:0.04,blue:0.20),
+//                                    Color(red:0.05,green:0.03,blue:0.18)],
+//                           startPoint: .topLeading, endPoint: .bottomTrailing)
+//                .ignoresSafeArea()
 
             // Moon decoration
             MoonDecoration()
@@ -170,12 +164,12 @@ struct Screen5AvoidBrightLight: View {
 
                 HStack(alignment: .center, spacing: 10) {
                     Label("Day 1 · 08:40 PM", systemImage: "moon.fill")
-                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.white.opacity(0.65))
+                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.black.opacity(0.65))
                         .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(.white.opacity(0.10)).clipShape(Capsule())
+                        .background(.black.opacity(0.10)).clipShape(Capsule())
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
-                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.white.opacity(0.40))
+                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.black.opacity(0.40))
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
@@ -190,16 +184,16 @@ struct Screen5AvoidBrightLight: View {
                         .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
 
                     Text("Avoid bright light")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.white)
+                        .font(.title).fontWeight(.bold).foregroundStyle(.black)
 
                     Text("Dim screens until 22:00")
-                        .font(.subheadline).foregroundStyle(.white.opacity(0.65))
+                        .font(.subheadline).foregroundStyle(.black.opacity(0.65))
 
                     VStack(spacing: 5) {
                         Text("Prevents your clock from shifting back")
-                            .font(.caption).foregroundStyle(.white.opacity(0.55))
+                            .font(.caption).foregroundStyle(.black.opacity(0.55))
                         Text("Based on your circadian phase")
-                            .font(.caption).foregroundStyle(.white.opacity(0.40))
+                            .font(.caption).foregroundStyle(.black.opacity(0.40))
                     }
                 }
                 .instructionCard()
@@ -220,9 +214,9 @@ struct Screen5AvoidBrightLight: View {
                     Spacer()
                     Image(systemName: "chevron.right").font(.caption2)
                 }
-                .foregroundStyle(.white.opacity(0.50))
+                .foregroundStyle(.black.opacity(0.50))
                 .padding(.horizontal, 14).padding(.vertical, 10)
-                .background(.white.opacity(0.08)).clipShape(RoundedRectangle(cornerRadius: 10))
+                .background(.black.opacity(0.08)).clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal, 24).padding(.bottom, 12)
 
                 // MARK: Dual CTA — titik percabangan utama (followed vs deviated)
@@ -238,7 +232,7 @@ struct Screen5AvoidBrightLight: View {
                         ScreenNewA_WatchDetects().environmentObject(appState)
                     } label: {
                         Text("I can't avoid light right now")
-                            .font(.subheadline).foregroundStyle(.white.opacity(0.45))
+                            .font(.subheadline).foregroundStyle(.black.opacity(0.45))
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                     }
                 }
@@ -258,7 +252,7 @@ private struct SunRaysDecoration: View {
         GeometryReader { geo in
             ForEach(0..<8) { i in
                 Rectangle()
-                    .fill(LinearGradient(colors: [Color.white.opacity(0.12), .clear],
+                    .fill(LinearGradient(colors: [Color.black.opacity(0.12), .clear],
                                          startPoint: .top, endPoint: .bottom))
                     .frame(width: 2, height: geo.size.height * 0.4)
                     .rotationEffect(.degrees(Double(i) * 45))

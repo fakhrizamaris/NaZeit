@@ -60,9 +60,9 @@ struct Screen3SleepNow: View {
         ZStack {
             // Dark navy — warna malam, mendukung instruksi "tidur"
             // Warna background mengkomunikasikan konteks tanpa kata-kata (HIG).
-            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.06,green:0.04,blue:0.22)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+//            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.06,green:0.04,blue:0.22)],
+//                           startPoint: .topLeading, endPoint: .bottomTrailing)
+//                .ignoresSafeArea()
 
             // Stars decoration — subtle dots untuk nuansa langit malam
             StarsBackground()
@@ -72,14 +72,14 @@ struct Screen3SleepNow: View {
                 // MARK: Phase chip + Circadian state bar
                 HStack(alignment: .center, spacing: 10) {
                     Label("In-flight", systemImage: "airplane")
-                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.white.opacity(0.70))
+                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.black.opacity(0.70))
                         .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(.white.opacity(0.10)).clipShape(Capsule())
+                        .background(.black.opacity(0.10)).clipShape(Capsule())
 
                     Spacer()
 
                     VStack(alignment: .trailing, spacing: 3) {
-                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.white.opacity(0.45))
+                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.black.opacity(0.45))
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
@@ -97,10 +97,10 @@ struct Screen3SleepNow: View {
                         .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.1), value: appeared)
 
                     Text("Sleep now")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.white)
+                        .font(.title).fontWeight(.bold).foregroundStyle(.black)
 
                     Text("\(appState.inputMethod == .watch ? "4" : "4") hrs to destination")
-                        .font(.subheadline).foregroundStyle(.white.opacity(0.65))
+                        .font(.subheadline).foregroundStyle(.black.opacity(0.65))
 
                     // Data attribution — koneksi ke real-time state
                     HStack(spacing: 4) {
@@ -110,9 +110,9 @@ struct Screen3SleepNow: View {
                              : "Based on your sleep schedule")
                             .font(.caption)
                     }
-                    .foregroundStyle(.white.opacity(0.45))
+                    .foregroundStyle(.black.opacity(0.45))
                     .padding(.horizontal, 14).padding(.vertical, 6)
-                    .background(.white.opacity(0.08)).clipShape(Capsule())
+                    .background(.black.opacity(0.08)).clipShape(Capsule())
                 }
                 .instructionCard()
                 .padding(.horizontal, 24)
@@ -145,7 +145,7 @@ struct Screen3SleepNow: View {
                         ScreenNewC_InFlightDeviated().environmentObject(appState)
                     } label: {
                         Text("Can't sleep right now")
-                            .font(.subheadline).foregroundStyle(.white.opacity(0.50))
+                            .font(.subheadline).foregroundStyle(.black.opacity(0.50))
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                     }
                 }
@@ -176,11 +176,11 @@ struct WhyChip: View {
                         .font(.caption).fontWeight(.medium)
                     Image(systemName: isShown ? "chevron.up" : "chevron.down").font(.caption2)
                 }
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(.black.opacity(0.55))
             }
             if isShown {
                 Text(explanation)
-                    .font(.caption).foregroundStyle(.white.opacity(0.55))
+                    .font(.caption).foregroundStyle(.black.opacity(0.55))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .transition(.opacity.combined(with: .move(edge: .top)))
@@ -196,7 +196,7 @@ struct NavDots: View {
         HStack(spacing: 7) {
             ForEach(0..<total, id: \.self) { i in
                 Circle()
-                    .fill(i == current ? Color.white : Color.white.opacity(0.25))
+                    .fill(i == current ? Color.black : Color.black.opacity(0.25))
                     .frame(width: i == current ? 7 : 5, height: i == current ? 7 : 5)
                     .animation(.spring(response: 0.3), value: current)
             }
@@ -213,7 +213,7 @@ private struct StarsBackground: View {
         GeometryReader { geo in
             ForEach(stars.indices, id: \.self) { i in
                 Circle()
-                    .fill(.white.opacity(Double.random(in: 0.1...0.4)))
+                    .fill(.black.opacity(Double.random(in: 0.1...0.4)))
                     .frame(width: stars[i].2, height: stars[i].2)
                     .position(x: stars[i].0 * geo.size.width,
                               y: stars[i].1 * geo.size.height)

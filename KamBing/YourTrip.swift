@@ -11,7 +11,9 @@ struct YourTrip: View {
     }
 
     var body: some View {
+        
         ScrollView {
+            
             VStack(alignment: .leading, spacing: 0) {
 
                 // Header
@@ -90,7 +92,7 @@ struct YourTrip: View {
                 // Plan summary card
                 if isValid {
                     HStack(spacing: 10) {
-                        Image(systemName: "sparkles").foregroundStyle(.accentColor)
+                        Image(systemName: "sparkles").foregroundStyle(Color.accentColor)
                         Text("We'll guide you with \(appState.inputMethod == .watch ? "live watch data" : "your sleep schedule") across the 15-hour shift.")
                             .font(.caption).foregroundStyle(.secondary)
                     }
@@ -115,7 +117,7 @@ struct YourTrip: View {
                     .frame(maxWidth: .infinity).padding(.vertical, 16)
                     .background(
                         isValid
-                        ? LinearGradient(colors: [.accentColor, .accentColor.opacity(0.75)],
+                        ? LinearGradient(colors: [Color.accentColor, Color.accentColor.opacity(0.75)],
                                          startPoint: .topLeading, endPoint: .bottomTrailing)
                         : LinearGradient(colors: [Color(.systemGray4), Color(.systemGray4)],
                                          startPoint: .leading, endPoint: .trailing),

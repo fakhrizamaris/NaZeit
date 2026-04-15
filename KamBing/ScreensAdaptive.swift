@@ -21,10 +21,10 @@ struct ScreenNewC_InFlightDeviated: View {
 
     var body: some View {
         ZStack {
-            // Tetap dark navy — masih in-flight, hanya instruksi berubah
-            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.10,green:0.05,blue:0.22)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+//            // Tetap dark navy — masih in-flight, hanya instruksi berubah
+//            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.10,green:0.05,blue:0.22)],
+//                           startPoint: .topLeading, endPoint: .bottomTrailing)
+//                .ignoresSafeArea()
 
             StarsBackground()
 
@@ -35,9 +35,9 @@ struct ScreenNewC_InFlightDeviated: View {
                 // Label tepat digunakan (SF Symbol + teks selalu tampil bersama, HIG).
                 HStack(spacing: 10) {
                     Label("In-flight", systemImage: "airplane")
-                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.white.opacity(0.65))
+                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.black.opacity(0.65))
                         .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(.white.opacity(0.10)).clipShape(Capsule())
+                        .background(.black.opacity(0.10)).clipShape(Capsule())
                     Spacer()
                     Label("Plan adjusted", systemImage: "arrow.triangle.2.circlepath")
                         .font(.caption2).fontWeight(.semibold).foregroundStyle(Color.adaptOrange)
@@ -49,7 +49,7 @@ struct ScreenNewC_InFlightDeviated: View {
                 // MARK: Gentle acknowledgment — bukan scolding
                 // HIG: pesan error/deviation harus konstruktif, bukan menyalahkan.
                 Text("Still awake? No problem.")
-                    .font(.subheadline).foregroundStyle(.white.opacity(0.55))
+                    .font(.subheadline).foregroundStyle(.black.opacity(0.55))
                     .padding(.bottom, 16)
 
                 Spacer()
@@ -62,10 +62,10 @@ struct ScreenNewC_InFlightDeviated: View {
                         .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
 
                     Text("Dim lights now")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.white)
+                        .font(.title).fontWeight(.bold).foregroundStyle(.black)
 
                     Text("Prepare body for sleep soon")
-                        .font(.subheadline).foregroundStyle(.white.opacity(0.65))
+                        .font(.subheadline).foregroundStyle(.black.opacity(0.65))
 
                     // Adjusted detail — orange indicator
                     VStack(spacing: 5) {
@@ -78,7 +78,7 @@ struct ScreenNewC_InFlightDeviated: View {
                         .background(Color.adaptOrange.opacity(0.12)).clipShape(Capsule())
 
                         Text("Based on circadian delay")
-                            .font(.caption).foregroundStyle(.white.opacity(0.40))
+                            .font(.caption).foregroundStyle(.black.opacity(0.40))
                     }
                 }
                 .instructionCard(isAdjusted: true)
@@ -117,10 +117,10 @@ struct ScreenNewA_WatchDetects: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(red:0.10,green:0.05,blue:0.20),
-                                    Color(red:0.06,green:0.03,blue:0.16)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+//            LinearGradient(colors: [Color(red:0.10,green:0.05,blue:0.20),
+//                                    Color(red:0.06,green:0.03,blue:0.16)],
+//                           startPoint: .top, endPoint: .bottom)
+//                .ignoresSafeArea()
 
             VStack(spacing: 28) {
                 Spacer()
@@ -141,10 +141,10 @@ struct ScreenNewA_WatchDetects: View {
                 // MARK: Detection info — faktual, tidak menghakimi
                 VStack(spacing: 10) {
                     Text("Sleep detected at 01:30 AM")
-                        .font(.headline).fontWeight(.semibold).foregroundStyle(.white)
+                        .font(.headline).fontWeight(.semibold).foregroundStyle(.black)
                         .multilineTextAlignment(.center)
                     Text("That's later than your recommended window (22:30)")
-                        .font(.subheadline).foregroundStyle(.white.opacity(0.55))
+                        .font(.subheadline).foregroundStyle(.black.opacity(0.55))
                         .multilineTextAlignment(.center)
                 }
                 .padding(.horizontal, 36)
@@ -186,7 +186,7 @@ struct ScreenNewA_WatchDetects: View {
                         // Small confirmation summary
                         HStack(spacing: 6) {
                             Image(systemName: "checkmark.circle.fill").foregroundStyle(.circadianTeal)
-                            Text("New plan ready").font(.caption).fontWeight(.medium).foregroundStyle(.white.opacity(0.70))
+                            Text("New plan ready").font(.caption).fontWeight(.medium).foregroundStyle(.black.opacity(0.70))
                         }
                         .font(.caption2)
 
@@ -226,11 +226,11 @@ struct ScreenNewB_RecalculatedInstruction: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(red:0.99,green:0.82,blue:0.35),
-                                    Color(red:0.97,green:0.65,blue:0.18),
-                                    Color(red:0.90,green:0.52,blue:0.10)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+//            LinearGradient(colors: [Color(red:0.99,green:0.82,blue:0.35),
+//                                    Color(red:0.97,green:0.65,blue:0.18),
+//                                    Color(red:0.90,green:0.52,blue:0.10)],
+//                           startPoint: .topLeading, endPoint: .bottomTrailing)
+//                .ignoresSafeArea()
 
             SunRaysDecoration()
 
@@ -300,7 +300,7 @@ struct ScreenNewB_RecalculatedInstruction: View {
                     }
                 }
                 .padding(28).frame(maxWidth: .infinity)
-                .background(.white.opacity(0.35), in: RoundedRectangle(cornerRadius: 24))
+                .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 24))
                 .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.adaptOrange.opacity(0.45), lineWidth: 1.5))
                 .shadow(color: Color.adaptOrange.opacity(0.15), radius: 20, y: 8)
                 .padding(.horizontal, 24)
@@ -370,7 +370,7 @@ private struct SunRaysDecoration: View {
         GeometryReader { geo in
             ForEach(0..<8) { i in
                 Rectangle()
-                    .fill(LinearGradient(colors: [.white.opacity(0.10), .clear],
+                    .fill(LinearGradient(colors: [.black.opacity(0.10), .clear],
                                          startPoint: .top, endPoint: .bottom))
                     .frame(width: 2, height: geo.size.height * 0.35)
                     .rotationEffect(.degrees(Double(i) * 45))
@@ -389,7 +389,7 @@ private struct StarsBackground: View {
         GeometryReader { geo in
             ForEach(stars.indices, id: \.self) { i in
                 Circle()
-                    .fill(.white.opacity(Double.random(in: 0.08...0.35)))
+                    .fill(.black.opacity(Double.random(in: 0.08...0.35)))
                     .frame(width: stars[i].2)
                     .position(x: stars[i].0 * geo.size.width,
                               y: stars[i].1 * geo.size.height)

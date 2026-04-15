@@ -10,9 +10,9 @@ struct ConnectAppleWatch: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.06,green:0.04,blue:0.20)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+//            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.06,green:0.04,blue:0.20)],
+//                           startPoint: .topLeading, endPoint: .bottomTrailing)
+//                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
@@ -23,13 +23,13 @@ struct ConnectAppleWatch: View {
 
                 // MARK: Labels
                 Text(isSynced ? "Watch connected!" : "Connect Apple Watch")
-                    .font(.title2).fontWeight(.bold).foregroundStyle(.white)
+                    .font(.title2).fontWeight(.bold).foregroundStyle(.black)
                     .contentTransition(.opacity)
                     .animation(.easeInOut(duration: 0.3), value: isSynced)
                     .padding(.bottom, 8)
 
                 Text("We'll read your biometric data in real-time")
-                    .font(.subheadline).foregroundStyle(.white.opacity(0.50))
+                    .font(.subheadline).foregroundStyle(.black.opacity(0.50))
                     .padding(.bottom, 36)
 
                 // Data chips — TextView showing what data is collected
@@ -77,7 +77,7 @@ struct ConnectAppleWatch: View {
                         Image(systemName: "arrow.right").font(.footnote)
                     }
                     .font(.subheadline)
-                    .foregroundStyle(.white.opacity(isSynced ? 0.80 : 0.30))
+                    .foregroundStyle(.black.opacity(isSynced ? 0.80 : 0.30))
                 }
                 .disabled(!isSynced)
                 .animation(.easeInOut, value: isSynced)
@@ -116,7 +116,7 @@ struct AnimatedWatchIcon: View {
                 Image(systemName: isSynced ? "checkmark.circle.fill" : "applewatch")
                     .font(.system(size: 44, weight: .thin))
                     .symbolRenderingMode(isSynced ? .palette : .hierarchical)
-                    .foregroundStyle(isSynced ? Color.green : Color.circadianTeal, Color.white)
+                    .foregroundStyle(isSynced ? Color.green : Color.circadianTeal, Color.black)
                     .contentTransition(.symbolEffect(.replace))
             }
         }
@@ -128,12 +128,12 @@ private struct WatchDataChip: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: icon).font(.caption).foregroundStyle(color).frame(width: 18)
-            Text(label).font(.subheadline).foregroundStyle(.white.opacity(0.78))
+            Text(label).font(.subheadline).foregroundStyle(.black.opacity(0.78))
             Spacer()
             Image(systemName: "checkmark").font(.caption2).foregroundStyle(color.opacity(0.7))
         }
         .padding(.horizontal, 18).padding(.vertical, 11)
-        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+        .background(.black.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
     }
 }
 

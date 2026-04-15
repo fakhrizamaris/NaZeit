@@ -21,11 +21,11 @@ struct OnboardingChoice: View {
         NavigationStack {
             ZStack {
                 // Background gradient — dark navy premium
-                LinearGradient(colors: [.bgOnboarding,
-                                        Color(red:0.07,green:0.05,blue:0.20),
-                                        Color(red:0.10,green:0.05,blue:0.25)],
-                               startPoint: .top, endPoint: .bottom)
-                    .ignoresSafeArea()
+//                LinearGradient(colors: [.bgOnboarding,
+//                                        Color(red:0.07,green:0.05,blue:0.20),
+//                                        Color(red:0.10,green:0.05,blue:0.25)],
+//                               startPoint: .top, endPoint: .bottom)
+//                    .ignoresSafeArea()
 
                 // Ambient glow — memberi depth tanpa noise
                 Circle()
@@ -57,11 +57,11 @@ struct OnboardingChoice: View {
                         Text("CIRCADIAN")
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .tracking(6)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.black)
 
                         Text("Stay functional across time zones")
                             .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.50))
+                            .foregroundStyle(.black.opacity(0.50))
                     }
                     .opacity(showLogo ? 1 : 0)
                     .offset(y: showLogo ? 0 : 24)
@@ -71,7 +71,7 @@ struct OnboardingChoice: View {
                     // MARK: Choice prompt — Label statis
                     Text("How should we read your health data?")
                         .font(.callout).fontWeight(.medium)
-                        .foregroundStyle(.white.opacity(0.80))
+                        .foregroundStyle(.black.opacity(0.80))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                         .padding(.bottom, 18)
@@ -79,7 +79,7 @@ struct OnboardingChoice: View {
 
                     // MARK: Dual Choice Cards
                     // Side-by-side NavigationLink — push ke ConnectAppleWatch atau ManualSetup
-                    HStack(spacing: 14) {
+                    HStack(spacing: 20) {
                         NavigationLink {
                             ConnectAppleWatch().environmentObject(appState)
                         } label: {
@@ -111,7 +111,7 @@ struct OnboardingChoice: View {
                         Image(systemName: "lock.fill").font(.caption2)
                         Text("Health data stays on device · never shared").font(.caption2)
                     }
-                    .foregroundStyle(.white.opacity(0.30))
+                    .foregroundStyle(.black.opacity(0.30))
                     .padding(.top, 28)
                     .padding(.bottom, 50)
                     .opacity(showFoot ? 1 : 0)
@@ -163,12 +163,12 @@ private struct ChoiceCard: View {
             // Title
             Text(title)
                 .font(.subheadline).fontWeight(.semibold)
-                .foregroundStyle(.white)
+                .foregroundStyle(.black)
 
             // Subtitle
             Text(subtitle)
                 .font(.caption)
-                .foregroundStyle(.white.opacity(0.50))
+                .foregroundStyle(.black.opacity(0.50))
                 .multilineTextAlignment(.leading)
                 .lineLimit(4)
                 .fixedSize(horizontal: false, vertical: true)
