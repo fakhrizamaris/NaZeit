@@ -8,8 +8,7 @@
 import SwiftUI
 import SwiftData
 
-@main
-struct NazeitAppApp: App {
+struct NazeitAppDataTemplateApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,

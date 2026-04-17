@@ -31,26 +31,49 @@ struct ManualSetup: View {
         return f.string(from: date)
     }
 
+    private var panelBackground: Color { Color(uiColor: .secondarySystemBackground) }
+
+    private var primaryText: Color { Color(uiColor: .label) }
+
+    private var secondaryText: Color { Color(uiColor: .secondaryLabel) }
+
     var body: some View {
         ZStack {
-//            LinearGradient(colors: [Color(red:0.06,green:0.04,blue:0.22),
-//                                    Color(red:0.10,green:0.06,blue:0.28)],
-//                           startPoint: .topLeading, endPoint: .bottomTrailing)
-//                .ignoresSafeArea()
+            LinearGradient(
+                colors: [
+                    Color(uiColor: .bgOnboarding),
+                    Color(uiColor: .systemBackground)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
+
+                    Text("Langkah 2 dari 3")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(secondaryText)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(panelBackground, in: Capsule())
+                        .padding(.horizontal, 28)
+                        .padding(.top, 10)
+                        .padding(.bottom, 14)
+                        .opacity(appeared ? 1 : 0)
 
                     // MARK: Header
                     VStack(alignment: .leading, spacing: 8) {
                         Image(systemName: "hand.tap.fill")
                             .font(.system(size: 32, weight: .light))
-                            .foregroundStyle(Color(red:0.7,green:0.5,blue:1.0))
+                            .foregroundStyle(Color(uiColor: .adaptOrange))
                             .padding(.bottom, 4)
                         Text("Manual setup")
-                            .font(.title2).fontWeight(.bold).foregroundStyle(.black)
-                        Text("Tell us about your typical sleep schedule")
-                            .font(.subheadline).foregroundStyle(.black.opacity(0.50))
+                            .font(.title2).fontWeight(.bold).foregroundStyle(primaryText)
+                        Text("Isi jadwal tidur harian Anda agar instruksi adaptasi lebih akurat.")
+                            .font(.subheadline).foregroundStyle(secondaryText)
                     }
                     .padding(.horizontal, 28).padding(.top, 24).padding(.bottom, 32)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
@@ -71,10 +94,6 @@ struct ManualSetup: View {
                                        displayedComponents: .hourAndMinute)
                                 .datePickerStyle(.wheel)
                                 .labelsHidden()
-                                // .labelsHidden() — label sudah ada di header, ini redundant.
-                                .colorScheme(.dark)
-                                // .colorScheme(.dark) agar picker wheel text putih
-                                // di atas background gelap — HIG: pastikan kontras cukup.
                                 .transition(.opacity.combined(with: .move(edge: .top)))
                                 .onChange(of: appState.preferredBedtime) { _, _ in
                                     appState.sleepHours = sleepDuration
@@ -97,7 +116,6 @@ struct ManualSetup: View {
                                        displayedComponents: .hourAndMinute)
                                 .datePickerStyle(.wheel)
                                 .labelsHidden()
-                                .colorScheme(.dark)
                                 .transition(.opacity.combined(with: .move(edge: .top)))
                                 .onChange(of: appState.preferredWakeTime) { _, _ in
                                     appState.sleepHours = sleepDuration
@@ -113,14 +131,18 @@ struct ManualSetup: View {
                     SectionCard(title: "Calculated sleep", icon: "clock.fill", iconColor: .circadianTeal) {
                         HStack {
                             Text(String(format: "%.1f hours", sleepDuration))
-                                .font(.title3).fontWeight(.semibold).foregroundStyle(.black)
+                                .font(.title3).fontWeight(.semibold).foregroundStyle(primaryText)
                             Spacer()
                             // Visual quality indicator
+                            let qualityColor: Color = sleepDuration >= 7
+                                ? Color.circadianTeal
+                                : (sleepDuration >= 6 ? Color.adaptOrange : Color.red.opacity(0.8))
+
                             Text(sleepDuration >= 7 ? "Good" : sleepDuration >= 6 ? "Fair" : "Low")
                                 .font(.caption).fontWeight(.medium)
-                                .foregroundStyle(sleepDuration >= 7 ? .circadianTeal : sleepDuration >= 6 ? .adaptOrange : .red.opacity(0.8))
+                                .foregroundStyle(qualityColor)
                                 .padding(.horizontal, 10).padding(.vertical, 4)
-                                .background((sleepDuration >= 7 ? Color.circadianTeal : sleepDuration >= 6 ? Color.adaptOrange : Color.red).opacity(0.15))
+                                .background(qualityColor.opacity(0.15))
                                 .clipShape(Capsule())
                         }
                         .padding(.vertical, 4)
@@ -141,7 +163,6 @@ struct ManualSetup: View {
             }
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.1)) { appeared = true }
             appState.sleepHours = sleepDuration
@@ -160,13 +181,19 @@ private struct SectionCard<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: icon).font(.caption).foregroundStyle(iconColor)
-                Text(title).font(.footnote).fontWeight(.semibold).foregroundStyle(.black.opacity(0.60))
+                Text(title)
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             content()
         }
         .padding(18)
-        .background(.black.opacity(0.07), in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(.black.opacity(0.10), lineWidth: 0.5))
+        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color(uiColor: .quaternaryLabel).opacity(0.25), lineWidth: 0.5)
+        )
     }
 }
 
@@ -177,10 +204,10 @@ private struct TimeRow: View {
 
     var body: some View {
         HStack {
-            Text(label).font(.body).foregroundStyle(.black)
+            Text(label).font(.body).foregroundStyle(Color(uiColor: .label))
             Spacer()
             Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                .font(.footnote).foregroundStyle(.black.opacity(0.50))
+                .font(.footnote).foregroundStyle(Color(uiColor: .secondaryLabel))
         }
     }
 }

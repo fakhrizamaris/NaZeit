@@ -181,7 +181,7 @@ struct ScreenNewA_WatchDetects: View {
                     VStack(spacing: 12) {
                         // Small confirmation summary
                         HStack(spacing: 6) {
-                            Image(systemName: "checkmark.circle.fill").foregroundStyle(.circadianTeal)
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(.teal)
                             Text("New plan ready").font(.caption).fontWeight(.medium).foregroundStyle(.black.opacity(0.70))
                         }
                         .font(.caption2)

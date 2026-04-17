@@ -134,6 +134,14 @@ struct MetricCard: View {
     let iconColor: Color
     let trend: String?
 
+    private var trendColor: Color {
+        Color(uiColor: UIColor { trait in
+            trait.userInterfaceStyle == .dark
+                ? UIColor(red: 0.30, green: 0.90, blue: 0.78, alpha: 1.0)
+                : UIColor(red: 0.08, green: 0.60, blue: 0.50, alpha: 1.0)
+        })
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Icon pill
@@ -147,7 +155,7 @@ struct MetricCard: View {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text(value).font(.title3).fontWeight(.bold)
                 if let t = trend {
-                    Text(t).font(.caption).fontWeight(.bold).foregroundStyle(.circadianTeal)
+                    Text(t).font(.caption).fontWeight(.bold).foregroundStyle(trendColor)
                 }
             }
             Text(label).font(.caption).foregroundStyle(.secondary)
