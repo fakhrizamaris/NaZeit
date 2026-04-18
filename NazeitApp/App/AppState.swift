@@ -22,6 +22,7 @@ class AppState: ObservableObject {
     @Published var fromCity: String = ""
     @Published var toCity: String = ""
     @Published var departureDate: Date = Date()
+    @Published var arrivalDate: Date = Date().addingTimeInterval(3600 * 15)
     @Published var adaptationPercent: Double = 0.65
     @Published var daysRemaining: Int = 2
     @Published var isSleepDisorder = false

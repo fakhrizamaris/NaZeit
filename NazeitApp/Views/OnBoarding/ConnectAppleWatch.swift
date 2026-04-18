@@ -39,9 +39,9 @@ struct ConnectAppleWatch: View {
 
                 // Data chips
                 VStack(spacing: 8) {
-                    WatchDataChip(icon: "heart.fill", label: "Heart Rate", color: .pink)
-                    WatchDataChip(icon: "waveform.path", label: "HRV Variability", color: Color(uiColor: .nazeitTeal))
-                    WatchDataChip(icon: "moon.zzz.fill", label: "Sleep Stages", color: .indigo)
+                    WatchDataChip(icon: "heart.fill", label: "Heart Rate", value: "82 BPM", color: .pink, isSynced: isSynced)
+                    WatchDataChip(icon: "waveform.path", label: "HRV Variability", value: "52 ms", color: Color(uiColor: .nazeitTeal), isSynced: isSynced)
+                    WatchDataChip(icon: "moon.zzz.fill", label: "Sleep Duration", value: "7.2 Hrs", color: .indigo, isSynced: isSynced)
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 44)
@@ -128,7 +128,12 @@ struct AnimatedWatchIcon: View {
 }
 
 private struct WatchDataChip: View {
-    let icon: String; let label: String; let color: Color
+    let icon: String
+    let label: String
+    let value: String
+    let color: Color
+    let isSynced: Bool
+    
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
@@ -140,15 +145,26 @@ private struct WatchDataChip: View {
                 .fontWeight(.medium)
                 .foregroundStyle(Color(uiColor: .label))
             Spacer()
-            Image(systemName: "checkmark")
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(color)
+            
+            // [Interactive Detail] Show real-time data instead of boring checkmarks once synced!
+            if isSynced {
+                Text(value)
+                    // Monospaced digit is perfect for health numbers (Apple HIG)
+                    .font(.subheadline.monospacedDigit().weight(.bold))
+                    .foregroundStyle(color)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else {
+                Text("--")
+                    .font(.subheadline.monospacedDigit().weight(.bold))
+                    .foregroundStyle(Color(uiColor: .tertiaryLabel))
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        // [Vis. Design] Subtle border
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
+        // Animasi fluid
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isSynced)
     }
 }
 
