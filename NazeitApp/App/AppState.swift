@@ -31,10 +31,8 @@ class AppState: ObservableObject {
 
 extension UIColor {
     static let nazeitTeal = UIColor { trait in
-        // Jika Dark Mode, gunakan Teal yang cerah (Glowing).
-        // Jika Light Mode, gunakan Teal yang sedikit lebih gelap agar kontras dengan putih.
         return trait.userInterfaceStyle == .dark ?
-            UIColor(red: 0.18, green: 0.80, blue: 0.68, alpha: 1.0) :
+            UIColor(red: 0.10, green: 0.50, blue: 0.38, alpha: 1.0) :
             UIColor(red: 0.12, green: 0.62, blue: 0.52, alpha: 1.0)
     }
     

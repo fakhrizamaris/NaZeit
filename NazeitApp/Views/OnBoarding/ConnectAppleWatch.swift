@@ -1,5 +1,7 @@
-//  ConnectAppleWatch.swift — KamBing
-//  Screen 1A: Path Apple Watch — HiFi dark, animasi pulse rings, glassmorphism chips.
+//
+//  ConnectAppleWatch.swift
+//  KamBing
+//
 
 import SwiftUI
 
@@ -10,33 +12,40 @@ struct ConnectAppleWatch: View {
 
     var body: some View {
         ZStack {
-            VStack(spacing: 0) {
-                Spacer()
-                // MARK: Animated Watch Icon dengan pulse rings
-                AnimatedWatchIcon(isAnimating: isAnimating, isSynced: isSynced)
-                .padding(.bottom, 44)
+            // [Background Hierarchy] Using the same soothing ambient layer
+            OnboardingChoiceBackgroundView(glowAnimated: isAnimating)
 
-                // MARK: Labels
-                Text(isSynced ? "Watch connected!" : "Connect Apple Watch")
-                    .font(.title2).fontWeight(.bold).foregroundStyle(.black)
+            VStack(spacing: 0) {
+                // [UX: Navigation Context]
+                StepIndicatorView(step: 2, totalSteps: 3)
+                    .padding(.top, 12)
+                
+                Spacer()
+                
+                AnimatedWatchIcon(isAnimating: isAnimating, isSynced: isSynced)
+                    .padding(.bottom, 40)
+
+                Text(isSynced ? "Watch Connected!" : "Connect Apple Watch")
+                    .font(.system(.title2, design: .rounded).weight(.bold))
+                    .foregroundStyle(Color(uiColor: .label))
                     .contentTransition(.opacity)
                     .animation(.easeInOut(duration: 0.3), value: isSynced)
                     .padding(.bottom, 8)
 
-                Text("We'll read your biometric data in real-time")
-                    .font(.subheadline).foregroundStyle(.black.opacity(0.50))
+                Text("We'll read your biometric data in real-time.")
+                    .font(.body)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
                     .padding(.bottom, 36)
 
-                // Data chips — TextView showing what data is collected
+                // Data chips
                 VStack(spacing: 8) {
-                    WatchDataChip(icon: "heart.fill",    label: "Heart rate",   color: Color(red:0.9,green:0.3,blue:0.4))
-                    WatchDataChip(icon: "waveform.path", label: "HRV",          color: .circadianTeal)
-                    WatchDataChip(icon: "moon.zzz.fill", label: "Sleep stages", color: Color(red:0.55,green:0.4,blue:0.95))
+                    WatchDataChip(icon: "heart.fill", label: "Heart Rate", color: .pink)
+                    WatchDataChip(icon: "waveform.path", label: "HRV Variability", color: Color(uiColor: .nazeitTeal))
+                    WatchDataChip(icon: "moon.zzz.fill", label: "Sleep Stages", color: .indigo)
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 44)
 
-                // MARK: Primary Button — Sync Now
                 Button {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                         isSynced = true
@@ -46,24 +55,20 @@ struct ConnectAppleWatch: View {
                     }
                 } label: {
                     HStack(spacing: 8) {
-                        if isSynced { Image(systemName: "checkmark").fontWeight(.semibold) }
-                        Text(isSynced ? "Data synced" : "Sync now")
+                        if isSynced { Image(systemName: "checkmark").fontWeight(.bold) }
+                        Text(isSynced ? "Data Synced" : "Sync Now")
                     }
-                    .font(.body).fontWeight(.semibold).foregroundStyle(.white)
-                    .frame(maxWidth: .infinity).padding(.vertical, 16)
-                    .background(
-                        LinearGradient(colors: isSynced
-                            ? [Color.green.opacity(0.8), Color.green.opacity(0.55)]
-                            : [Color.accentColor, Color.accentColor.opacity(0.72)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing),
-                        in: RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: (isSynced ? Color.green : Color.accentColor).opacity(0.35), radius: 10, y: 5)
-                    .animation(.spring(response: 0.4), value: isSynced)
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(isSynced ? Color.teal : Color(uiColor: .nazeitTeal))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
-                .padding(.horizontal, 24).padding(.bottom, 14)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
                 .disabled(isSynced)
 
-                // Continue link — hanya aktif setelah sync
                 NavigationLink {
                     YourTrip().environmentObject(appState)
                 } label: {
@@ -72,7 +77,9 @@ struct ConnectAppleWatch: View {
                         Image(systemName: "arrow.right").font(.footnote)
                     }
                     .font(.subheadline)
-                    .foregroundStyle(.black.opacity(isSynced ? 0.80 : 0.30))
+                    .fontWeight(.medium)
+                    // [Accessibility] Uses label rather than black
+                    .foregroundStyle(Color(uiColor: .label).opacity(isSynced ? 1.0 : 0.30))
                 }
                 .disabled(!isSynced)
                 .animation(.easeInOut, value: isSynced)
@@ -80,11 +87,12 @@ struct ConnectAppleWatch: View {
                 Spacer()
             }
         }
-        .navigationTitle("").navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear { isAnimating = true }
     }
 }
+
+// MARK: - Components
 
 struct AnimatedWatchIcon: View {
     var isAnimating: Bool
@@ -98,20 +106,21 @@ struct AnimatedWatchIcon: View {
                 let tScale: CGFloat = CGFloat(1.5 + Double(i) * 0.3)
                 
                 Circle()
-                    .stroke(Color.circadianTeal.opacity(isAnimating ? 0 : 0.25), lineWidth: 1.5)
+                    .stroke(Color(uiColor: .nazeitTeal).opacity(isAnimating ? 0 : 0.25), lineWidth: 1.5)
                     .frame(width: size)
                     .scaleEffect(isAnimating ? tScale : 1.0)
                     .animation(.easeOut(duration: 1.8).repeatForever(autoreverses: false).delay(delay), value: isAnimating)
             }
             ZStack {
                 Circle()
-                    .fill(isSynced ? Color.green.opacity(0.22) : Color.circadianTeal.opacity(0.14))
+                    .fill(isSynced ? Color.teal.opacity(0.15) : Color(uiColor: .nazeitTeal).opacity(0.12))
                     .frame(width: 96)
                     .animation(.spring(response: 0.4), value: isSynced)
+                
                 Image(systemName: isSynced ? "checkmark.circle.fill" : "applewatch")
-                    .font(.system(size: 44, weight: .thin))
-                    .symbolRenderingMode(isSynced ? .palette : .hierarchical)
-                    .foregroundStyle(isSynced ? Color.green : Color.circadianTeal, Color.black)
+                    .font(.system(size: 44, weight: .light))
+                    .symbolRenderingMode(isSynced ? .multicolor : .monochrome)
+                    .foregroundStyle(isSynced ? Color.teal : Color(uiColor: .nazeitTeal))
                     .contentTransition(.symbolEffect(.replace))
             }
         }
@@ -121,14 +130,25 @@ struct AnimatedWatchIcon: View {
 private struct WatchDataChip: View {
     let icon: String; let label: String; let color: Color
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon).font(.caption).foregroundStyle(color).frame(width: 18)
-            Text(label).font(.subheadline).foregroundStyle(.black.opacity(0.78))
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(color)
+                .frame(width: 24)
+            Text(label)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(Color(uiColor: .label))
             Spacer()
-            Image(systemName: "checkmark").font(.caption2).foregroundStyle(color.opacity(0.7))
+            Image(systemName: "checkmark")
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(color)
         }
-        .padding(.horizontal, 18).padding(.vertical, 11)
-        .background(.black.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        // [Vis. Design] Subtle border
+        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
     }
 }
 

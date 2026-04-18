@@ -2,12 +2,6 @@
 //  ManualSetup.swift
 //  KamBing
 //
-//  Created by Fakhri Djamaris on 14/04/26.
-//
-
-//  ManualSetup.swift — KamBing
-//  Screen 1B: Path Manual — user input sleep schedule & health info sendiri.
-//  HiFi: dark gradient, time pickers, slider untuk sleep hours.
 
 import SwiftUI
 
@@ -31,58 +25,46 @@ struct ManualSetup: View {
         return f.string(from: date)
     }
 
-    private var panelBackground: Color { Color(uiColor: .secondarySystemBackground) }
-
-    private var primaryText: Color { Color(uiColor: .label) }
-
-    private var secondaryText: Color { Color(uiColor: .secondaryLabel) }
-
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(uiColor: .bgOnboarding),
-                    Color(uiColor: .systemBackground)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // [Background Hierarchy]
+            OnboardingChoiceBackgroundView(glowAnimated: false)
 
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
 
-                    Text("Langkah 2 dari 3")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(secondaryText)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(panelBackground, in: Capsule())
-                        .padding(.horizontal, 28)
-                        .padding(.top, 10)
-                        .padding(.bottom, 14)
-                        .opacity(appeared ? 1 : 0)
+                    // [Navigation Context]
+                    HStack {
+                        Spacer()
+                        StepIndicatorView(step: 2, totalSteps: 3)
+                        Spacer()
+                    }
+                    .padding(.top, 12)
+                    .padding(.bottom, 24)
+                    .opacity(appeared ? 1 : 0)
 
                     // MARK: Header
                     VStack(alignment: .leading, spacing: 8) {
                         Image(systemName: "hand.tap.fill")
-                            .font(.system(size: 32, weight: .light))
-                            .foregroundStyle(Color(uiColor: .adaptOrange))
-                            .padding(.bottom, 4)
-                        Text("Manual setup")
-                            .font(.title2).fontWeight(.bold).foregroundStyle(primaryText)
-                        Text("Isi jadwal tidur harian Anda agar instruksi adaptasi lebih akurat.")
-                            .font(.subheadline).foregroundStyle(secondaryText)
+                            .font(.largeTitle.weight(.light))
+                            .foregroundStyle(Color.indigo)
+                            .padding(.bottom, 8)
+                            
+                        Text("Manual Setup")
+                            .font(.system(.title2, design: .rounded).weight(.bold))
+                            .foregroundStyle(Color(uiColor: .label))
+                            
+                        Text("Enter your daily sleep schedule so we can provide accurate adaptation instructions.")
+                            .font(.body)
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
                     }
-                    .padding(.horizontal, 28).padding(.top, 24).padding(.bottom, 32)
-                    .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
+                    .padding(.horizontal, 28)
+                    .padding(.bottom, 32)
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 20)
 
-                    // MARK: Bedtime Picker — Pickers
-                    // DatePicker dengan displayedComponents: .hourAndMinute dipakai
-                    // bukan TextField karena waktu butuh format yang tepat dan
-                    // user tidak perlu mengetik jam secara manual.
-                    SectionCard(title: "Usual bedtime", icon: "moon.fill", iconColor: Color(red:0.55,green:0.4,blue:0.95)) {
+                    // MARK: Bedtime Picker
+                    SectionCard(title: "Usual Bedtime", icon: "moon.fill", iconColor: .indigo) {
                         Button {
                             withAnimation(.spring(response: 0.4)) { showBedtimePicker.toggle() }
                         } label: {
@@ -100,11 +82,11 @@ struct ManualSetup: View {
                                 }
                         }
                     }
-                    .padding(.horizontal, 24).padding(.bottom, 14)
+                    .padding(.horizontal, 24).padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
                     // MARK: Wake Time Picker
-                    SectionCard(title: "Usual wake time", icon: "sun.horizon.fill", iconColor: Color.bgMorning) {
+                    SectionCard(title: "Usual Wake Time", icon: "sun.horizon.fill", iconColor: .orange) {
                         Button {
                             withAnimation(.spring(response: 0.4)) { showWakePicker.toggle() }
                         } label: {
@@ -122,47 +104,54 @@ struct ManualSetup: View {
                                 }
                         }
                     }
-                    .padding(.horizontal, 24).padding(.bottom, 14)
+                    .padding(.horizontal, 24).padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
                     // MARK: Sleep Hours — calculated display
-                    // Label informatif hasil kalkulasi otomatis dari dua picker di atas.
-                    // Tidak perlu input terpisah — derived dari bedtime + waketime.
-                    SectionCard(title: "Calculated sleep", icon: "clock.fill", iconColor: .circadianTeal) {
+                    SectionCard(title: "Calculated Sleep", icon: "clock.fill", iconColor: Color(uiColor: .nazeitTeal)) {
                         HStack {
                             Text(String(format: "%.1f hours", sleepDuration))
-                                .font(.title3).fontWeight(.semibold).foregroundStyle(primaryText)
+                                .font(.title3).fontWeight(.semibold)
+                                .foregroundStyle(Color(uiColor: .label))
+                                
                             Spacer()
-                            // Visual quality indicator
+                            
                             let qualityColor: Color = sleepDuration >= 7
-                                ? Color.circadianTeal
-                                : (sleepDuration >= 6 ? Color.adaptOrange : Color.red.opacity(0.8))
+                                ? Color(uiColor: .nazeitTeal)
+                                : (sleepDuration >= 6 ? Color.orange : Color.red.opacity(0.8))
 
                             Text(sleepDuration >= 7 ? "Good" : sleepDuration >= 6 ? "Fair" : "Low")
-                                .font(.caption).fontWeight(.medium)
+                                .font(.caption).fontWeight(.bold)
                                 .foregroundStyle(qualityColor)
-                                .padding(.horizontal, 10).padding(.vertical, 4)
-                                .background(qualityColor.opacity(0.15))
-                                .clipShape(Capsule())
+                                .padding(.horizontal, 12).padding(.vertical, 6)
+                                .background(qualityColor.opacity(0.15), in: Capsule())
                         }
                         .padding(.vertical, 4)
                     }
-                    .padding(.horizontal, 24).padding(.bottom, 32)
+                    .padding(.horizontal, 24).padding(.bottom, 40)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
-                    // MARK: CTA — Continue to trip setup
+                    // MARK: CTA
                     NavigationLink {
                         YourTrip().environmentObject(appState)
                     } label: {
-                        PrimaryBtn(title: "Continue to trip setup →",
-                                   color: Color(red:0.6,green:0.4,blue:1.0))
+                        HStack(spacing: 8) {
+                            Text("Continue to trip setup")
+                            Image(systemName: "arrow.right")
+                        }
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.indigo)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
                     .padding(.horizontal, 24).padding(.bottom, 48)
                     .opacity(appeared ? 1 : 0)
                 }
             }
         }
-        .navigationTitle("").navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.1)) { appeared = true }
             appState.sleepHours = sleepDuration

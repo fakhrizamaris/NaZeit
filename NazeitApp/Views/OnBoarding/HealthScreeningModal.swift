@@ -49,11 +49,11 @@ struct HealthScreeningModal: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(Color.teal)
+                        .background(Color(uiColor: .nazeitTeal))
                         .foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
-                .opacity(selectedCondition == nil ? 0.4 : 1.0)
+                .opacity(selectedCondition == nil ? 0.20 : 1)
                 .disabled(selectedCondition == nil)
                 .padding(.bottom, 16)
             }
@@ -123,12 +123,12 @@ struct ScreeningOptionRow: View {
                 }
             }
             .padding(16)
-            .background(isSelected ? Color.teal.opacity(0.12) : Color(uiColor: .tertiarySystemBackground))
-            .foregroundStyle(isSelected ? Color.teal : Color(uiColor: .label))
+            .background(isSelected ? Color(uiColor: .nazeitTeal).opacity(0.12) : Color(uiColor: .tertiarySystemBackground))
+            .foregroundStyle(isSelected ? Color(uiColor: .nazeitTeal) : Color(uiColor: .label))
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? Color.teal : Color(uiColor: .quaternaryLabel), lineWidth: isSelected ? 2 : 1)
+                    .stroke(isSelected ? Color(uiColor: .nazeitTeal) : Color(uiColor: .quaternaryLabel), lineWidth: isSelected ? 2 : 1)
             )
         }
     }
