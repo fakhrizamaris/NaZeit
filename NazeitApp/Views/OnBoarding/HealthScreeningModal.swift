@@ -14,87 +14,126 @@ struct HealthScreeningModal: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                // 🧠 [Design Principle: Hierarchy]
-                // Judul besar agar user tahu ini hal penting.
-                VStack(spacing: 8) {
-                    Text("Pengecekan Keamanan")
-                        .font(.title2).fontWeight(.bold)
-                    Text("Algoritma sirkadian kami bekerja paling baik pada pola tidur normal.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                // Header
+                VStack(spacing: 10) {
+                    Text("Routine Check")
+                        .font(.system(.title2, design: .rounded).weight(.bold))
+                        .foregroundStyle(Color(uiColor: .label))
+                    
+                    Text("Our circadian algorithm works best on standard sleep patterns.")
+                        .font(.body)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.center)
                 }
-                .padding(.top)
+                .padding(.top, 24)
 
-                // 🧠 [Gestalt: Similarity]
-                // Opsi screening dengan bentuk yang sama.
+                // Options
                 VStack(spacing: 12) {
-                    ScreeningOptionRow(title: "Insomnia Klinis", icon: "moon.zzz", selected: $selectedCondition)
-                    ScreeningOptionRow(title: "Lansia (>65 tahun)", icon: "figure.walk", selected: $selectedCondition)
-                    ScreeningOptionRow(title: "Pola Tidur Normal", icon: "checkmark.shield", selected: $selectedCondition)
+                    ScreeningOptionRow(title: "Clinical Insomnia", icon: "moon.zzz", selected: $selectedCondition)
+                    ScreeningOptionRow(title: "Elderly (>65 years)", icon: "figure.walk", selected: $selectedCondition)
+                    ScreeningOptionRow(title: "Normal Sleep Pattern", icon: "checkmark.shield", selected: $selectedCondition)
                 }
 
-                // 🧠 [Design Principle: Contrast (Warning Card)]
-                // Menggunakan warna orange untuk menarik perhatian pada risiko medis.
-                if selectedCondition != nil && selectedCondition != "Pola Tidur Normal" {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                            Text("Peringatan Medis").fontWeight(.bold)
-                        }
-                        .foregroundStyle(.orange)
-                        
-                        Text("Instruksi cahaya mungkin tidak seefektif biasanya karena jam biologis Anda memiliki karakteristik khusus.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding()
-                    .background(Color.orange.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .padding(.horizontal)
+                // Medical Warning
+                if let condition = selectedCondition, condition != "Normal Sleep Pattern" {
+                    MedicalWarningView()
                 }
 
-                Spacer()
+                Spacer(minLength: 16)
 
-                // Tombol Aksi
+                // Action Button
                 Button {
                     isAccepted = true
                 } label: {
-                    Text("Lanjutkan ke Aplikasi")
-                        .fontWeight(.bold)
+                    Text("Continue Setup")
+                        .font(.headline)
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selectedCondition == nil ? Color.gray : Color(uiColor: .nazeitTeal))
+                        .padding(.vertical, 16)
+                        .background(Color.teal)
                         .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
+                .opacity(selectedCondition == nil ? 0.4 : 1.0)
                 .disabled(selectedCondition == nil)
-                .padding()
+                .padding(.bottom, 16)
             }
-            .padding()
+            .padding(.horizontal, 20)
             .background(Color(uiColor: .secondarySystemBackground))
+            .interactiveDismissDisabled()
         }
     }
 }
 
-// Sub-component untuk opsi
+struct MedicalWarningView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .imageScale(.large)
+                Text("Adaptation Notice")
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+            }
+            .foregroundStyle(.orange)
+            
+            Text("Light exposure instructions may not be as effective because your biological clock has special characteristics.")
+                .font(.footnote)
+                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                .multilineTextAlignment(.leading)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+        )
+        .transition(.scale(scale: 0.95).combined(with: .opacity))
+    }
+}
+
 struct ScreeningOptionRow: View {
-    let title: String; let icon: String
+    let title: String
+    let icon: String
     @Binding var selected: String?
     
+    var isSelected: Bool { selected == title }
+    
     var body: some View {
-        Button { selected = title } label: {
-            HStack {
-                Image(systemName: icon).frame(width: 30)
-                Text(title)
-                Spacer()
-                if selected == title { Image(systemName: "checkmark.circle.fill") }
+        Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                selected = title
             }
-            .padding()
-            .background(selected == title ? Color(uiColor: .nazeitTeal).opacity(0.1) : Color(uiColor: .tertiarySystemBackground))
-            .foregroundStyle(selected == title ? Color(uiColor: .nazeitTeal) : .primary)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected == title ? Color(uiColor: .nazeitTeal) : Color.clear, lineWidth: 2))
+        } label: {
+            HStack(spacing: 16) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .frame(width: 32)
+                
+                Text(title)
+                    .font(.body)
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title3)
+                }
+            }
+            .padding(16)
+            .background(isSelected ? Color.teal.opacity(0.12) : Color(uiColor: .tertiarySystemBackground))
+            .foregroundStyle(isSelected ? Color.teal : Color(uiColor: .label))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(isSelected ? Color.teal : Color(uiColor: .quaternaryLabel), lineWidth: isSelected ? 2 : 1)
+            )
         }
     }
+}
+
+#Preview {
+    HealthScreeningModal(isAccepted: .constant(false))
 }
