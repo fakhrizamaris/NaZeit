@@ -4,10 +4,49 @@
 //
 //  Created by Fakhri Djamaris on 17/04/26.
 //
+
 import SwiftUI
 
 struct SplashScreenView: View {
-    @State private var startAnimation = false
+    @State private var animateBackground = false
+    @State private var animateLogo = false
+    @State private var animateText = false
+    
+    var body: some View {
+        ZStack {
+            BackgroundLayerView(animateBackground: animateBackground)
+            
+            VStack(spacing: 32) {
+                LogoComponentView(animateLogo: animateLogo)
+                TypographyComponentView(animateText: animateText)
+            }
+        }
+        .onAppear {
+            triggerAnimations()
+        }
+    }
+
+    private func triggerAnimations() {
+        withAnimation(.easeInOut(duration: 3.5).repeatForever(autoreverses: true)) {
+            animateBackground = true
+        }
+        
+        withAnimation(.spring(response: 0.7, dampingFraction: 0.6, blendDuration: 0.5)) {
+            animateLogo = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.easeOut(duration: 0.8)) {
+                animateText = true
+            }
+        }
+    }
+}
+
+// MARK: - Reusable Components
+
+struct BackgroundLayerView: View {
+    var animateBackground: Bool
     
     var body: some View {
         ZStack {
@@ -16,46 +55,72 @@ struct SplashScreenView: View {
                     Color(uiColor: .bgOnboarding),
                     Color(uiColor: .systemBackground)
                 ],
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-
-            Circle()
-                .fill(Color(uiColor: .circadianTeal).opacity(startAnimation ? 0.18 : 0.08))
-                .frame(width: 380)
-                .blur(radius: 90)
-                .offset(y: -160)
             
-            VStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(Color(uiColor: .circadianTeal).opacity(0.14))
-                        .frame(width: 108, height: 108)
-
-                    Image(systemName: "timer")
-                        .font(.system(size: 48, weight: .ultraLight))
-                        .foregroundStyle(Color(uiColor: .nazeitTeal))
-                        .symbolEffect(.pulse, value: startAnimation)
-                }
-
-                Text("NAZEIT")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .tracking(10)
-                    .foregroundStyle(Color(uiColor: .label))
-                    .offset(y: startAnimation ? 0 : 16)
-                    .opacity(startAnimation ? 1 : 0)
-
-                Text("Menyiapkan panduan adaptasi Anda")
-                    .font(.subheadline)
-                    .foregroundStyle(Color(uiColor: .secondaryLabel))
-                    .opacity(startAnimation ? 1 : 0)
-            }
+            Circle()
+                .fill(Color(uiColor: .circadianTeal).opacity(animateBackground ? 0.2 : 0.05))
+                .frame(width: 400)
+                .blur(radius: 100)
+                .offset(x: animateBackground ? 40 : -40, y: animateBackground ? -180 : -140)
+            
+            Circle()
+                .fill(Color(uiColor: .nazeitTeal).opacity(animateBackground ? 0.15 : 0.0))
+                .frame(width: 300)
+                .blur(radius: 120)
+                .offset(x: animateBackground ? -50 : 50, y: animateBackground ? 200 : 250)
         }
-        .onAppear {
-            withAnimation(.easeOut(duration: 1.0)) {
-                startAnimation = true
-            }
+    }
+}
+
+struct LogoComponentView: View {
+    var animateLogo: Bool
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color(uiColor: .circadianTeal).opacity(0.15))
+                .frame(width: 140, height: 140)
+                .scaleEffect(animateLogo ? 1 : 0.6)
+                .opacity(animateLogo ? 1 : 0)
+            
+            Circle()
+                .stroke(Color(uiColor: .nazeitTeal).opacity(0.4), lineWidth: 1)
+                .frame(width: 160, height: 160)
+                .scaleEffect(animateLogo ? 1 : 0.8)
+                .opacity(animateLogo ? 1 : 0)
+            
+            Image(systemName: "timer")
+                .font(.system(size: 64, weight: .ultraLight))
+                .foregroundStyle(Color(uiColor: .nazeitTeal))
+                .symbolEffect(.pulse, value: animateLogo)
+                .scaleEffect(animateLogo ? 1 : 0.4)
+                .opacity(animateLogo ? 1 : 0)
+        }
+    }
+}
+
+struct TypographyComponentView: View {
+    var animateText: Bool
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("NAZEIT")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .tracking(10)
+                .foregroundStyle(Color(uiColor: .label))
+                .offset(y: animateText ? 0 : 20)
+                .opacity(animateText ? 1 : 0)
+            
+            Text("Preparing your adaptation guide")
+                .font(.subheadline)
+                .fontWeight(.regular)
+                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                .multilineTextAlignment(.center)
+                .offset(y: animateText ? 0 : 15)
+                .opacity(animateText ? 1 : 0)
         }
     }
 }

@@ -18,81 +18,28 @@ struct OnboardingChoice: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [
-                        Color(uiColor: .bgOnboarding),
-                        Color(uiColor: .systemBackground)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-                
-                Circle ()
-                    .fill(Color(uiColor: .circadianTeal)
-                        .opacity(glowAnimated ? 0.18 : 0.08))
-                    .frame(width: 450)
-                    .blur(radius: 100)
-                    .offset(y: -150)
-                    .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: glowAnimated)
+                OnboardingChoiceBackgroundView(glowAnimated: glowAnimated)
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
-                        // Step context membuat user langsung paham ini alur berurutan.
-                        Text("Langkah 1 dari 3")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color(uiColor: .secondarySystemBackground), in: Capsule())
+                        StepIndicatorView(step: 1, totalSteps: 3)
                             .padding(.top, 12)
-                            .padding(.bottom, 26)
-                    
-                        // Hero & value proposition
-                        VStack(spacing: 18) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color(uiColor: .circadianTeal).opacity(0.14))
-                                    .frame(width: 96, height: 96)
+                            .padding(.bottom, 24)
+                        
+                        HeaderSectionView()
+                            .opacity(showContent ? 1 : 0)
+                            .offset(y: showContent ? 0 : 20)
 
-                                Image(systemName: "timer")
-                                    .font(.system(size: 40, weight: .light))
-                                    .foregroundStyle(Color(uiColor: .circadianTeal))
-                                    .symbolEffect(.pulse)
-                            }
-
-                            VStack(spacing: 10) {
-                                Text("NAZEIT")
-                                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                                    .tracking(8)
-                                    .foregroundStyle(Color(uiColor: .label))
-
-                                Text("Master your biological time")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(Color(uiColor: .label))
-
-                                Text("Pilih sumber data Anda. Setelah itu kami susun instruksi adaptasi zona waktu secara bertahap.")
-                                    .font(.subheadline)
-                                    .multilineTextAlignment(.center)
-                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
-                                    .padding(.horizontal, 28)
-                            }
-                        }
-                        .opacity(showContent ? 1 : 0)
-                        .offset(y: showContent ? 0 : 24)
-
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text("Pilih metode data")
-                                .font(.footnote)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                            .padding(.horizontal, 24)
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Select input method")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                .padding(.horizontal, 24)
 
                             Group {
                                 if usesVerticalCards {
-                                    VStack(spacing: 12) {
+                                    VStack(spacing: 16) {
                                         watchChoice
                                         manualChoice
                                     }
@@ -105,29 +52,37 @@ struct OnboardingChoice: View {
                             }
                             .padding(.horizontal, 24)
                         }
-                        .padding(.top, 30)
+                        .padding(.top, 32)
                         .opacity(showContent ? 1 : 0)
                         .offset(y: showContent ? 0 : 30)
 
-                        HStack(spacing: 6) {
+                        HStack(spacing: 8) {
                             Image(systemName: "shield.checkered")
-                            Text("Data kesehatan diproses privat di perangkat Anda.")
+                                .imageScale(.large)
+                            Text("Your health data is processed privately on your device.")
                         }
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.caption)
+                        .fontWeight(.medium)
                         .foregroundStyle(Color(uiColor: .secondaryLabel))
-                        .padding(.top, 28)
-                        .padding(.bottom, 18)
+                        .padding(.top, 32)
+                        .padding(.bottom, 24)
+                        .opacity(showContent ? 1 : 0)
                     }
-                    .padding(.horizontal, 6)
                 }
             }
             .navigationBarHidden(true)
             .onAppear {
-                withAnimation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.2)) {
-                    showContent = true
-                    glowAnimated = true
-                }
+                triggerApparition()
             }
+        }
+    }
+    
+    private func triggerApparition() {
+        withAnimation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
+            glowAnimated = true
+        }
+        withAnimation(.spring(response: 0.7, dampingFraction: 0.8, blendDuration: 0.5).delay(0.1)) {
+            showContent = true
         }
     }
 
@@ -137,11 +92,11 @@ struct OnboardingChoice: View {
         } label: {
             ChoiceCard(
                 icon: "applewatch",
-                title: "Wearable",
-                subtitle: "Otomatis & paling akurat",
-                detail: "Sinkronkan Apple Watch dan lanjut ke setup trip.",
-                tint: Color(uiColor: .circadianTeal),
-                badge: "Direkomendasikan"
+                title: "Apple Watch",
+                subtitle: "Automatic & Highly accurate",
+                detail: "Sync with Apple Watch and proceed to trip setup.",
+                tint: Color.teal,
+                badge: "Recommended"
             )
         }
         .simultaneousGesture(TapGesture().onEnded { appState.inputMethod = .watch })
@@ -154,18 +109,100 @@ struct OnboardingChoice: View {
             ChoiceCard(
                 icon: "hand.tap.fill",
                 title: "Manual",
-                subtitle: "Tanpa wearable",
-                detail: "Isi jam tidur biasa Anda secara manual.",
-                tint: Color(uiColor: .adaptOrange),
-                badge: "Alternatif"
+                subtitle: "Without Wearable",
+                detail: "Manually enter your typical sleep schedule.",
+                tint: Color.indigo,
+                badge: "Alternative"
             )
         }
         .simultaneousGesture(TapGesture().onEnded { appState.inputMethod = .manual })
     }
 }
 
-// Komponen Card Reusable
-private struct ChoiceCard: View {
+// MARK: - Reusable Components
+
+struct OnboardingChoiceBackgroundView: View {
+    var glowAnimated: Bool
+    
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(uiColor: .secondarySystemBackground),
+                    Color(uiColor: .systemBackground)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            Circle()
+                .fill(Color.teal.opacity(glowAnimated ? 0.23 : 0.05))
+                .frame(maxWidth: 400)
+                .blur(radius: 120)
+                .offset(x: -60, y: -180)
+            
+            Circle()
+                .fill(Color.indigo.opacity(glowAnimated ? 0.12 : 0.03))
+                .frame(maxWidth: 350)
+                .blur(radius: 100)
+                .offset(x: 100, y: 150)
+        }
+    }
+}
+
+struct StepIndicatorView: View {
+    let step: Int
+    let totalSteps: Int
+    
+    var body: some View {
+        Text("Step \(step) of \(totalSteps)")
+            .font(.caption)
+            .fontWeight(.semibold)
+            .foregroundStyle(Color(uiColor: .secondaryLabel))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(Color(uiColor: .tertiarySystemFill), in: Capsule())
+    }
+}
+
+struct HeaderSectionView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(Color.teal.opacity(0.12))
+                    .frame(width: 80, height: 80)
+
+                Image(systemName: "timer")
+                    .font(.largeTitle)
+                    .fontWeight(.light)
+                    .foregroundStyle(Color.teal)
+                    .symbolEffect(.pulse)
+            }
+
+            VStack(spacing: 12) {
+                Text("NAZEIT")
+                    .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                    .tracking(8)
+                    .foregroundStyle(Color(uiColor: .label))
+
+                Text("Master your biological time")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color(uiColor: .label))
+
+                Text("Choose your data source. We will tailor a step-by-step time zone adaptation guide.")
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .padding(.horizontal, 28)
+            }
+        }
+    }
+}
+
+struct ChoiceCard: View {
     let icon: String
     let title: String
     let subtitle: String
@@ -174,48 +211,59 @@ private struct ChoiceCard: View {
     let badge: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 5) {
             HStack {
                 Label(badge, systemImage: "sparkles")
-                    .font(.caption2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(tint)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(tint.opacity(0.12), in: Capsule())
-                Spacer()
-                Image(systemName: "chevron.right")
                     .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(tint)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(tint.opacity(0.15), in: Capsule())
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.body.weight(.semibold))
                     .foregroundStyle(Color(uiColor: .tertiaryLabel))
             }
 
+            Spacer(minLength: 4)
+
             Image(systemName: icon)
-                .font(.title2)
+                .font(.title)
                 .foregroundStyle(tint)
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
                     .foregroundStyle(Color(uiColor: .label))
+                    .multilineTextAlignment(.leading)
+                
                 Text(subtitle)
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .multilineTextAlignment(.leading)
+                    .padding(.bottom, 2)
+                
                 Text(detail)
-                    .font(.caption)
+                    .font(.footnote)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
-                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
             }
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, minHeight: 176, alignment: .topLeading)
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(Color(uiColor: .secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(tint.opacity(0.35), lineWidth: 1))
-        .shadow(color: .black.opacity(0.04), radius: 8, y: 5)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(tint.opacity(0.5), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.05), radius: 12, y: 4)
     }
 }
-
 
 #Preview {
     OnboardingChoice().environmentObject(AppState())
