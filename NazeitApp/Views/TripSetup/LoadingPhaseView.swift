@@ -8,6 +8,7 @@ import SwiftUI
 struct LoadingPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var selectedDayIndex: Int = 0 
+    @State private var navigatetoDashboard: Bool = false
     
     // MARK: - Data Models
     let offsets = [3, 2, 1]
@@ -114,7 +115,7 @@ struct LoadingPhaseView: View {
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 if selectedDayIndex > 0 { selectedDayIndex -= 1 }
-                            }
+                            } 
                         } label: {
                             Image(systemName: "arrow.left")
                                 .font(.headline)
@@ -133,6 +134,7 @@ struct LoadingPhaseView: View {
                                     selectedDayIndex += 1 
                                 } else {
                                     // TODO: Handle completion navigation
+                                    navigatetoDashboard = true
                                 }
                             }
                         } label: {
