@@ -47,8 +47,8 @@ struct Screen6YourAdaptation: View {
                         .trim(from: 0, to: ringProgress)
                         .stroke(AngularGradient(
                             gradient: Gradient(colors: [
-                                Color.red.opacity(0.7),
-                                Color.adaptOrange,
+                                Color.indigo.opacity(0.7),
+                                Color.cyan,
                                 Color.circadianTeal
                             ]),
                             center: .center,
@@ -64,7 +64,7 @@ struct Screen6YourAdaptation: View {
                     // Center text
                     VStack(spacing: 2) {
                         Text("\(Int(appState.adaptationPercent * 100))%")
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .font(.system(.largeTitle, design: .rounded).weight(.bold))
                             .foregroundStyle(.primary)
                         Text("adapted")
                             .font(.caption).foregroundStyle(.secondary)
@@ -77,7 +77,7 @@ struct Screen6YourAdaptation: View {
                     MetricCard(value: String(format: "%.1f", appState.sleepHours) + "h",
                                label: "sleep",
                                icon: "moon.zzz.fill",
-                               iconColor: Color(red:0.5,green:0.4,blue:0.9),
+                               iconColor: Color.indigo,
                                trend: nil)
                     MetricCard(value: "\(appState.currentHRV)ms",
                                label: "HRV",
@@ -97,7 +97,7 @@ struct Screen6YourAdaptation: View {
                         ZStack(alignment: .leading) {
                             Capsule().fill(Color(.systemGray5)).frame(height: 4)
                             Capsule()
-                                .fill(LinearGradient(colors: [.adaptOrange, .circadianTeal],
+                                .fill(LinearGradient(colors: [Color.cyan, .circadianTeal],
                                                       startPoint: .leading, endPoint: .trailing))
                                 .frame(width: geo.size.width * ringProgress, height: 4)
                         }
@@ -112,7 +112,16 @@ struct Screen6YourAdaptation: View {
                 NavigationLink {
                     Screen7FullyAdapted().environmentObject(appState)
                 } label: {
-                    PrimaryBtn(title: "See today's next instruction →")
+                    HStack(spacing: 8) {
+                        Text("See today's next instruction")
+                        Image(systemName: "arrow.right").fontWeight(.semibold)
+                    }
+                    .font(.body).fontWeight(.semibold).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity).padding(.vertical, 16)
+                    .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
+                                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                                in: RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
                 }
                 .padding(.horizontal, 24).padding(.bottom, 32)
             }
@@ -135,11 +144,7 @@ struct MetricCard: View {
     let trend: String?
 
     private var trendColor: Color {
-        Color(uiColor: UIColor { trait in
-            trait.userInterfaceStyle == .dark
-                ? UIColor(red: 0.30, green: 0.90, blue: 0.78, alpha: 1.0)
-                : UIColor(red: 0.08, green: 0.60, blue: 0.50, alpha: 1.0)
-        })
+        Color(uiColor: .nazeitTeal)
     }
 
     var body: some View {
@@ -204,7 +209,7 @@ struct Screen7FullyAdapted: View {
 
                     // Checkmark — SF Symbol dengan bounce animation
                     Image(systemName: "checkmark")
-                        .font(.system(size: 42, weight: .semibold))
+                        .font(.system(.largeTitle).weight(.semibold))
                         .foregroundStyle(Color.circadianTeal)
                         .scaleEffect(showCheck ? 1.0 : 0.0)
                         .opacity(showCheck ? 1 : 0)
@@ -245,8 +250,16 @@ struct Screen7FullyAdapted: View {
                 // Button bukan NavigationLink karena ini adalah terminal screen.
                 // Di implementasi nyata: reset NavigationStack path ke root.
                 Button { } label: {
-                    PrimaryBtn(title: "Plan next trip →",
-                               color: Color.circadianTeal.opacity(0.85))
+                    HStack(spacing: 8) {
+                        Text("Plan next trip")
+                        Image(systemName: "arrow.right").fontWeight(.semibold)
+                    }
+                    .font(.body).fontWeight(.semibold).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity).padding(.vertical, 16)
+                    .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
+                                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                                in: RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
                 }
                 .padding(.horizontal, 24)
                 .opacity(showText ? 1 : 0)

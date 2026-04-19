@@ -172,6 +172,9 @@ struct LoadingPhaseView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(isPresented: $navigatetoDashboard) {
+                Screen3SleepNow()
+            }
         }
     }
 }

@@ -86,7 +86,7 @@ struct ManualSetup: View {
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
                     // MARK: Wake Time Picker
-                    SectionCard(title: "Usual Wake Time", icon: "sun.horizon.fill", iconColor: .orange) {
+                    SectionCard(title: "Usual Wake Time", icon: "sun.horizon.fill", iconColor: Color.cyan) {
                         Button {
                             withAnimation(.spring(response: 0.4)) { showWakePicker.toggle() }
                         } label: {
@@ -118,7 +118,7 @@ struct ManualSetup: View {
                             
                             let qualityColor: Color = sleepDuration >= 7
                                 ? Color(uiColor: .nazeitTeal)
-                                : (sleepDuration >= 6 ? Color.orange : Color.red.opacity(0.8))
+                                : (sleepDuration >= 6 ? Color.mint : Color.cyan.opacity(0.8))
 
                             Text(sleepDuration >= 7 ? "Good" : sleepDuration >= 6 ? "Fair" : "Low")
                                 .font(.caption).fontWeight(.bold)
@@ -143,8 +143,10 @@ struct ManualSetup: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(Color.indigo)
+                        .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
+                                                   startPoint: .leading, endPoint: .trailing))
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
                     }
                     .padding(.horizontal, 24).padding(.bottom, 48)
                     .opacity(appeared ? 1 : 0)

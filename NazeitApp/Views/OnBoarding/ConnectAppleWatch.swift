@@ -98,6 +98,8 @@ struct AnimatedWatchIcon: View {
     var isAnimating: Bool
     var isSynced: Bool
     
+    @ScaledMetric(relativeTo: .largeTitle) private var watchIconSize: CGFloat = 44
+    
     var body: some View {
         ZStack {
             ForEach(0..<3) { i in
@@ -118,7 +120,7 @@ struct AnimatedWatchIcon: View {
                     .animation(.spring(response: 0.4), value: isSynced)
                 
                 Image(systemName: isSynced ? "checkmark.circle.fill" : "applewatch")
-                    .font(.system(size: 44, weight: .light))
+                    .font(.system(size: watchIconSize, weight: .light))
                     .symbolRenderingMode(isSynced ? .multicolor : .monochrome)
                     .foregroundStyle(isSynced ? Color.teal : Color(uiColor: .nazeitTeal))
                     .contentTransition(.symbolEffect(.replace))

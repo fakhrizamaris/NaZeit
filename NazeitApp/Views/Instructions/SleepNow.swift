@@ -37,7 +37,7 @@ struct CircadianStateBar: View {
             }
 
             Text(stateLabel)
-                .font(compact ? .system(size: 10, weight: .medium) : .caption2)
+                .font(compact ? .caption2.weight(.medium) : .caption2)
                 .fontWeight(.medium)
                 .foregroundStyle(stateColor)
         }
@@ -55,31 +55,35 @@ struct Screen3SleepNow: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy = false
     @State private var appeared = false
+    
+    // [HIG] ScaledMetric mengizinkan ukuran raksasa (64) tetap responsif terhadap zoom level iOS
+    @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
     var body: some View {
         ZStack {
-            // Dark navy — warna malam, mendukung instruksi "tidur"
-            // Warna background mengkomunikasikan konteks tanpa kata-kata (HIG).
-//            LinearGradient(colors: [.bgNightTop, .bgNight, Color(red:0.06,green:0.04,blue:0.22)],
-//                           startPoint: .topLeading, endPoint: .bottomTrailing)
-//                .ignoresSafeArea()
-
-            // Stars decoration — subtle dots untuk nuansa langit malam
-            StarsBackground()
+            //  [Materi Dynamic Appearance]: Menggunakan .systemBackground agar aplikasi beradaptasi mutlak pada preferensi asali Dark/Light Mode pengguna, mengikuti pedoman HIG Accessibility.
+            Color(uiColor: .systemBackground).ignoresSafeArea()
 
             VStack(spacing: 0) {
 
                 // MARK: Phase chip + Circadian state bar
-                HStack(alignment: .center, spacing: 10) {
-                    Label("In-flight", systemImage: "airplane")
-                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.black.opacity(0.70))
-                        .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(.black.opacity(0.10)).clipShape(Capsule())
+                //  [Materi Navigation Context (HIG)]: Header minimalis yang menyajikan orientasi status saat ini.
+                // Menggunakan huruf kapital dan spasi ekstra (tracking) pada micro-data untuk keterbacaan tingkat lanjut.
+                HStack(alignment: .center) {
+                    Label("In-Flight", systemImage: "airplane.circle.fill")
+                        .font(.subheadline).fontWeight(.semibold)
+                        .foregroundStyle(Color(uiColor: .nazeitTeal))
+                        .padding(.horizontal, 12).padding(.vertical, 8)
+                        .background(Color(uiColor: .nazeitTeal).opacity(0.12))
+                        .clipShape(Capsule())
 
                     Spacer()
 
-                    VStack(alignment: .trailing, spacing: 3) {
-                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.black.opacity(0.45))
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("CIRCADIAN STATE")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .tracking(1.0)
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
@@ -87,43 +91,44 @@ struct Screen3SleepNow: View {
 
                 Spacer()
 
-                // MARK: Main Instruction Card — glassmorphism
-                VStack(spacing: 14) {
-                    // Emoji icon besar — ImageView equivalent
-                    // Size 64 membuat instruksi terbaca bahkan sebelum membaca teks.
+                // MARK: Main Instruction — Extreme Minimalism
+                VStack(spacing: 20) {
                     Text("💤")
-                        .font(.system(size: 64))
+                        .font(.system(size: heroIconSize))
                         .scaleEffect(appeared ? 1.0 : 0.7)
                         .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.1), value: appeared)
 
-                    Text("Sleep now")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.black)
+                    //  [Materi Typography Hierarchy]: Menggunakan .largeTitle untuk instruksi inti yang menyesuaikan warna label dinamis
+                    Text("Sleep Now")
+                        .font(.system(.largeTitle, design: .rounded).weight(.heavy))
+                        .foregroundStyle(Color(uiColor: .label))
 
                     Text("\(appState.inputMethod == .watch ? "4" : "4") hrs to destination")
-                        .font(.subheadline).foregroundStyle(.black.opacity(0.65))
+                        .font(.headline).foregroundStyle(Color(uiColor: .secondaryLabel))
 
-                    // Data attribution — koneksi ke real-time state
-                    HStack(spacing: 4) {
-                        Image(systemName: "applewatch").font(.caption2)
+                    HStack(spacing: 6) {
+                        Image(systemName: appState.inputMethod == .watch ? "applewatch" : "bed.double.fill")
+                            .font(.caption2).foregroundStyle(Color(uiColor: .nazeitTeal))
                         Text(appState.inputMethod == .watch
-                             ? "Based on your HRV · \(appState.currentHRV)ms"
-                             : "Based on your sleep schedule")
+                             ? "Based on HRV · \(appState.currentHRV)ms"
+                             : "Based on sleep schedule")
                             .font(.caption)
                     }
-                    .foregroundStyle(.black.opacity(0.45))
-                    .padding(.horizontal, 14).padding(.vertical, 6)
-                    .background(.black.opacity(0.08)).clipShape(Capsule())
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .padding(.horizontal, 14).padding(.vertical, 8)
+                    .background(Color(uiColor: .nazeitTeal).opacity(0.1)).clipShape(Capsule())
                 }
-                .instructionCard()
+                .padding(.vertical, 40)
+                .frame(maxWidth: .infinity)
+                .background(Color(uiColor: .secondarySystemFill), in: RoundedRectangle(cornerRadius: 32, style: .continuous))
                 .padding(.horizontal, 24)
 
                 Spacer()
 
                 // MARK: Why chip — progressive disclosure (HIG)
-                // Detail ilmiah tersembunyi agar tidak overwhelm user kelelahan.
-                // Tap untuk expand — hanya jika user ingin tahu lebih.
-                WhyChip(isShown: $showWhy, explanation:
-                    "Your HRV is low (\(appState.currentHRV)ms), indicating your body is rest-ready. Sleeping now advances your circadian clock toward the destination time zone by up to 3 hours.")
+                WhyChip(isShown: $showWhy, explanation: appState.inputMethod == .watch ?
+                    "Your HRV is optimal (\(appState.currentHRV)ms), indicating your body is rest-ready. Sleeping now advances your circadian clock toward the destination time zone by up to 3 hours." :
+                    "Based on your usual schedule, your body's melatonin cycle is beginning. Sleeping now helps shift your circadian clock toward the destination time zone by up to 3 hours.")
                     .padding(.bottom, 16)
 
                 // Navigation dots — progress indicator (manual, bukan PageControl,
@@ -133,19 +138,28 @@ struct Screen3SleepNow: View {
 
                 // MARK: Dual CTA — branching point
                 // Primary: followed → flow normal
-                // Secondary: deviated → adaptive flow (ScreenNewC)
-                VStack(spacing: 10) {
+                // Secondary: deviated                // MARK: Dual CTA
+                VStack(spacing: 12) {
                     NavigationLink {
                         Screen4GetSunlight().environmentObject(appState)
                     } label: {
-                        PrimaryBtn(title: "Got it — I'll sleep now")
+                        HStack(spacing: 8) {
+                            Text("Done — I woke up")
+                            Image(systemName: "checkmark").fontWeight(.semibold)
+                        }
+                        .font(.body).fontWeight(.semibold).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity).padding(.vertical, 16)
+                        .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
+                                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                                    in: RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
                     }
 
                     NavigationLink {
                         ScreenNewC_InFlightDeviated().environmentObject(appState)
                     } label: {
                         Text("Can't sleep right now")
-                            .font(.subheadline).foregroundStyle(.black.opacity(0.50))
+                            .font(.subheadline).foregroundStyle(Color(uiColor: .nazeitTeal).opacity(0.8))
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                     }
                 }
@@ -171,16 +185,16 @@ struct WhyChip: View {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { isShown.toggle() }
             } label: {
                 HStack(spacing: 5) {
-                    Image(systemName: "info.circle").font(.caption2)
+                    Image(systemName: "info.circle").font(.caption2).foregroundStyle(Color(uiColor: .nazeitTeal))
                     Text(isShown ? "Hide explanation" : "Why this instruction?")
                         .font(.caption).fontWeight(.medium)
                     Image(systemName: isShown ? "chevron.up" : "chevron.down").font(.caption2)
                 }
-                .foregroundStyle(.black.opacity(0.55))
+                .foregroundStyle(Color(uiColor: .nazeitTeal))
             }
             if isShown {
                 Text(explanation)
-                    .font(.caption).foregroundStyle(.black.opacity(0.55))
+                    .font(.caption).foregroundStyle(Color(uiColor: .tertiaryLabel))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .transition(.opacity.combined(with: .move(edge: .top)))

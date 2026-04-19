@@ -1,15 +1,21 @@
 //  YourTrip.swift — KamBing
 import SwiftUI
+import CoreLocation
 
 struct YourTrip: View {
     @EnvironmentObject var appState: AppState
     @State private var showDatePicker = false
     @State private var showArrivalDatePicker = false
     @State private var appeared       = false
+    
+    // CoreLocation Geocoding Engine
+    @State private var isGeocodingTo   = false
+    @State private var isGeocodingFrom = false
 
     private var isValid: Bool { !appState.fromCity.isEmpty && !appState.toCity.isEmpty }
     private var dateLabel: String {
         let f = DateFormatter()
+        f.timeZone = appState.fromTimeZone
         f.dateStyle = .medium
         f.timeStyle = .short // Menampilkan Jam juga
         return f.string(from: appState.departureDate)
@@ -17,9 +23,17 @@ struct YourTrip: View {
     
     private var arrivalDateLabel: String {
         let f = DateFormatter()
+        f.timeZone = appState.toTimeZone
         f.dateStyle = .medium
         f.timeStyle = .short
         return f.string(from: appState.arrivalDate)
+    }
+    
+    private var timezoneShift: Int {
+        // [Native Math]: Menghitung perbedaan jam absolut dari dua zona waktu secara presisi tanpa scraping API.
+        let fromSeconds = appState.fromTimeZone.secondsFromGMT(for: appState.departureDate)
+        let toSeconds = appState.toTimeZone.secondsFromGMT(for: appState.arrivalDate)
+        return (toSeconds - fromSeconds) / 3600
     }
 
     // [Color Harmony]
@@ -81,9 +95,21 @@ struct YourTrip: View {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { showDatePicker.toggle() }
                         } label: {
                             HStack {
-                                Label(dateLabel, systemImage: "airplane.departure")
-                                    .font(.body)
-                                    .foregroundStyle(Color(uiColor: .label))
+                                Label {
+                                    HStack(alignment: .lastTextBaseline, spacing: 6) {
+                                        Text(dateLabel)
+                                        //  [Materi Emphasis]: Label zona waktu menggunakan font lebih kecil & sekunder agar memberikan konteks orientasi tanpa mendominasi informasi jam keberangkatan.
+                                        if let abbrev = appState.fromTimeZone.abbreviation() {
+                                            Text(abbrev)
+                                                .font(.caption).fontWeight(.bold)
+                                                .foregroundStyle(Color(uiColor: .tertiaryLabel))
+                                        }
+                                    }
+                                } icon: {
+                                    Image(systemName: "airplane.departure")
+                                }
+                                .font(.body)
+                                .foregroundStyle(Color(uiColor: .label))
                                 Spacer()
                                 Image(systemName: showDatePicker ? "chevron.up" : "chevron.down")
                                     .font(.footnote).foregroundStyle(Color(uiColor: .secondaryLabel))
@@ -116,9 +142,20 @@ struct YourTrip: View {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { showArrivalDatePicker.toggle() }
                         } label: {
                             HStack {
-                                Label(arrivalDateLabel, systemImage: "airplane.arrival")
-                                    .font(.body)
-                                    .foregroundStyle(Color(uiColor: .label))
+                                Label {
+                                    HStack(alignment: .lastTextBaseline, spacing: 6) {
+                                        Text(arrivalDateLabel)
+                                        if let abbrev = appState.toTimeZone.abbreviation() {
+                                            Text(abbrev)
+                                                .font(.caption).fontWeight(.bold)
+                                                .foregroundStyle(Color(uiColor: .tertiaryLabel))
+                                        }
+                                    }
+                                } icon: {
+                                    Image(systemName: "airplane.arrival")
+                                }
+                                .font(.body)
+                                .foregroundStyle(Color(uiColor: .label))
                                 Spacer()
                                 Image(systemName: showArrivalDatePicker ? "chevron.up" : "chevron.down")
                                     .font(.footnote).foregroundStyle(Color(uiColor: .secondaryLabel))
@@ -141,17 +178,24 @@ struct YourTrip: View {
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
                     // MARK: Time zone shift chip
-                    if !appState.toCity.isEmpty {
+                    if timezoneShift != 0 && !appState.toCity.isEmpty {
                         HStack(spacing: 8) {
-                            Image(systemName: "clock.arrow.2.circlepath").font(.subheadline)
-                            Text("+15 hr time zone shift detected")
+                            if isGeocodingTo || isGeocodingFrom {
+                                ProgressView().tint(Color.mint).scaleEffect(0.8)
+                            } else {
+                                Image(systemName: "clock.arrow.2.circlepath").font(.subheadline)
+                            }
+                            
+                            let sign = timezoneShift > 0 ? "+" : ""
+                            Text("\(sign)\(timezoneShift) hr time zone shift detected")
                                 .font(.caption.weight(.bold))
                         }
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.mint)
                         .padding(.horizontal, 14).padding(.vertical, 8)
-                        .background(Color.orange.opacity(0.12), in: Capsule())
+                        .background(Color.mint.opacity(0.12), in: Capsule())
                         .padding(.horizontal, 24).padding(.bottom, 24)
                         .transition(.scale(scale: 0.95).combined(with: .opacity))
+                        .animation(.spring, value: isGeocodingTo)
                     }
 
                     // MARK: Plan summary card
@@ -160,7 +204,7 @@ struct YourTrip: View {
                             Image(systemName: "sparkles")
                                 .font(.title3)
                                 .foregroundStyle(baseColor)
-                            Text("We'll guide you with \(appState.inputMethod == .watch ? "live watch data" : "your sleep schedule") across the 15-hour shift.")
+                            Text("We'll guide you with \(appState.inputMethod == .watch ? "live watch data" : "your sleep schedule") across the \(abs(timezoneShift))-hour shift.")
                                 .font(.footnote)
                                 .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 .multilineTextAlignment(.leading)
@@ -198,8 +242,35 @@ struct YourTrip: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: appState.toCity.isEmpty)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: timezoneShift)
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.1)) { appeared = true }
+        }
+        // MARK: Native Auto-Geocoding (No Web Scraping Needed!)
+        // Debounce asinkronus mencegah geocoding dieksekusi terus setiap kali user ngetik 1 huruf.
+        .task(id: appState.fromCity) {
+            guard !appState.fromCity.isEmpty else { appState.fromTimeZone = .current; return }
+            isGeocodingFrom = true
+            do {
+                try await Task.sleep(nanoseconds: 1_200_000_000) // 1.2 detik debounce
+                let placemarks = try await CLGeocoder().geocodeAddressString(appState.fromCity)
+                if let tz = placemarks.first?.timeZone {
+                    await MainActor.run { appState.fromTimeZone = tz }
+                }
+            } catch {}
+            isGeocodingFrom = false
+        }
+        .task(id: appState.toCity) {
+            guard !appState.toCity.isEmpty else { return }
+            isGeocodingTo = true
+            do {
+                try await Task.sleep(nanoseconds: 1_200_000_000) // 1.2 detik debounce
+                let placemarks = try await CLGeocoder().geocodeAddressString(appState.toCity)
+                if let tz = placemarks.first?.timeZone {
+                    await MainActor.run { appState.toTimeZone = tz }
+                }
+            } catch {}
+            isGeocodingTo = false
         }
     }
 }

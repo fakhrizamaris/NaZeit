@@ -14,6 +14,8 @@ struct Screen4GetSunlight: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy  = false
     @State private var appeared = false
+    
+    @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
     var body: some View {
         ZStack {
@@ -26,15 +28,13 @@ struct Screen4GetSunlight: View {
 
                 // Phase chip + state bar
                 // CircadianStateBar di sini onDark = false karena background terang
+                //  [Materi Disorientation Relief]: Menyajikan waktu asal dan tujuan secara berdampingan (Dual Timeline) mengurangi beban kognitif pengguna yang bingung referensi "jam berapa".
                 HStack(alignment: .center, spacing: 10) {
-                    Label("Day 1 · 07:40 AM", systemImage: "sun.horizon.fill")
-                        .font(.caption2).fontWeight(.semibold)
-                        .foregroundStyle(Color(red:0.55,green:0.35,blue:0.0).opacity(0.85))
-                        .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(.black.opacity(0.08)).clipShape(Capsule())
+                    DualTimeView(localTime: "07:40", isDaytime: true)
+                    
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
-                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.black.opacity(0.40))
+                        Text("Circadian state").font(.caption2).foregroundStyle(Color(uiColor: .secondaryLabel))
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
@@ -45,17 +45,17 @@ struct Screen4GetSunlight: View {
                 // Main Instruction Card — glassmorphism di atas warm background
                 VStack(spacing: 14) {
                     Text("☀️")
-                        .font(.system(size: 64))
+                        .font(.system(size: heroIconSize))
                         .scaleEffect(appeared ? 1.0 : 0.6)
                         .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
                         .shadow(color: Color.bgMorning.opacity(0.6), radius: 20)
 
                     Text("Get sunlight")
                         .font(.title).fontWeight(.bold)
-                        .foregroundStyle(Color(red:0.35,green:0.20,blue:0.0))
+                        .foregroundStyle(Color(uiColor: .nazeitTeal))
 
                     Text("Go outside for 20 min")
-                        .font(.subheadline).foregroundStyle(Color(red:0.45,green:0.28,blue:0.0).opacity(0.75))
+                        .font(.subheadline).foregroundStyle(Color.teal)
 
                     VStack(spacing: 5) {
                         HStack(spacing: 5) {
@@ -63,20 +63,20 @@ struct Screen4GetSunlight: View {
                             Text("Best before 7:00 AM")
                                 .font(.caption).fontWeight(.medium)
                         }
-                        .foregroundStyle(Color(red:0.60,green:0.30,blue:0.0))
+                        .foregroundStyle(Color.mint)
                         .padding(.horizontal, 12).padding(.vertical, 5)
-                        .background(.black.opacity(0.06)).clipShape(Capsule())
+                        .background(Color(uiColor: .secondarySystemBackground)).clipShape(Capsule())
 
                         Text("Resets your body clock · Based on your circadian phase")
-                            .font(.caption).foregroundStyle(Color(red:0.45,green:0.28,blue:0.0).opacity(0.65))
+                            .font(.caption).foregroundStyle(Color.teal.opacity(0.8))
                             .multilineTextAlignment(.center)
                     }
                 }
-                // Card background — lightly tinted untuk kontras di warm background
+                // Card background — lightly tinted untuk kontras
                 .padding(28).frame(maxWidth: .infinity)
-                .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 24))
-                .overlay(RoundedRectangle(cornerRadius: 24).stroke(.black.opacity(0.5), lineWidth: 1))
-                .shadow(color: .black.opacity(0.10), radius: 20, y: 8)
+                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
+                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 1))
+                .shadow(color: Color.black.opacity(0.05), radius: 20, y: 8)
                 .padding(.horizontal, 24)
 
                 Spacer()
@@ -91,11 +91,11 @@ struct Screen4GetSunlight: View {
                             Text(showWhy ? "Hide" : "Why sunlight?").font(.caption).fontWeight(.medium)
                             Image(systemName: showWhy ? "chevron.up" : "chevron.down").font(.caption2)
                         }
-                        .foregroundStyle(Color(red:0.35,green:0.20,blue:0.0).opacity(0.65))
+                        .foregroundStyle(Color.teal)
                     }
                     if showWhy {
                         Text("Morning light suppresses melatonin and signals your brain it's daytime in the new time zone — the fastest way to shift your circadian clock forward.")
-                            .font(.caption).foregroundStyle(Color(red:0.40,green:0.25,blue:0.0).opacity(0.70))
+                            .font(.caption).foregroundStyle(Color.cyan.opacity(0.8))
                             .multilineTextAlignment(.center).padding(.horizontal, 32)
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
@@ -111,9 +111,9 @@ struct Screen4GetSunlight: View {
                     Spacer()
                     Image(systemName: "chevron.right").font(.caption2)
                 }
-                .foregroundStyle(Color(red:0.40,green:0.25,blue:0.0).opacity(0.65))
+                .foregroundStyle(Color.teal)
                 .padding(.horizontal, 14).padding(.vertical, 10)
-                .background(.black.opacity(0.06)).clipShape(RoundedRectangle(cornerRadius: 10))
+                .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal, 24).padding(.bottom, 12)
 
                 NavigationLink {
@@ -125,11 +125,10 @@ struct Screen4GetSunlight: View {
                     }
                     .font(.body).fontWeight(.semibold).foregroundStyle(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, 16)
-                    .background(LinearGradient(colors: [Color(red:0.75,green:0.40,blue:0.0),
-                                                         Color(red:0.60,green:0.28,blue:0.0)],
+                    .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
                                                startPoint: .topLeading, endPoint: .bottomTrailing),
                                 in: RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: .black.opacity(0.20), radius: 10, y: 5)
+                    .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
                 }
                 .padding(.horizontal, 24).padding(.bottom, 32)
             }
@@ -144,6 +143,8 @@ struct Screen5AvoidBrightLight: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy  = false
     @State private var appeared = false
+    
+    @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
     var body: some View {
         ZStack {
@@ -160,13 +161,11 @@ struct Screen5AvoidBrightLight: View {
             VStack(spacing: 0) {
 
                 HStack(alignment: .center, spacing: 10) {
-                    Label("Day 1 · 08:40 PM", systemImage: "moon.fill")
-                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.black.opacity(0.65))
-                        .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(.black.opacity(0.10)).clipShape(Capsule())
+                    DualTimeView(localTime: "20:40", isDaytime: false)
+                    
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
-                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.black.opacity(0.40))
+                        Text("Circadian state").font(.caption2).foregroundStyle(.black.opacity(0.40))
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
@@ -176,21 +175,21 @@ struct Screen5AvoidBrightLight: View {
 
                 VStack(spacing: 14) {
                     Text("🌑")
-                        .font(.system(size: 64))
+                        .font(.system(size: heroIconSize))
                         .scaleEffect(appeared ? 1.0 : 0.6)
                         .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
 
                     Text("Avoid bright light")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.black)
+                        .font(.title).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
 
                     Text("Dim screens until 22:00")
-                        .font(.subheadline).foregroundStyle(.black.opacity(0.65))
+                        .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
 
                     VStack(spacing: 5) {
                         Text("Prevents your clock from shifting back")
-                            .font(.caption).foregroundStyle(.black.opacity(0.55))
+                            .font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
                         Text("Based on your circadian phase")
-                            .font(.caption).foregroundStyle(.black.opacity(0.40))
+                            .font(.caption).foregroundStyle(Color(uiColor: .tertiaryLabel))
                     }
                 }
                 .instructionCard()
@@ -211,9 +210,9 @@ struct Screen5AvoidBrightLight: View {
                     Spacer()
                     Image(systemName: "chevron.right").font(.caption2)
                 }
-                .foregroundStyle(.black.opacity(0.50))
+                .foregroundStyle(Color(uiColor: .secondaryLabel))
                 .padding(.horizontal, 14).padding(.vertical, 10)
-                .background(.black.opacity(0.08)).clipShape(RoundedRectangle(cornerRadius: 10))
+                .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal, 24).padding(.bottom, 12)
 
                 // MARK: Dual CTA — titik percabangan utama (followed vs deviated)
@@ -229,7 +228,7 @@ struct Screen5AvoidBrightLight: View {
                         ScreenNewA_WatchDetects().environmentObject(appState)
                     } label: {
                         Text("I can't avoid light right now")
-                            .font(.subheadline).foregroundStyle(.black.opacity(0.45))
+                            .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                     }
                 }
@@ -249,7 +248,7 @@ private struct SunRaysDecoration: View {
         GeometryReader { geo in
             ForEach(0..<8) { i in
                 Rectangle()
-                    .fill(LinearGradient(colors: [Color.black.opacity(0.12), .clear],
+                    .fill(LinearGradient(colors: [Color(uiColor: .label).opacity(0.12), .clear],
                                          startPoint: .top, endPoint: .bottom))
                     .frame(width: 2, height: geo.size.height * 0.4)
                     .rotationEffect(.degrees(Double(i) * 45))
@@ -257,6 +256,38 @@ private struct SunRaysDecoration: View {
             }
         }
         .ignoresSafeArea().allowsHitTesting(false)
+    }
+}
+
+// MARK: - Dual Timeline Component
+struct DualTimeView: View {
+    @EnvironmentObject var appState: AppState
+    let localTime: String
+    let isDaytime: Bool
+    
+    //  [Materi Color Harmony (Analogous)]: Indigo merepresentasikan Malam/Asal, sedangkan Cyan/Teal (dan warna hangat) merepresentasikan Siang/Tujuan.
+    var body: some View {
+        HStack(spacing: 8) {
+            // Origin Time zone
+            VStack(alignment: .center, spacing: 2) {
+                Text(appState.fromTimeZone.abbreviation() ?? "ORIGIN").font(.system(size: 8, weight: .bold))
+                Text("19:40").font(.caption.weight(.heavy)) // Dummy converted time
+            }
+            .foregroundStyle(isDaytime ? .indigo : .teal)
+            
+            Image(systemName: "arrow.right").font(.system(size: 10, weight: .bold))
+                .foregroundStyle(Color(uiColor: .quaternaryLabel))
+            
+            // Destination Time zone
+            VStack(alignment: .center, spacing: 2) {
+                Text(appState.toTimeZone.abbreviation() ?? "LOCAL").font(.system(size: 8, weight: .bold))
+                Text(localTime).font(.caption.weight(.heavy))
+            }
+            .foregroundStyle(isDaytime ? Color(uiColor: .nazeitTeal) : Color(uiColor: .label)) // Tetap Teal untuk siang
+        }
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(Capsule())
     }
 }
 

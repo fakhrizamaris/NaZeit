@@ -14,6 +14,8 @@ struct ScreenNewC_InFlightDeviated: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy  = false
     @State private var appeared = false
+    
+    @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
     var body: some View {
         ZStack {
@@ -31,21 +33,21 @@ struct ScreenNewC_InFlightDeviated: View {
                 // Label tepat digunakan (SF Symbol + teks selalu tampil bersama, HIG).
                 HStack(spacing: 10) {
                     Label("In-flight", systemImage: "airplane")
-                        .font(.caption2).fontWeight(.semibold).foregroundStyle(.black.opacity(0.65))
+                        .font(.caption2).fontWeight(.semibold).foregroundStyle(Color(uiColor: .secondaryLabel))
                         .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(.black.opacity(0.10)).clipShape(Capsule())
+                        .background(Color(uiColor: .secondarySystemBackground)).clipShape(Capsule())
                     Spacer()
                     Label("Plan adjusted", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.caption2).fontWeight(.semibold).foregroundStyle(Color.adaptOrange)
+                        .font(.caption2).fontWeight(.semibold).foregroundStyle(Color.mint)
                         .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(Color.adaptOrange.opacity(0.15)).clipShape(Capsule())
+                        .background(Color.mint.opacity(0.15)).clipShape(Capsule())
                 }
                 .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
 
                 // MARK: Gentle acknowledgment — bukan scolding
                 // HIG: pesan error/deviation harus konstruktif, bukan menyalahkan.
                 Text("Still awake? No problem.")
-                    .font(.subheadline).foregroundStyle(.black.opacity(0.55))
+                    .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
                     .padding(.bottom, 16)
 
                 Spacer()
@@ -53,15 +55,15 @@ struct ScreenNewC_InFlightDeviated: View {
                 // MARK: Adjusted instruction card — orange border signature
                 VStack(spacing: 14) {
                     Text("🌑")
-                        .font(.system(size: 64))
+                        .font(.system(size: heroIconSize))
                         .scaleEffect(appeared ? 1.0 : 0.6)
                         .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
 
                     Text("Dim lights now")
-                        .font(.title).fontWeight(.bold).foregroundStyle(.black)
+                        .font(.title).fontWeight(.bold).foregroundStyle(Color(uiColor: .label))
 
                     Text("Prepare body for sleep soon")
-                        .font(.subheadline).foregroundStyle(.black.opacity(0.65))
+                        .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
 
                     // Adjusted detail — orange indicator
                     VStack(spacing: 5) {
@@ -69,12 +71,12 @@ struct ScreenNewC_InFlightDeviated: View {
                             Image(systemName: "arrow.triangle.2.circlepath").font(.caption2)
                             Text("Sleep window: 23:00 – 00:00").font(.caption).fontWeight(.medium)
                         }
-                        .foregroundStyle(Color.adaptOrange)
+                        .foregroundStyle(Color.mint)
                         .padding(.horizontal, 12).padding(.vertical, 5)
-                        .background(Color.adaptOrange.opacity(0.12)).clipShape(Capsule())
+                        .background(Color.mint.opacity(0.12)).clipShape(Capsule())
 
                         Text("Based on circadian delay")
-                            .font(.caption).foregroundStyle(.black.opacity(0.40))
+                            .font(.caption).foregroundStyle(Color(uiColor: .tertiaryLabel))
                     }
                 }
                 .instructionCard(isAdjusted: true)
@@ -90,7 +92,7 @@ struct ScreenNewC_InFlightDeviated: View {
                 NavigationLink {
                     Screen4GetSunlight().environmentObject(appState)
                 } label: {
-                    PrimaryBtn(title: "Got it", color: Color.adaptOrange)
+                    PrimaryBtn(title: "Got it", color: Color.mint)
                 }
                 .padding(.horizontal, 24).padding(.bottom, 32)
             }
@@ -110,6 +112,8 @@ struct ScreenNewA_WatchDetects: View {
     @State private var dotCount      = 0
     @State private var isRecalculating = true
     @State private var appeared      = false
+    
+    @ScaledMetric(relativeTo: .largeTitle) private var watchIconSize: CGFloat = 44
 
     var body: some View {
         ZStack {
@@ -126,21 +130,21 @@ struct ScreenNewA_WatchDetects: View {
                 // "watch sedang aktif membaca data." (HIG: animasi bermakna konsisten)
                 ZStack {
                     Circle()
-                        .fill(Color.adaptOrange.opacity(0.12))
+                        .fill(Color.mint.opacity(0.12))
                         .frame(width: 96)
                     Image(systemName: "applewatch")
-                        .font(.system(size: 44, weight: .thin))
-                        .foregroundStyle(Color.adaptOrange)
+                        .font(.system(size: watchIconSize, weight: .thin))
+                        .foregroundStyle(Color.mint)
                         .symbolEffect(.pulse)
                 }
 
                 // MARK: Detection info — faktual, tidak menghakimi
                 VStack(spacing: 10) {
                     Text("Sleep detected at 01:30 AM")
-                        .font(.headline).fontWeight(.semibold).foregroundStyle(.black)
+                        .font(.headline).fontWeight(.semibold).foregroundStyle(Color(uiColor: .label))
                         .multilineTextAlignment(.center)
                     Text("That's later than your recommended window (22:30)")
-                        .font(.subheadline).foregroundStyle(.black.opacity(0.55))
+                        .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.center)
                 }
                 .padding(.horizontal, 36)
@@ -151,12 +155,12 @@ struct ScreenNewA_WatchDetects: View {
                 if isRecalculating {
                     HStack(spacing: 5) {
                         Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.subheadline).foregroundStyle(Color.adaptOrange)
+                            .font(.subheadline).foregroundStyle(Color.mint)
                             .rotationEffect(.degrees(isRecalculating ? 360 : 0))
                             .animation(.linear(duration: 1).repeatForever(autoreverses: false),
                                        value: isRecalculating)
                         Text("Recalculating your plan" + String(repeating: ".", count: dotCount))
-                            .font(.subheadline).foregroundStyle(Color.adaptOrange)
+                            .font(.subheadline).foregroundStyle(Color.mint)
                             .frame(width: 240, alignment: .leading)
                             // Fixed width mencegah layout shift saat dots bertambah.
                     }
@@ -182,14 +186,14 @@ struct ScreenNewA_WatchDetects: View {
                         // Small confirmation summary
                         HStack(spacing: 6) {
                             Image(systemName: "checkmark.circle.fill").foregroundStyle(.teal)
-                            Text("New plan ready").font(.caption).fontWeight(.medium).foregroundStyle(.black.opacity(0.70))
+                            Text("New plan ready").font(.caption).fontWeight(.medium).foregroundStyle(Color(uiColor: .secondaryLabel))
                         }
                         .font(.caption2)
 
                         NavigationLink {
                             ScreenNewB_RecalculatedInstruction().environmentObject(appState)
                         } label: {
-                            PrimaryBtn(title: "See updated plan →", color: Color.adaptOrange)
+                            PrimaryBtn(title: "See updated plan →", color: Color.mint)
                         }
                     }
                     .padding(.horizontal, 24)
@@ -216,6 +220,8 @@ struct ScreenNewB_RecalculatedInstruction: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy  = false
     @State private var appeared = false
+    
+    @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
     let originalTime = "7 AM"
     let adjustedTime = "9 AM"
@@ -236,12 +242,12 @@ struct ScreenNewB_RecalculatedInstruction: View {
                 HStack(alignment: .center, spacing: 10) {
                     Label("Day 1 · 09:00 AM", systemImage: "sun.horizon.fill")
                         .font(.caption2).fontWeight(.semibold)
-                        .foregroundStyle(Color(red:0.55,green:0.35,blue:0.0).opacity(0.85))
+                        .foregroundStyle(Color.mint.opacity(0.85))
                         .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(.black.opacity(0.08)).clipShape(Capsule())
+                        .background(Color(uiColor: .secondarySystemBackground)).clipShape(Capsule())
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
-                        Text("Circadian state").font(.system(size: 9)).foregroundStyle(.black.opacity(0.40))
+                        Text("Circadian state").font(.caption2).foregroundStyle(Color(uiColor: .secondaryLabel))
                         CircadianStateBar(level: 0.30, compact: true)
                         // Level lebih rendah dari Screen 4 normal karena tidur telat.
                     }
@@ -255,12 +261,12 @@ struct ScreenNewB_RecalculatedInstruction: View {
                     Image(systemName: "arrow.triangle.2.circlepath").font(.caption)
                     Text("Plan updated based on last night").font(.caption).fontWeight(.medium)
                     Spacer()
-                    Text("was \(originalTime)").font(.caption2).foregroundStyle(Color.adaptOrange.opacity(0.75))
+                    Text("was \(originalTime)").font(.caption2).foregroundStyle(Color.mint.opacity(0.75))
                 }
-                .foregroundStyle(Color.adaptOrange)
+                .foregroundStyle(Color.mint)
                 .padding(.horizontal, 14).padding(.vertical, 8)
-                .background(Color.adaptOrange.opacity(0.12))
-                .overlay(Rectangle().frame(height: 0.5).foregroundStyle(Color.adaptOrange.opacity(0.3)),
+                .background(Color.mint.opacity(0.12))
+                .overlay(Rectangle().frame(height: 0.5).foregroundStyle(Color.mint.opacity(0.3)),
                          alignment: .bottom)
                 .padding(.horizontal, 24).padding(.bottom, 14)
 
@@ -269,17 +275,17 @@ struct ScreenNewB_RecalculatedInstruction: View {
                 // Adjusted instruction card — same format as Screen 4 + orange border
                 VStack(spacing: 14) {
                     Text("☀️")
-                        .font(.system(size: 64))
+                        .font(.system(size: heroIconSize))
                         .scaleEffect(appeared ? 1.0 : 0.6)
                         .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
                         .shadow(color: Color.bgMorning.opacity(0.6), radius: 20)
 
                     Text("Get sunlight at \(adjustedTime)")
                         .font(.title).fontWeight(.bold)
-                        .foregroundStyle(Color(red:0.35,green:0.20,blue:0.0))
+                        .foregroundStyle(Color(uiColor: .nazeitTeal))
 
                     Text("Go outside for 20 min")
-                        .font(.subheadline).foregroundStyle(Color(red:0.45,green:0.28,blue:0.0).opacity(0.75))
+                        .font(.subheadline).foregroundStyle(Color.teal)
 
                     VStack(spacing: 6) {
                         // Adjusted badge
@@ -287,18 +293,18 @@ struct ScreenNewB_RecalculatedInstruction: View {
                             Image(systemName: "arrow.triangle.2.circlepath").font(.caption2)
                             Text("Adjusted · was \(originalTime)").font(.caption).fontWeight(.medium)
                         }
-                        .foregroundStyle(Color.adaptOrange)
+                        .foregroundStyle(Color.mint)
                         .padding(.horizontal, 12).padding(.vertical, 5)
-                        .background(Color.adaptOrange.opacity(0.10)).clipShape(Capsule())
+                        .background(Color.mint.opacity(0.10)).clipShape(Capsule())
 
                         Text("Based on your actual sleep · HRV")
-                            .font(.caption).foregroundStyle(Color(red:0.45,green:0.28,blue:0.0).opacity(0.60))
+                            .font(.caption).foregroundStyle(Color.teal.opacity(0.80))
                     }
                 }
                 .padding(28).frame(maxWidth: .infinity)
-                .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 24))
-                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.adaptOrange.opacity(0.45), lineWidth: 1.5))
-                .shadow(color: Color.adaptOrange.opacity(0.15), radius: 20, y: 8)
+                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
+                .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.mint.opacity(0.45), lineWidth: 1.5))
+                .shadow(color: Color.mint.opacity(0.15), radius: 20, y: 8)
                 .padding(.horizontal, 24)
 
                 Spacer()
@@ -313,11 +319,11 @@ struct ScreenNewB_RecalculatedInstruction: View {
                             Text(showWhy ? "Hide" : "Why adjusted?").font(.caption).fontWeight(.medium)
                             Image(systemName: showWhy ? "chevron.up" : "chevron.down").font(.caption2)
                         }
-                        .foregroundStyle(Color(red:0.35,green:0.20,blue:0.0).opacity(0.65))
+                        .foregroundStyle(Color.teal)
                     }
                     if showWhy {
                         Text("Because you slept later, your circadian phase shifted. Sunlight at 9 AM (instead of 7 AM) still resets your clock — just 2 hours later than the optimal window.")
-                            .font(.caption).foregroundStyle(Color(red:0.40,green:0.25,blue:0.0).opacity(0.65))
+                            .font(.caption).foregroundStyle(Color.cyan.opacity(0.8))
                             .multilineTextAlignment(.center).padding(.horizontal, 32)
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
@@ -331,9 +337,9 @@ struct ScreenNewB_RecalculatedInstruction: View {
                     Spacer()
                     Image(systemName: "chevron.right").font(.caption2)
                 }
-                .foregroundStyle(Color(red:0.40,green:0.25,blue:0.0).opacity(0.60))
+                .foregroundStyle(Color.teal)
                 .padding(.horizontal, 14).padding(.vertical, 10)
-                .background(.black.opacity(0.06)).clipShape(RoundedRectangle(cornerRadius: 10))
+                .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal, 24).padding(.bottom, 12)
 
                 // CTA — kembali ke main flow (Screen 6)
@@ -346,11 +352,10 @@ struct ScreenNewB_RecalculatedInstruction: View {
                     }
                     .font(.body).fontWeight(.semibold).foregroundStyle(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, 16)
-                    .background(LinearGradient(colors: [Color(red:0.75,green:0.40,blue:0.0),
-                                                         Color(red:0.60,green:0.28,blue:0.0)],
+                    .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
                                                startPoint: .topLeading, endPoint: .bottomTrailing),
                                 in: RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: .black.opacity(0.20), radius: 10, y: 5)
+                    .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
                 }
                 .padding(.horizontal, 24).padding(.bottom, 32)
             }
@@ -366,7 +371,7 @@ private struct SunRaysDecoration: View {
         GeometryReader { geo in
             ForEach(0..<8) { i in
                 Rectangle()
-                    .fill(LinearGradient(colors: [.black.opacity(0.10), .clear],
+                    .fill(LinearGradient(colors: [Color(uiColor: .label).opacity(0.10), .clear],
                                          startPoint: .top, endPoint: .bottom))
                     .frame(width: 2, height: geo.size.height * 0.35)
                     .rotationEffect(.degrees(Double(i) * 45))
@@ -385,7 +390,7 @@ private struct StarsBackground: View {
         GeometryReader { geo in
             ForEach(stars.indices, id: \.self) { i in
                 Circle()
-                    .fill(.black.opacity(Double.random(in: 0.08...0.35)))
+                    .fill(Color(uiColor: .label).opacity(Double.random(in: 0.08...0.35)))
                     .frame(width: stars[i].2)
                     .position(x: stars[i].0 * geo.size.width,
                               y: stars[i].1 * geo.size.height)

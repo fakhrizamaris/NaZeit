@@ -21,6 +21,9 @@ class AppState: ObservableObject {
     @Published var preferredWakeTime: Date = Calendar.current.date(bySettingHour: 7, minute: 0, second: 0, of: Date()) ?? Date()
     @Published var fromCity: String = ""
     @Published var toCity: String = ""
+    @Published var fromTimeZone: TimeZone = .current
+    @Published var toTimeZone: TimeZone = .current
+    
     @Published var departureDate: Date = Date()
     @Published var arrivalDate: Date = Date().addingTimeInterval(3600 * 15)
     @Published var adaptationPercent: Double = 0.65
