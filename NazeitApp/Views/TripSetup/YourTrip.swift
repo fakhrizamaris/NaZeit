@@ -1,5 +1,5 @@
 import SwiftUI
-import CoreLocation
+import MapKit
 
 struct YourTrip: View {
     @EnvironmentObject var appState: AppState
@@ -247,9 +247,11 @@ struct YourTrip: View {
             isGeocodingFrom = true
             do {
                 try await Task.sleep(nanoseconds: 1_200_000_000)
-                let placemarks = try await CLGeocoder().geocodeAddressString(appState.fromCity)
-                if let tz = placemarks.first?.timeZone {
-                    await MainActor.run { appState.fromTimeZone = tz }
+                if let request = MKGeocodingRequest(addressString: appState.fromCity) {
+                    let mapItems = try await request.mapItems
+                    if let tz = mapItems.first?.timeZone {
+                        await MainActor.run { appState.fromTimeZone = tz }
+                    }
                 }
             } catch {}
             isGeocodingFrom = false
@@ -259,9 +261,11 @@ struct YourTrip: View {
             isGeocodingTo = true
             do {
                 try await Task.sleep(nanoseconds: 1_200_000_000)
-                let placemarks = try await CLGeocoder().geocodeAddressString(appState.toCity)
-                if let tz = placemarks.first?.timeZone {
-                    await MainActor.run { appState.toTimeZone = tz }
+                if let request = MKGeocodingRequest(addressString: appState.toCity) {
+                    let mapItems = try await request.mapItems
+                    if let tz = mapItems.first?.timeZone {
+                        await MainActor.run { appState.toTimeZone = tz }
+                    }
                 }
             } catch {}
             isGeocodingTo = false
