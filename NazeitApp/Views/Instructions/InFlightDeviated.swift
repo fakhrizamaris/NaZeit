@@ -5,10 +5,18 @@
 
 import SwiftUI
 
+enum InFlightDeviationType {
+    case stayedAwake
+    case fellAsleep
+}
+
 struct ScreenNewC_InFlightDeviated: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy  = false
     @State private var appeared = false
+    
+    // Allows toggling for preview/testing, in a real app this would be passed during navigation.
+    var deviationType: InFlightDeviationType = .stayedAwake
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
@@ -36,29 +44,29 @@ struct ScreenNewC_InFlightDeviated: View {
                     VStack(spacing: 0) {
                         Spacer(minLength: 24)
 
-                        Text("Still awake? No problem.")
+                        Text(deviationType == .stayedAwake ? "Still awake? No problem." : "Accidentally slept? It's okay.")
                             .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
                             .padding(.bottom, 16)
 
                         // MARK: Adjusted instruction card
                 VStack(spacing: 14) {
-                    Image(systemName: "moon.stars.fill")
+                    Image(systemName: deviationType == .stayedAwake ? "moon.stars.fill" : "sun.max.fill")
                         .font(.system(size: heroIconSize))
-                        .foregroundStyle(Color.indigo)
+                        .foregroundStyle(deviationType == .stayedAwake ? Color.indigo : Color.orange)
                         .scaleEffect(appeared ? 1.0 : 0.6)
                         .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
 
-                    Text("Dim lights now")
+                    Text(deviationType == .stayedAwake ? "Dim lights now" : "Get active & seek light")
                         .font(.system(.title, design: .rounded).weight(.bold))
                         .foregroundStyle(Color(uiColor: .label))
 
-                    Text("Prepare body for sleep soon")
+                    Text(deviationType == .stayedAwake ? "Prepare body for sleep soon" : "Halt further sleep pressure")
                         .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
 
                     VStack(spacing: 5) {
                         HStack(spacing: 5) {
                             Image(systemName: "arrow.triangle.2.circlepath").font(.caption)
-                            Text("Sleep window: 23:00 – 00:00").font(.subheadline).fontWeight(.bold)
+                            Text(deviationType == .stayedAwake ? "Sleep window: 23:00 – 00:00" : "Stay awake until 22:00").font(.subheadline).fontWeight(.bold)
                         }
                         .foregroundStyle(Color.mint)
                         .padding(.horizontal, 12).padding(.vertical, 5)
@@ -73,8 +81,10 @@ struct ScreenNewC_InFlightDeviated: View {
 
                 Spacer(minLength: 32)
 
-                WhyChip(isShown: $showWhy, explanation:
-                    "Since you're not sleeping, dimming lights still helps melatonin production begin. Your sleep window is shifted to give your body more time to prepare.")
+                WhyChip(isShown: $showWhy, explanation: deviationType == .stayedAwake ?
+                    "Since you're not sleeping, dimming lights still helps melatonin production begin. Your sleep window is shifted to give your body more time to prepare." :
+                    "Since you slept earlier than planned, your biological clock might try to shift backward. Getting active and seeking light now halts that process and keeps you anchored."
+                )
                     .padding(.bottom, 24)
             }
         }
@@ -93,4 +103,6 @@ struct ScreenNewC_InFlightDeviated: View {
     }
 }
 
-#Preview { NavigationStack { ScreenNewC_InFlightDeviated().environmentObject(AppState()) } }
+#Preview("Stayed Awake") { NavigationStack { ScreenNewC_InFlightDeviated(deviationType: .stayedAwake).environmentObject(AppState()) } }
+
+#Preview("Fell Asleep") { NavigationStack { ScreenNewC_InFlightDeviated(deviationType: .fellAsleep).environmentObject(AppState()) } }

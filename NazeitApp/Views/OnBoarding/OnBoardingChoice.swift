@@ -170,15 +170,11 @@ struct HeaderSectionView: View {
     var body: some View {
         VStack(spacing: 20) {
             ZStack {
-                Circle()
-                    .fill(Color.teal.opacity(0.12))
-                    .frame(width: 80, height: 80)
-
-                Image(systemName: "timer")
-                    .font(.largeTitle)
-                    .fontWeight(.light)
-                    .foregroundStyle(Color.teal)
-                    .symbolEffect(.pulse)
+                Image("NazeitLogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 72, height: 72)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
 
             VStack(spacing: 12) {

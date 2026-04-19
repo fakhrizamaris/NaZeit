@@ -78,26 +78,13 @@ struct BackgroundLayerView: View {
 struct LogoComponentView: View {
     var animateLogo: Bool
     
-    @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
-    
     var body: some View {
         ZStack {
-            Circle()
-                .fill(Color(uiColor: .circadianTeal).opacity(0.15))
-                .frame(width: 140, height: 140)
-                .scaleEffect(animateLogo ? 1 : 0.6)
-                .opacity(animateLogo ? 1 : 0)
-            
-            Circle()
-                .stroke(Color(uiColor: .nazeitTeal).opacity(0.4), lineWidth: 1)
-                .frame(width: 160, height: 160)
-                .scaleEffect(animateLogo ? 1 : 0.8)
-                .opacity(animateLogo ? 1 : 0)
-            
-            Image(systemName: "timer")
-                .font(.system(size: heroIconSize, weight: .ultraLight))
-                .foregroundStyle(Color(uiColor: .nazeitTeal))
-                .symbolEffect(.pulse, value: animateLogo)
+            Image("NazeitLogo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 120, height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                 .scaleEffect(animateLogo ? 1 : 0.4)
                 .opacity(animateLogo ? 1 : 0)
         }
