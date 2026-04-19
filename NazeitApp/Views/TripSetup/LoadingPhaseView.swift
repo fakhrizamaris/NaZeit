@@ -9,8 +9,8 @@ struct LoadingPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var selectedDayIndex: Int = 0 
     
-    // MARK: - Dummy Data & Contextual Calendar
-    let offsets = [3, 2, 1] // Berapa hari sebelum H-0
+    // MARK: - Data Models
+    let offsets = [3, 2, 1]
     let sleepTargets = [
         "10:00 PM - 06:00 AM", 
         "09:00 PM - 05:00 AM", 
@@ -18,28 +18,24 @@ struct LoadingPhaseView: View {
     ]
     let shifts = ["-1 Hour Shift", "-2 Hour Shift", "-3 Hour Shift"]
     
-    // MARK: [HIG: Contextual Dates] 
-    // Menghitung tanggal aktual dari H-X sehingga pengguna tidak menebak-nebak ini hari apa.
+    private var baseColor: Color { Color(uiColor: .nazeitTeal) }
+
     private func dateString(for offset: Int) -> String {
         let date = Calendar.current.date(byAdding: .day, value: -offset, to: appState.departureDate) ?? Date()
         let f = DateFormatter()
-        f.dateFormat = "MMM d" // e.g. "Oct 24"
+        f.dateFormat = "MMM d"
         return f.string(from: date)
     }
     
-    private var baseColor: Color { Color(uiColor: .nazeitTeal) }
-
     var body: some View {
         NavigationStack {
             ZStack {
-                // [Background Ambient]: Linear Gradient Halus agar tidak terasa flat
                 LinearGradient(
                     colors: [Color(uiColor: .secondarySystemBackground), Color(uiColor: .systemBackground)],
                     startPoint: .topLeading, endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
                 
-                // [Ambient Glow]: Efek relaksasi pada latar belakang yang menyatu dengan tema sirkadian
                 Circle()
                     .fill(baseColor.opacity(0.12))
                     .frame(maxWidth: 400)
@@ -48,17 +44,15 @@ struct LoadingPhaseView: View {
 
                 VStack(spacing: 0) {
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: 24) { // Diperkecil dari 32 ke 24
+                        VStack(spacing: 24) {
                             
-                            // MARK: Header Instruction
+                            // MARK: - Header
                             VStack(spacing: 6) {
                                 Text("Pre-flight Loading Phase")
-                                    // [Typography Hierarchy]: Menggunakan .title2 & .rounded untuk kesan ilmiah namun tetap Humanist/friendly.
                                     .font(.system(.title2, design: .rounded).weight(.bold))
                                     .foregroundStyle(Color(uiColor: .label))
                                 
                                 Text("Your circadian adjustment has started. Follow this schedule to minimize fast cognition shock upon arrival.")
-                                    // [Legibility]: .subheadline sangat cukup dibaca dan warnanya secondary agar title menonjol.
                                     .font(.subheadline)
                                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                                     .multilineTextAlignment(.center)
@@ -66,13 +60,12 @@ struct LoadingPhaseView: View {
                             }
                             .padding(.top, 8)
                             
-                            // MARK: Tracker 3 Hari
+                            // MARK: - Progress Tracker
                             DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: selectedDayIndex, activeColor: baseColor)
                                 .padding(.horizontal, 24)
                             
-                            // MARK: [HIG: Physical Sliding Transition] 
-                            VStack(spacing: 24) { // Diperkecil dari 32 ke 24
-                                // MARK: Hero Emphasis (Target Tidur)
+                            // MARK: - Content Cards
+                            VStack(spacing: 24) {
                                 HeroSleepTargetView(
                                     title: "Tonight's Sleep Target",
                                     timeRange: sleepTargets[selectedDayIndex],
@@ -81,8 +74,7 @@ struct LoadingPhaseView: View {
                                 )
                                 .padding(.horizontal, 24)
                                 
-                                // MARK: Instruksi Protokol (Chronobiology Actionable Items)
-                                VStack(alignment: .leading, spacing: 12) { // Diperkecil dari 16 ke 12
+                                VStack(alignment: .leading, spacing: 12) {
                                     Text("Daily Protocol")
                                         .font(.headline)
                                         .foregroundStyle(Color(uiColor: .label))
@@ -90,15 +82,17 @@ struct LoadingPhaseView: View {
                                     
                                     VStack(spacing: 12) {
                                         ProtocolCard(
-                                            icon: "sun.max.fill", iconTint: .orange,
+                                            icon: "sun.max.fill", iconTint: .cyan,
                                             title: "Seek Morning Light", detail: "Get 15 mins of sunlight immediately after waking up."
                                         )
+                                        
                                         ProtocolCard(
-                                            icon: "cup.and.saucer.fill", iconTint: .brown,
+                                            icon: "cup.and.saucer.fill", iconTint: baseColor,
                                             title: "Caffeine Cutoff", detail: "No coffee or tea after 02:00 PM today."
                                         )
+                                        
                                         ProtocolCard(
-                                            icon: "moon.fill", iconTint: .indigo,
+                                            icon: "moon.fill", iconTint: .mint,
                                             title: "Dim the Lights", detail: "Use warm lights or blue-light blocking glasses 2 hours before bed."
                                         )
                                     }
@@ -111,14 +105,12 @@ struct LoadingPhaseView: View {
                                 removal: .move(edge: .leading).combined(with: .opacity)
                             ))
                             
-                            Spacer(minLength: 24) // Diperkecil dari 40 ke 24
+                            Spacer(minLength: 24)
                         }
                     }
                     
-                    // MARK: Pagination Controls (Sticky Footer)
-                    // Dipindahkan ke luar ScrollView agar tombol selalu berada di bawah layar penuh!
+                    // MARK: - Bottom Navigation Bar
                     HStack(spacing: 16) {
-                        // Back Button
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 if selectedDayIndex > 0 { selectedDayIndex -= 1 }
@@ -135,13 +127,12 @@ struct LoadingPhaseView: View {
                         }
                         .disabled(selectedDayIndex == 0)
                         
-                        // Next / Finish Button
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 if selectedDayIndex < offsets.count - 1 { 
                                     selectedDayIndex += 1 
                                 } else {
-                                    // Aksi saat selesai membaca semua Loading Phase
+                                    // TODO: Handle completion navigation
                                 }
                             }
                         } label: {
@@ -165,7 +156,7 @@ struct LoadingPhaseView: View {
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 16)
-                    .padding(.bottom, 16) // Padding aman agar tidak memotong home indicator iPhone
+                    .padding(.bottom, 16)
                     .background(
                         LinearGradient(
                             stops: [
@@ -183,7 +174,7 @@ struct LoadingPhaseView: View {
     }
 }
 
-// MARK: - Reusable Modular Components
+// MARK: - Components
 
 struct DayProgressTracker: View {
     let offsets: [Int]
@@ -193,8 +184,6 @@ struct DayProgressTracker: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            // Garis Penghubung Latar (Background Track)
-            // Diposisikan menembus poros tengah dari lingkaran simpul
             GeometryReader { geo in
                 let stepWidth = geo.size.width / CGFloat(offsets.count * 2)
                 
@@ -203,18 +192,16 @@ struct DayProgressTracker: View {
                         .fill(Color(uiColor: .tertiarySystemFill))
                         .frame(height: 4)
                     
-                    // Garis Progres aktif
                     Rectangle()
                         .fill(activeColor)
                         .frame(width: max(0, CGFloat(selectedIndex) * (geo.size.width - (stepWidth * 2)) / CGFloat(max(1, offsets.count - 1))), height: 4)
                         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: selectedIndex)
                 }
                 .padding(.horizontal, stepWidth)
-                .offset(y: 14) // Y=14 adalah titik tengah dari Circle berukuran 32 (dikurang setengah tinggi garis)
+                .offset(y: 14)
             }
             .frame(height: 32)
             
-            // Simpul Lingkaran & Label Teks
             HStack(spacing: 0) {
                 ForEach(0..<offsets.count, id: \.self) { index in
                     VStack(spacing: 12) {
@@ -264,11 +251,9 @@ struct HeroSleepTargetView: View {
         VStack(spacing: 12) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
-                // [Color Theory]: Secondary memastikan mata tidak tertahan di label, langsung loncat ke angkanya.
                 .foregroundStyle(Color(uiColor: .secondaryLabel))
             
             Text(timeRange)
-                // [Typography: Monospaced]: MonospacedDigit menjaga agar lebar barisan teks waktu (Jam) konstan dan rapi. Weight .black memberikan kontras ekstrem (Hero Text).
                 .font(.system(.title, design: .rounded).monospacedDigit().weight(.black))
                 .foregroundStyle(color)
             
@@ -282,16 +267,14 @@ struct HeroSleepTargetView: View {
             .padding(.vertical, 6)
             .background(color, in: Capsule())
         }
-        .padding(.vertical, 20) // Diperkecil dari 24 ke 20 untuk memadatkan Hero Card
+        .padding(.vertical, 20)
         .frame(maxWidth: .infinity)
-        // [Gestalt: Enclosure/Common Region]: Membungkus secara fisik agar angka-angka dirasakan terhubung erat oleh pengguna.
         .background(Color(uiColor: .secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(color.opacity(0.3), lineWidth: 1)
         )
-        // [Visual Cue]: Shadow memberi dimensi Z bahwa card ini lebih tebal dan "paling penting".
         .shadow(color: Color.black.opacity(0.04), radius: 10, y: 4)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: timeRange)
     }
@@ -307,9 +290,6 @@ struct ProtocolCard: View {
     
     var body: some View {
         Button {
-            // MARK: [HIG: Gamification/Goal-Gradient]
-            // Tap untuk komit menyelesaikan tugas. Menghasilkan animasi pantul dan checkmark hijau.
-            // Bisa disambungkan ke Haptic Feedback!
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 isCompleted.toggle()
             }
@@ -318,10 +298,10 @@ struct ProtocolCard: View {
                 ZStack {
                     Circle()
                         .fill(iconTint.opacity(0.12))
-                        .frame(width: 38, height: 38) // Diperkecil dari 44 ke 38
+                        .frame(width: 38, height: 38)
                     
                     Image(systemName: icon)
-                        .font(.body) // Dari .title3 ke .body agar proporsional dengan 38
+                        .font(.body)
                         .foregroundStyle(iconTint)
                 }
                 
@@ -333,13 +313,11 @@ struct ProtocolCard: View {
                     Text(detail)
                         .font(.footnote)
                         .foregroundStyle(Color(uiColor: .secondaryLabel))
-                        // [Accessibility]: Wajib hilang lineLimit agar card beradaptasi merenggang ke bawah jika ukuran font user sangat besar (XXX Large).
                         .multilineTextAlignment(.leading)
                 }
                 
                 Spacer(minLength: 0)
                 
-                // Kolom Checklist Indikator
                 ZStack {
                     Circle()
                         .stroke(isCompleted ? .clear : Color(uiColor: .quaternaryLabel), lineWidth: 2)
@@ -353,7 +331,7 @@ struct ProtocolCard: View {
                     }
                 }
             }
-            .padding(14) // Diperkecil dari 16 ke 14
+            .padding(14)
             .background(Color(uiColor: .secondarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
@@ -361,7 +339,7 @@ struct ProtocolCard: View {
                     .stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5)
             )
         }
-        .buttonStyle(.plain) // Mencegah highlight biru bawaan tombol di iOS
+        .buttonStyle(.plain)
     }
 }
 
