@@ -40,14 +40,7 @@ extension UIColor {
             UIColor(red: 0.12, green: 0.62, blue: 0.52, alpha: 1.0)
     }
     
-    static let nazeitOrange = UIColor { trait in
-        return trait.userInterfaceStyle == .dark ?
-            UIColor(red: 0.95, green: 0.55, blue: 0.12, alpha: 1.0) :
-            UIColor(red: 0.80, green: 0.45, blue: 0.08, alpha: 1.0)
-    }
-
     static let circadianTeal = UIColor.nazeitTeal
-    static let adaptOrange = UIColor.nazeitOrange
     
     static let nazeitBackground = UIColor { trait in
         // Riset Insight #2: Jet lag adalah ketidaksesuaian jam internal.

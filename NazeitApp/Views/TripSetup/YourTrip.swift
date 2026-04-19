@@ -230,9 +230,14 @@ struct YourTrip: View {
                         .font(.headline)
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity).padding(.vertical, 16)
-                        .background(isValid ? baseColor : Color(uiColor: .quaternaryLabel))
+                        .background(
+                            isValid
+                            ? AnyShapeStyle(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
+                                                           startPoint: .topLeading, endPoint: .bottomTrailing))
+                            : AnyShapeStyle(Color(uiColor: .quaternaryLabel))
+                        )
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .shadow(color: isValid ? baseColor.opacity(0.30) : .clear, radius: 10, y: 5)
+                        .shadow(color: isValid ? Color.teal.opacity(0.20) : .clear, radius: 10, y: 5)
                     }
                     .disabled(!isValid)
                     .padding(.horizontal, 24).padding(.bottom, 48)
@@ -240,6 +245,7 @@ struct YourTrip: View {
                 }
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .navigationBarTitleDisplayMode(.inline)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: appState.toCity.isEmpty)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: timezoneShift)

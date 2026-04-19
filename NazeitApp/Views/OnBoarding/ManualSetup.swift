@@ -162,46 +162,6 @@ struct ManualSetup: View {
 }
 
 // MARK: - SectionCard — card container untuk setiap input section
-private struct SectionCard<Content: View>: View {
-    let title: String
-    let icon: String
-    let iconColor: Color
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: icon).font(.caption).foregroundStyle(iconColor)
-                Text(title)
-                    .font(.footnote)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color(uiColor: .secondaryLabel))
-            }
-            content()
-        }
-        .padding(18)
-        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color(uiColor: .quaternaryLabel).opacity(0.25), lineWidth: 0.5)
-        )
-    }
-}
-
-// MARK: - TimeRow — tap-to-expand row untuk picker
-private struct TimeRow: View {
-    let label: String
-    let isExpanded: Bool
-
-    var body: some View {
-        HStack {
-            Text(label).font(.body).foregroundStyle(Color(uiColor: .label))
-            Spacer()
-            Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                .font(.footnote).foregroundStyle(Color(uiColor: .secondaryLabel))
-        }
-    }
-}
 
 #Preview {
     NavigationStack { ManualSetup().environmentObject(AppState()) }

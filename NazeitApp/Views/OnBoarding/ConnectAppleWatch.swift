@@ -62,8 +62,12 @@ struct ConnectAppleWatch: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(isSynced ? Color.teal : Color(uiColor: .nazeitTeal))
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .background(
+                        LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    )
+                    .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)

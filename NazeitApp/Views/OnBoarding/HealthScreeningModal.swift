@@ -49,9 +49,13 @@ struct HealthScreeningModal: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(Color(uiColor: .nazeitTeal))
                         .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .background(
+                            LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
+                                           startPoint: .topLeading, endPoint: .bottomTrailing),
+                            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        )
+                        .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
                 }
                 .opacity(selectedCondition == nil ? 0.20 : 1)
                 .disabled(selectedCondition == nil)
@@ -74,7 +78,7 @@ struct MedicalWarningView: View {
                     .font(.subheadline)
                     .fontWeight(.bold)
             }
-            .foregroundStyle(.orange)
+            .foregroundStyle(Color.mint)
             
             Text("Light exposure instructions may not be as effective because your biological clock has special characteristics.")
                 .font(.footnote)
@@ -83,11 +87,11 @@ struct MedicalWarningView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.12))
+        .background(Color.mint.opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                .stroke(Color.mint.opacity(0.3), lineWidth: 1)
         )
         .transition(.scale(scale: 0.95).combined(with: .opacity))
     }

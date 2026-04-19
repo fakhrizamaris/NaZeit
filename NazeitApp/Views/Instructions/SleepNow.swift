@@ -17,7 +17,7 @@ struct CircadianStateBar: View {
         level < 0.35 ? "Misaligned" : level < 0.65 ? "Adjusting" : "Aligned"
     }
     private var stateColor: Color {
-        level < 0.35 ? .red.opacity(0.85) : level < 0.65 ? .adaptOrange : .circadianTeal
+        level < 0.35 ? .red.opacity(0.85) : level < 0.65 ? .mint : .circadianTeal
     }
 
     var body: some View {
@@ -31,7 +31,7 @@ struct CircadianStateBar: View {
                     .frame(width: compact ? 52 : 64, height: compact ? 4 : 5)
                 Capsule()
                     .fill(LinearGradient(
-                        colors: [Color.red.opacity(0.8), Color.adaptOrange, Color.circadianTeal],
+                        colors: [Color.red.opacity(0.8), Color.mint, Color.circadianTeal],
                         startPoint: .leading, endPoint: .trailing))
                     .frame(width: max(compact ? 4 : 5, (compact ? 52 : 64) * animated), height: compact ? 4 : 5)
             }
@@ -93,8 +93,9 @@ struct Screen3SleepNow: View {
 
                 // MARK: Main Instruction — Extreme Minimalism
                 VStack(spacing: 20) {
-                    Text("💤")
+                    Image(systemName: "moon.zzz.fill")
                         .font(.system(size: heroIconSize))
+                        .foregroundStyle(Color.indigo)
                         .scaleEffect(appeared ? 1.0 : 0.7)
                         .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.1), value: appeared)
 
@@ -103,7 +104,7 @@ struct Screen3SleepNow: View {
                         .font(.system(.largeTitle, design: .rounded).weight(.heavy))
                         .foregroundStyle(Color(uiColor: .label))
 
-                    Text("\(appState.inputMethod == .watch ? "4" : "4") hrs to destination")
+                    Text("4 hrs to destination")
                         .font(.headline).foregroundStyle(Color(uiColor: .secondaryLabel))
 
                     HStack(spacing: 6) {
@@ -210,7 +211,7 @@ struct NavDots: View {
         HStack(spacing: 7) {
             ForEach(0..<total, id: \.self) { i in
                 Circle()
-                    .fill(i == current ? Color.black : Color.black.opacity(0.25))
+                    .fill(i == current ? Color(uiColor: .label) : Color(uiColor: .label).opacity(0.25))
                     .frame(width: i == current ? 7 : 5, height: i == current ? 7 : 5)
                     .animation(.spring(response: 0.3), value: current)
             }
@@ -218,25 +219,6 @@ struct NavDots: View {
     }
 }
 
-// StarsBackground — decorative dots untuk nuansa langit malam
-private struct StarsBackground: View {
-    let stars: [(CGFloat, CGFloat, CGFloat)] = (0..<40).map { _ in
-        (CGFloat.random(in: 0...1), CGFloat.random(in: 0...0.6), CGFloat.random(in: 1...3))
-    }
-    var body: some View {
-        GeometryReader { geo in
-            ForEach(stars.indices, id: \.self) { i in
-                Circle()
-                    .fill(.black.opacity(Double.random(in: 0.1...0.4)))
-                    .frame(width: stars[i].2, height: stars[i].2)
-                    .position(x: stars[i].0 * geo.size.width,
-                              y: stars[i].1 * geo.size.height)
-            }
-        }
-        .ignoresSafeArea()
-        .allowsHitTesting(false)
-    }
-}
 
 #Preview {
     NavigationStack { Screen3SleepNow().environmentObject(AppState()) }
