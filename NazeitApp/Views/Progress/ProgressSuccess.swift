@@ -14,6 +14,7 @@ import SwiftUI
 // MARK: - Screen 6: Your Adaptation
 struct Screen6YourAdaptation: View {
     @EnvironmentObject var appState: AppState
+    @State private var ringProgress: Double = 0
     @State private var appeared = false
 
     var body: some View {
@@ -44,7 +45,7 @@ struct Screen6YourAdaptation: View {
 
                     // Gradient progress ring — gradasi warna mengikuti tingkat adaptasi
                     Circle()
-                        .trim(from: 0, to: appState.adaptationPercent)
+                        .trim(from: 0, to: ringProgress)
                         .stroke(AngularGradient(
                             gradient: Gradient(colors: [
                                 Color.indigo.opacity(0.7),
@@ -99,7 +100,7 @@ struct Screen6YourAdaptation: View {
                             Capsule()
                                 .fill(LinearGradient(colors: [Color.cyan, .circadianTeal],
                                                       startPoint: .leading, endPoint: .trailing))
-                                .frame(width: geo.size.width * appState.adaptationPercent, height: 4)
+                                .frame(width: geo.size.width * ringProgress, height: 4)
                         }
                     }
                     .frame(height: 4)
@@ -130,6 +131,8 @@ struct Screen6YourAdaptation: View {
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .onAppear {
             withAnimation(.spring(response: 0.7).delay(0.1)) { appeared = true }
+            // Animasi cepat agar tidak memfrustasikan, tetap ada kesan 'fill up'
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2)) { ringProgress = appState.adaptationPercent }
         }
     }
 }

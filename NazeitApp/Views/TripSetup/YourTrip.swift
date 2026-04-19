@@ -43,6 +43,7 @@ struct YourTrip: View {
         ZStack {
             // [Background Hierarchy]
             OnboardingChoiceBackgroundView(glowAnimated: false)
+                .onTapGesture { hideKeyboard() }
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -245,7 +246,7 @@ struct YourTrip: View {
                 }
             }
         }
-        .scrollDismissesKeyboard(.interactively)
+        .onTapGesture { hideKeyboard() }
         .navigationBarTitleDisplayMode(.inline)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: appState.toCity.isEmpty)
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: timezoneShift)
@@ -313,4 +314,11 @@ private struct TripField: View {
 
 #Preview { 
     NavigationStack { YourTrip().environmentObject(AppState()) } 
+}
+
+// MARK: - Keyboard Dismissal Helper
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
 }
