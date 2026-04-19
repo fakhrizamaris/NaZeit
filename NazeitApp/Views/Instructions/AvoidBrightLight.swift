@@ -23,7 +23,10 @@ struct Screen5AvoidBrightLight: View {
                     
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
-                        Text("Circadian state").font(.caption2).foregroundStyle(Color(uiColor: .secondaryLabel))
+                        Text("CIRCADIAN STATE")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .tracking(0.5)
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }

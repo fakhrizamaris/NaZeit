@@ -66,11 +66,19 @@ struct Screen6YourAdaptation: View {
                                icon: "moon.zzz.fill",
                                iconColor: Color.indigo,
                                trend: nil)
-                    MetricCard(value: "\(appState.currentHRV)ms",
-                               label: "HRV",
-                               icon: "waveform.path",
-                               iconColor: .circadianTeal,
-                               trend: "↑")
+                    if appState.inputMethod == .watch {
+                        MetricCard(value: "\(appState.currentHRV)ms",
+                                   label: "HRV",
+                                   icon: "waveform.path",
+                                   iconColor: .circadianTeal,
+                                   trend: "↑")
+                    } else {
+                        MetricCard(value: "\(appState.daysRemaining)d",
+                                   label: "remaining",
+                                   icon: "calendar.badge.clock",
+                                   iconColor: .circadianTeal,
+                                   trend: nil)
+                    }
                 }
                 .padding(.horizontal, 24).padding(.bottom, 20)
 

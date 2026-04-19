@@ -20,14 +20,14 @@ struct ScreenNewC_InFlightDeviated: View {
 
                 // MARK: Phase chip + Adjusted badge
                 HStack(spacing: 10) {
-                    Label("In-flight", systemImage: "airplane")
-                        .font(.caption2).fontWeight(.semibold).foregroundStyle(Color(uiColor: .secondaryLabel))
+                    Label("In-Flight", systemImage: "airplane")
+                        .font(.caption).fontWeight(.bold).foregroundStyle(Color(uiColor: .secondaryLabel))
                         .padding(.horizontal, 10).padding(.vertical, 4)
                         .background(Color(uiColor: .secondarySystemBackground)).clipShape(Capsule())
                     Spacer()
                     Label("Plan adjusted", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.caption2).fontWeight(.semibold).foregroundStyle(Color.mint)
-                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .font(.caption).fontWeight(.bold).foregroundStyle(Color.mint)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
                         .background(Color.mint.opacity(0.15)).clipShape(Capsule())
                 }
                 .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
@@ -57,8 +57,8 @@ struct ScreenNewC_InFlightDeviated: View {
 
                     VStack(spacing: 5) {
                         HStack(spacing: 5) {
-                            Image(systemName: "arrow.triangle.2.circlepath").font(.caption2)
-                            Text("Sleep window: 23:00 – 00:00").font(.caption).fontWeight(.bold)
+                            Image(systemName: "arrow.triangle.2.circlepath").font(.caption)
+                            Text("Sleep window: 23:00 – 00:00").font(.subheadline).fontWeight(.bold)
                         }
                         .foregroundStyle(Color.mint)
                         .padding(.horizontal, 12).padding(.vertical, 5)

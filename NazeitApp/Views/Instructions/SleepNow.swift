@@ -92,7 +92,7 @@ struct Screen3SleepNow: View {
                         .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.1), value: appeared)
 
                     Text("Sleep Now")
-                        .font(.system(.largeTitle, design: .rounded).weight(.heavy))
+                        .font(.system(.title, design: .rounded).weight(.bold))
                         .foregroundStyle(Color(uiColor: .label))
 
                     Text("4 hrs to destination")

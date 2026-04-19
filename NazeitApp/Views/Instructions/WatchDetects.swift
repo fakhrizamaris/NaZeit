@@ -22,18 +22,22 @@ struct ScreenNewA_WatchDetects: View {
                     Circle()
                         .fill(Color.mint.opacity(0.12))
                         .frame(width: 96)
-                    Image(systemName: "applewatch")
+                    Image(systemName: appState.inputMethod == .watch ? "applewatch" : "bed.double.fill")
                         .font(.system(size: watchIconSize, weight: .thin))
                         .foregroundStyle(Color.mint)
                         .symbolEffect(.pulse)
                 }
 
                 VStack(spacing: 12) {
-                    Text("Sleep detected at 01:30 AM")
+                    Text(appState.inputMethod == .watch
+                         ? "Sleep detected at 01:30 AM"
+                         : "Late sleep detected")
                         .font(.system(.title2, design: .rounded).weight(.bold))
                         .foregroundStyle(Color(uiColor: .label))
                         .multilineTextAlignment(.center)
-                    Text("That's later than your recommended window (22:30)")
+                    Text(appState.inputMethod == .watch
+                         ? "That's later than your recommended window (22:30)"
+                         : "You slept later than your planned schedule (22:30)")
                         .font(.body).foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.center)
                 }

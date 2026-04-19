@@ -21,7 +21,10 @@ struct Screen4GetSunlight: View {
                     
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
-                        Text("Circadian state").font(.caption2).foregroundStyle(Color(uiColor: .secondaryLabel))
+                        Text("CIRCADIAN STATE")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .tracking(0.5)
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
@@ -48,9 +51,9 @@ struct Screen4GetSunlight: View {
 
                     VStack(spacing: 5) {
                         HStack(spacing: 5) {
-                            Image(systemName: "clock.badge.exclamationmark").font(.caption2)
+                            Image(systemName: "clock.badge.exclamationmark").font(.caption)
                             Text("Best before 7:00 AM")
-                                .font(.caption).fontWeight(.bold)
+                                .font(.subheadline).fontWeight(.bold)
                         }
                         .foregroundStyle(Color.mint)
                         .padding(.horizontal, 12).padding(.vertical, 5)

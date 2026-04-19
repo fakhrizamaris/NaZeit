@@ -21,13 +21,16 @@ struct ScreenNewB_RecalculatedInstruction: View {
 
                 HStack(alignment: .center, spacing: 10) {
                     Label("Day 1 · 09:00 AM", systemImage: "sun.horizon.fill")
-                        .font(.caption2).fontWeight(.semibold)
+                        .font(.caption).fontWeight(.bold)
                         .foregroundStyle(Color.mint.opacity(0.85))
                         .padding(.horizontal, 10).padding(.vertical, 4)
                         .background(Color(uiColor: .secondarySystemBackground)).clipShape(Capsule())
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
-                        Text("Circadian state").font(.caption2).foregroundStyle(Color(uiColor: .secondaryLabel))
+                        Text("CIRCADIAN STATE")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .tracking(0.5)
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
@@ -75,7 +78,9 @@ struct ScreenNewB_RecalculatedInstruction: View {
                         .padding(.horizontal, 12).padding(.vertical, 5)
                         .background(Color.mint.opacity(0.10)).clipShape(Capsule())
 
-                        Text("Based on your actual sleep · HRV")
+                        Text(appState.inputMethod == .watch
+                             ? "Based on your actual sleep · HRV"
+                             : "Based on your sleep schedule")
                             .font(.caption).foregroundStyle(Color(uiColor: .tertiaryLabel))
                     }
                 }
