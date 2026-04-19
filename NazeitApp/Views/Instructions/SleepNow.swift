@@ -1,15 +1,14 @@
-//  SleepNow.swift — KamBing
-//  Screen 3: In-flight Sleep Now. Dark navy gradient, glassmorphism card.
-//  Juga berisi CircadianStateBar (reusable di Screen 4, 5, adaptive).
+//
+//  SleepNow.swift
+//  KamBing
+//
 
 import SwiftUI
 
-// MARK: - Reusable CircadianStateBar
-// Dipisah ke view sendiri agar Screen 3, 4, 5 dan adaptive screens
-// semuanya menggunakan komponen yang identik — konsistensi (HIG).
+// MARK: - CircadianStateBar
 struct CircadianStateBar: View {
-    let level: Double           // 0.0 = misaligned, 1.0 = aligned
-    var compact: Bool = false   // compact mode untuk header chip
+    let level: Double
+    var compact: Bool = false
 
     @State private var animated: Double = 0
 
@@ -22,9 +21,6 @@ struct CircadianStateBar: View {
 
     var body: some View {
         HStack(spacing: compact ? 6 : 8) {
-            // Track + fill dengan gradient red→orange→green
-            // Gradient selalu penuh, tapi di-mask sesuai level — menunjukkan
-            // posisi user di spektrum alignment circadian.
             ZStack(alignment: .leading) {
                 Capsule()
                     .fill(Color(.systemGray5).opacity(0.6))
@@ -50,25 +46,21 @@ struct CircadianStateBar: View {
     }
 }
 
-// MARK: - Screen 3: Sleep Now (In-flight)
+// MARK: - Screen 3: Sleep Now
 struct Screen3SleepNow: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy = false
     @State private var appeared = false
     
-    // [HIG] ScaledMetric mengizinkan ukuran raksasa (64) tetap responsif terhadap zoom level iOS
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
     var body: some View {
         ZStack {
-            //  [Materi Dynamic Appearance]: Menggunakan .systemBackground agar aplikasi beradaptasi mutlak pada preferensi asali Dark/Light Mode pengguna, mengikuti pedoman HIG Accessibility.
             Color(uiColor: .systemBackground).ignoresSafeArea()
 
             VStack(spacing: 0) {
 
                 // MARK: Phase chip + Circadian state bar
-                //  [Materi Navigation Context (HIG)]: Header minimalis yang menyajikan orientasi status saat ini.
-                // Menggunakan huruf kapital dan spasi ekstra (tracking) pada micro-data untuk keterbacaan tingkat lanjut.
                 HStack(alignment: .center) {
                     Label("In-Flight", systemImage: "airplane.circle.fill")
                         .font(.subheadline).fontWeight(.semibold)
@@ -91,7 +83,7 @@ struct Screen3SleepNow: View {
 
                 Spacer()
 
-                // MARK: Main Instruction — Extreme Minimalism
+                // MARK: Main Instruction
                 VStack(spacing: 20) {
                     Image(systemName: "moon.zzz.fill")
                         .font(.system(size: heroIconSize))
@@ -99,7 +91,6 @@ struct Screen3SleepNow: View {
                         .scaleEffect(appeared ? 1.0 : 0.7)
                         .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.1), value: appeared)
 
-                    //  [Materi Typography Hierarchy]: Menggunakan .largeTitle untuk instruksi inti yang menyesuaikan warna label dinamis
                     Text("Sleep Now")
                         .font(.system(.largeTitle, design: .rounded).weight(.heavy))
                         .foregroundStyle(Color(uiColor: .label))
@@ -126,20 +117,16 @@ struct Screen3SleepNow: View {
 
                 Spacer()
 
-                // MARK: Why chip — progressive disclosure (HIG)
+                // MARK: Why chip
                 WhyChip(isShown: $showWhy, explanation: appState.inputMethod == .watch ?
                     "Your HRV is optimal (\(appState.currentHRV)ms), indicating your body is rest-ready. Sleeping now advances your circadian clock toward the destination time zone by up to 3 hours." :
                     "Based on your usual schedule, your body's melatonin cycle is beginning. Sleeping now helps shift your circadian clock toward the destination time zone by up to 3 hours.")
                     .padding(.bottom, 16)
 
-                // Navigation dots — progress indicator (manual, bukan PageControl,
-                // karena navigasi kita Push bukan swipe lateral)
                 NavDots(total: 3, current: 0)
                     .padding(.bottom, 20)
 
-                // MARK: Dual CTA — branching point
-                // Primary: followed → flow normal
-                // Secondary: deviated                // MARK: Dual CTA
+                // MARK: Dual CTA
                 VStack(spacing: 12) {
                     NavigationLink {
                         Screen4GetSunlight().environmentObject(appState)
@@ -173,9 +160,7 @@ struct Screen3SleepNow: View {
     }
 }
 
-// MARK: - Shared helper views
-
-// WhyChip — expandable explanation chip, dipakai di Screen 3, 4, 5, adaptive
+// MARK: - WhyChip
 struct WhyChip: View {
     @Binding var isShown: Bool
     let explanation: String
@@ -204,7 +189,7 @@ struct WhyChip: View {
     }
 }
 
-// NavDots — dots indicator posisi dalam flow instruksi
+// MARK: - NavDots
 struct NavDots: View {
     let total: Int; let current: Int
     var body: some View {

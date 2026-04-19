@@ -5,10 +5,6 @@
 //  Created by Fakhri Djamaris on 13/04/26.
 //
 
-//  ProgressSuccess.swift — KamBing
-//  Screen 6: Your Adaptation — animated gradient ring, metric cards.
-//  Screen 7: Fully Adapted — celebration dengan spring animation.
-
 import SwiftUI
 
 // MARK: - Screen 6: Your Adaptation
@@ -23,7 +19,6 @@ struct Screen6YourAdaptation: View {
 
             VStack(spacing: 0) {
 
-                // MARK: Header — Label
                 Text("Your adaptation")
                     .font(.system(.title, design: .rounded).weight(.bold))
                     .foregroundStyle(Color(uiColor: .label))
@@ -34,16 +29,11 @@ struct Screen6YourAdaptation: View {
                     .padding(.bottom, 32)
 
                 // MARK: Progress Ring
-                // Ring berbentuk lingkaran mewakili siklus 24 jam circadian — bukan bar linear.
-                // .trim dari 0 → progress dianimasikan saat onAppear.
-                // .rotationEffect(-90°) karena SwiftUI default mulai dari jam 3, bukan jam 12.
                 ZStack {
-                    // Track ring
                     Circle()
                         .stroke(Color(.systemGray5), lineWidth: 14)
                         .frame(width: 160, height: 160)
 
-                    // Gradient progress ring — gradasi warna mengikuti tingkat adaptasi
                     Circle()
                         .trim(from: 0, to: ringProgress)
                         .stroke(AngularGradient(
@@ -58,11 +48,7 @@ struct Screen6YourAdaptation: View {
                         ), style: StrokeStyle(lineWidth: 14, lineCap: .round))
                         .frame(width: 160, height: 160)
                         .rotationEffect(.degrees(-90))
-                        // .round lineCap membuat ujung arc membulat — premium detail.
-                        // AngularGradient memberi gradient melingkar yang lebih ekspresif
-                        // dari LinearGradient untuk ring shape.
 
-                    // Center text
                     VStack(spacing: 2) {
                         Text("\(Int(appState.adaptationPercent * 100))%")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
@@ -73,7 +59,7 @@ struct Screen6YourAdaptation: View {
                 }
                 .padding(.bottom, 32)
 
-                // MARK: Metric Cards — data biometrik dari Watch / manual
+                // MARK: Metric Cards
                 HStack(spacing: 12) {
                     MetricCard(value: String(format: "%.1f", appState.sleepHours) + "h",
                                label: "sleep",
@@ -88,12 +74,10 @@ struct Screen6YourAdaptation: View {
                 }
                 .padding(.horizontal, 24).padding(.bottom, 20)
 
-                // MARK: Motivational Label + progress bar
                 VStack(spacing: 8) {
                     Text("Keep going — \(appState.daysRemaining) days left")
                         .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
 
-                    // Linear progress bar sebagai secondary indicator
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             Capsule().fill(Color(.systemGray5)).frame(height: 4)
@@ -131,14 +115,13 @@ struct Screen6YourAdaptation: View {
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .onAppear {
             withAnimation(.spring(response: 0.7).delay(0.1)) { appeared = true }
-            // Animasi cepat agar tidak memfrustasikan, tetap ada kesan 'fill up'
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2)) { ringProgress = appState.adaptationPercent }
         }
     }
 }
 
 
-// MARK: - Screen 7: Fully Adapted — celebration screen
+// MARK: - Screen 7: Fully Adapted
 struct Screen7FullyAdapted: View {
     @EnvironmentObject var appState: AppState
     @State private var showCheck  = false
@@ -207,7 +190,6 @@ struct Screen7FullyAdapted: View {
                     YourTrip()
                         .environmentObject(appState)
                         .onAppear {
-                            // Reset trip data untuk perjalanan baru
                             appState.fromCity = ""
                             appState.toCity = ""
                             appState.fromTimeZone = .current

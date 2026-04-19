@@ -12,11 +12,9 @@ struct ConnectAppleWatch: View {
 
     var body: some View {
         ZStack {
-            // [Background Hierarchy] Using the same soothing ambient layer
             OnboardingChoiceBackgroundView(glowAnimated: isAnimating)
 
             VStack(spacing: 0) {
-                // [UX: Navigation Context]
                 StepIndicatorView(step: 2, totalSteps: 3)
                     .padding(.top, 12)
                 
@@ -37,7 +35,6 @@ struct ConnectAppleWatch: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                     .padding(.bottom, 36)
 
-                // Data chips
                 VStack(spacing: 8) {
                     WatchDataChip(icon: "heart.fill", label: "Heart Rate", value: "82 BPM", color: .pink, isSynced: isSynced)
                     WatchDataChip(icon: "waveform.path", label: "HRV Variability", value: "52 ms", color: Color(uiColor: .nazeitTeal), isSynced: isSynced)
@@ -82,7 +79,6 @@ struct ConnectAppleWatch: View {
                     }
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    // [Accessibility] Uses label rather than black
                     .foregroundStyle(Color(uiColor: .label).opacity(isSynced ? 1.0 : 0.30))
                 }
                 .disabled(!isSynced)
@@ -152,10 +148,8 @@ private struct WatchDataChip: View {
                 .foregroundStyle(Color(uiColor: .label))
             Spacer()
             
-            // [Interactive Detail] Show real-time data instead of boring checkmarks once synced!
             if isSynced {
                 Text(value)
-                    // Monospaced digit is perfect for health numbers (Apple HIG)
                     .font(.subheadline.monospacedDigit().weight(.bold))
                     .foregroundStyle(color)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -169,7 +163,6 @@ private struct WatchDataChip: View {
         .padding(.vertical, 12)
         .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
-        // Animasi fluid
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isSynced)
     }
 }

@@ -2,8 +2,6 @@
 //  InFlightDeviated.swift
 //  KamBing
 //
-//  Screen NEW C: In-Flight Deviation
-//  Dipicu dari "Can't sleep right now" di Screen 3.
 
 import SwiftUI
 
@@ -34,15 +32,15 @@ struct ScreenNewC_InFlightDeviated: View {
                 }
                 .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
 
-                // MARK: Gentle acknowledgment — bukan scolding
-                // HIG: pesan error/deviation harus konstruktif, bukan menyalahkan.
-                Text("Still awake? No problem.")
-                    .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
-                    .padding(.bottom, 16)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 24)
 
-                Spacer()
+                        Text("Still awake? No problem.")
+                            .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .padding(.bottom, 16)
 
-                // MARK: Adjusted instruction card
+                        // MARK: Adjusted instruction card
                 VStack(spacing: 14) {
                     Image(systemName: "moon.stars.fill")
                         .font(.system(size: heroIconSize))
@@ -73,14 +71,15 @@ struct ScreenNewC_InFlightDeviated: View {
                 .instructionCard(isAdjusted: true)
                 .padding(.horizontal, 24)
 
-                Spacer()
+                Spacer(minLength: 32)
 
-                // Why adjusted chip
                 WhyChip(isShown: $showWhy, explanation:
                     "Since you're not sleeping, dimming lights still helps melatonin production begin. Your sleep window is shifted to give your body more time to prepare.")
                     .padding(.bottom, 24)
+            }
+        }
 
-                NavigationLink {
+        NavigationLink {
                     Screen4GetSunlight().environmentObject(appState)
                 } label: {
                     PrimaryBtn(title: "Got it")

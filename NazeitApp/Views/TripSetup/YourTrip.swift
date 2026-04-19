@@ -1,4 +1,3 @@
-//  YourTrip.swift — KamBing
 import SwiftUI
 import CoreLocation
 
@@ -8,7 +7,6 @@ struct YourTrip: View {
     @State private var showArrivalDatePicker = false
     @State private var appeared       = false
     
-    // CoreLocation Geocoding Engine
     @State private var isGeocodingTo   = false
     @State private var isGeocodingFrom = false
 
@@ -17,7 +15,7 @@ struct YourTrip: View {
         let f = DateFormatter()
         f.timeZone = appState.fromTimeZone
         f.dateStyle = .medium
-        f.timeStyle = .short // Menampilkan Jam juga
+        f.timeStyle = .short
         return f.string(from: appState.departureDate)
     }
     
@@ -30,25 +28,21 @@ struct YourTrip: View {
     }
     
     private var timezoneShift: Int {
-        // [Native Math]: Menghitung perbedaan jam absolut dari dua zona waktu secara presisi tanpa scraping API.
         let fromSeconds = appState.fromTimeZone.secondsFromGMT(for: appState.departureDate)
         let toSeconds = appState.toTimeZone.secondsFromGMT(for: appState.arrivalDate)
         return (toSeconds - fromSeconds) / 3600
     }
 
-    // [Color Harmony]
     private var baseColor: Color { Color(uiColor: .nazeitTeal) }
 
     var body: some View {
         ZStack {
-            // [Background Hierarchy]
             OnboardingChoiceBackgroundView(glowAnimated: false)
                 .onTapGesture { hideKeyboard() }
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
 
-                    // [Navigation Context]
                     HStack {
                         Spacer()
                         StepIndicatorView(step: 3, totalSteps: 3)
@@ -62,7 +56,6 @@ struct YourTrip: View {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Your Trip")
-                                // [Typography Hierarchy]
                                 .font(.system(.title2, design: .rounded).weight(.bold))
                                 .foregroundStyle(Color(uiColor: .label))
                             
@@ -75,17 +68,17 @@ struct YourTrip: View {
                     .padding(.horizontal, 24).padding(.bottom, 32)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
-                    // MARK: TextField — From city
+                    // MARK: From
                     TripField(label: "From", placeholder: "e.g. Jakarta (JKT)", text: $appState.fromCity, tintColor: baseColor)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
-                    // MARK: TextField — To city
+                    // MARK: To
                     TripField(label: "To", placeholder: "e.g. Los Angeles (LAX)", text: $appState.toCity, tintColor: baseColor)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
-                    // MARK: DatePicker — Departure date & Time
+                    // MARK: Departure
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Departure Date & Time")
                             .font(.footnote).fontWeight(.semibold)
@@ -99,7 +92,6 @@ struct YourTrip: View {
                                 Label {
                                     HStack(alignment: .lastTextBaseline, spacing: 6) {
                                         Text(dateLabel)
-                                        //  [Materi Emphasis]: Label zona waktu menggunakan font lebih kecil & sekunder agar memberikan konteks orientasi tanpa mendominasi informasi jam keberangkatan.
                                         if let abbrev = appState.fromTimeZone.abbreviation() {
                                             Text(abbrev)
                                                 .font(.caption).fontWeight(.bold)
@@ -132,7 +124,7 @@ struct YourTrip: View {
                     .padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
-                    // MARK: DatePicker — Arrival date & Time
+                    // MARK: Arrival
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Arrival Date & Time (Local)")
                             .font(.footnote).fontWeight(.semibold)
@@ -178,7 +170,6 @@ struct YourTrip: View {
                     .padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
-                    // MARK: Time zone shift chip
                     if timezoneShift != 0 && !appState.toCity.isEmpty {
                         HStack(spacing: 8) {
                             if isGeocodingTo || isGeocodingFrom {
@@ -199,7 +190,6 @@ struct YourTrip: View {
                         .animation(.spring, value: isGeocodingTo)
                     }
 
-                    // MARK: Plan summary card
                     if isValid {
                         HStack(spacing: 12) {
                             Image(systemName: "sparkles")
@@ -219,9 +209,8 @@ struct YourTrip: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
 
-                    // MARK: NavigationLink → Loading Phase
+                    // MARK: CTA
                     NavigationLink {
-                        // [Routing]: User explicitly requested connecting to LoadingPhaseView 
                         LoadingPhaseView().environmentObject(appState)
                     } label: {
                         HStack(spacing: 8) {
@@ -253,13 +242,11 @@ struct YourTrip: View {
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.1)) { appeared = true }
         }
-        // MARK: Native Auto-Geocoding (No Web Scraping Needed!)
-        // Debounce asinkronus mencegah geocoding dieksekusi terus setiap kali user ngetik 1 huruf.
         .task(id: appState.fromCity) {
             guard !appState.fromCity.isEmpty else { appState.fromTimeZone = .current; return }
             isGeocodingFrom = true
             do {
-                try await Task.sleep(nanoseconds: 1_200_000_000) // 1.2 detik debounce
+                try await Task.sleep(nanoseconds: 1_200_000_000)
                 let placemarks = try await CLGeocoder().geocodeAddressString(appState.fromCity)
                 if let tz = placemarks.first?.timeZone {
                     await MainActor.run { appState.fromTimeZone = tz }
@@ -271,7 +258,7 @@ struct YourTrip: View {
             guard !appState.toCity.isEmpty else { return }
             isGeocodingTo = true
             do {
-                try await Task.sleep(nanoseconds: 1_200_000_000) // 1.2 detik debounce
+                try await Task.sleep(nanoseconds: 1_200_000_000)
                 let placemarks = try await CLGeocoder().geocodeAddressString(appState.toCity)
                 if let tz = placemarks.first?.timeZone {
                     await MainActor.run { appState.toTimeZone = tz }

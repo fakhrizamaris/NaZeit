@@ -2,12 +2,6 @@
 //  RecalculatedInstruction.swift
 //  KamBing
 //
-//  Screen NEW B: Recalculated Instruction
-//  Format IDENTIK dengan Screen 4 — hanya ada:
-//  1. Banner "Plan updated" di atas
-//  2. Badge "⟳ Adjusted · was 7 AM" di dalam kartu
-//  3. Mint border pada kartu
-//  Konsistensi format = user langsung tahu ini instruksi, tidak perlu re-learn.
 
 import SwiftUI
 
@@ -25,7 +19,6 @@ struct ScreenNewB_RecalculatedInstruction: View {
         ZStack {
             VStack(spacing: 0) {
 
-                // Phase chip + State bar
                 HStack(alignment: .center, spacing: 10) {
                     Label("Day 1 · 09:00 AM", systemImage: "sun.horizon.fill")
                         .font(.caption2).fontWeight(.semibold)
@@ -35,13 +28,12 @@ struct ScreenNewB_RecalculatedInstruction: View {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
                         Text("Circadian state").font(.caption2).foregroundStyle(Color(uiColor: .secondaryLabel))
-                        CircadianStateBar(level: 0.30, compact: true)
-                        // Level lebih rendah dari Screen 4 normal karena tidur telat.
+                        CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
                 .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
 
-                // MARK: Plan updated banner — KUNCI VISUAL ADAPTIVE FLOW
+                // MARK: Plan updated banner
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.triangle.2.circlepath").font(.caption)
                     Text("Plan updated based on last night").font(.caption).fontWeight(.medium)
@@ -55,9 +47,10 @@ struct ScreenNewB_RecalculatedInstruction: View {
                          alignment: .bottom)
                 .padding(.horizontal, 24).padding(.bottom, 14)
 
-                Spacer()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 24)
 
-                // Adjusted instruction card — same format as Screen 4 + mint border
                 VStack(spacing: 14) {
                     Image(systemName: "sun.max.fill")
                         .font(.system(size: heroIconSize))
@@ -74,7 +67,6 @@ struct ScreenNewB_RecalculatedInstruction: View {
                         .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
 
                     VStack(spacing: 6) {
-                        // Adjusted badge
                         HStack(spacing: 5) {
                             Image(systemName: "arrow.triangle.2.circlepath").font(.caption2)
                             Text("Adjusted · was \(originalTime)").font(.caption).fontWeight(.bold)
@@ -93,9 +85,8 @@ struct ScreenNewB_RecalculatedInstruction: View {
                 .shadow(color: Color.mint.opacity(0.15), radius: 20, y: 8)
                 .padding(.horizontal, 24)
 
-                Spacer()
+                Spacer(minLength: 32)
 
-                // Why adjusted chip
                 VStack(spacing: 8) {
                     Button {
                         withAnimation(.spring(response: 0.4)) { showWhy.toggle() }
@@ -116,19 +107,18 @@ struct ScreenNewB_RecalculatedInstruction: View {
                 }
                 .padding(.bottom, 16)
 
-                // Up next — waktu juga ikut bergeser
                 HStack(spacing: 6) {
                     Image(systemName: "clock.arrow.circlepath").font(.caption)
                     Text("Up next: Eat at 13:00 (was 12:00)").font(.caption).fontWeight(.medium)
                     Spacer()
-                    Image(systemName: "chevron.right").font(.caption2)
                 }
                 .foregroundStyle(Color(uiColor: .secondaryLabel))
                 .padding(.horizontal, 14).padding(.vertical, 10)
                 .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal, 24).padding(.bottom, 12)
+            }
+        }
 
-                // CTA — kembali ke main flow (Screen 6)
                 NavigationLink {
                     Screen6YourAdaptation().environmentObject(appState)
                 } label: {

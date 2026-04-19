@@ -2,8 +2,6 @@
 //  CircadianComponents.swift
 //  KamBing
 //
-//  Shared Modular Architecture — Contains all reusable Structural & Gestalt components
-//  extracted from fat views like LoadingPhase, ManualSetup, Instructions, and ProgressSuccess.
 
 import SwiftUI
 
@@ -84,22 +82,20 @@ struct DualTimeView: View {
     
     var body: some View {
         HStack(spacing: 8) {
-            // Origin Time zone
             VStack(alignment: .center, spacing: 2) {
                 Text(appState.fromTimeZone.abbreviation() ?? "ORIGIN").font(.system(size: 8, weight: .bold))
-                Text("19:40").font(.caption.weight(.heavy)) // Dummy converted time
+                Text("19:40").font(.caption.weight(.heavy))
             }
             .foregroundStyle(isDaytime ? .indigo : .teal)
             
             Image(systemName: "arrow.right").font(.system(size: 10, weight: .bold))
                 .foregroundStyle(Color(uiColor: .quaternaryLabel))
             
-            // Destination Time zone
             VStack(alignment: .center, spacing: 2) {
                 Text(appState.toTimeZone.abbreviation() ?? "LOCAL").font(.system(size: 8, weight: .bold))
                 Text(localTime).font(.caption.weight(.heavy))
             }
-            .foregroundStyle(isDaytime ? Color(uiColor: .nazeitTeal) : Color(uiColor: .label)) // Tetap Teal untuk siang
+            .foregroundStyle(isDaytime ? Color(uiColor: .nazeitTeal) : Color(uiColor: .label))
         }
         .padding(.horizontal, 14).padding(.vertical, 8)
         .background(Color(uiColor: .secondarySystemBackground))
@@ -122,14 +118,12 @@ struct MetricCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Icon pill
             ZStack {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(iconColor.opacity(0.12))
                     .frame(width: 32, height: 32)
                 Image(systemName: icon).font(.caption).foregroundStyle(iconColor)
             }
-            // Value + trend
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text(value).font(.title3).fontWeight(.bold)
                 if let t = trend {

@@ -43,7 +43,7 @@ struct SplashScreenView: View {
     }
 }
 
-// MARK: - Reusable Components
+// MARK: - Components
 
 struct BackgroundLayerView: View {
     var animateBackground: Bool

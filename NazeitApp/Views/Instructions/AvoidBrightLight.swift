@@ -2,7 +2,6 @@
 //  AvoidBrightLight.swift
 //  KamBing
 //
-//  Screen 5: Avoid Bright Light — evening, titik percabangan paling kritis
 
 import SwiftUI
 
@@ -15,7 +14,6 @@ struct Screen5AvoidBrightLight: View {
 
     var body: some View {
         ZStack {
-            // Moon decoration
             MoonDecoration()
 
             VStack(spacing: 0) {
@@ -29,11 +27,13 @@ struct Screen5AvoidBrightLight: View {
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
-                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 20)
+                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
 
-                Spacer()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 32)
 
-                VStack(spacing: 14) {
+                        VStack(spacing: 14) {
                     Image(systemName: "moon.stars.fill")
                         .font(.system(size: heroIconSize))
                         .foregroundStyle(Color.indigo)
@@ -57,7 +57,7 @@ struct Screen5AvoidBrightLight: View {
                 .instructionCard()
                 .padding(.horizontal, 24)
 
-                Spacer()
+                Spacer(minLength: 40)
 
                 WhyChip(isShown: $showWhy, explanation:
                     "Light after 8 PM in your new time zone tells your brain it's still daytime, delaying melatonin and pushing your sleep window later — the opposite of what we need.")
@@ -65,27 +65,26 @@ struct Screen5AvoidBrightLight: View {
 
                 NavDots(total: 3, current: 2).padding(.bottom, 20)
 
-                // Up next chip
                 HStack(spacing: 6) {
                     Image(systemName: "clock.arrow.circlepath").font(.caption)
                     Text("Up next: Sleep at 22:30").font(.caption).fontWeight(.medium)
                     Spacer()
-                    Image(systemName: "chevron.right").font(.caption2)
                 }
                 .foregroundStyle(Color(uiColor: .secondaryLabel))
                 .padding(.horizontal, 14).padding(.vertical, 10)
                 .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal, 24).padding(.bottom, 12)
+            }
+        }
 
-                // MARK: Dual CTA — titik percabangan utama (followed vs deviated)
-                VStack(spacing: 10) {
+        // MARK: Dual CTA
+        VStack(spacing: 10) {
                     NavigationLink {
                         Screen6YourAdaptation().environmentObject(appState)
                     } label: {
                         PrimaryBtn(title: "Done — lights dimmed ✓")
                     }
 
-                    // Secondary: trigger adaptive flow → ScreenNewA
                     NavigationLink {
                         ScreenNewA_WatchDetects().environmentObject(appState)
                     } label: {

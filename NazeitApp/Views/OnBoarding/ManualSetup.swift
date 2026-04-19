@@ -27,13 +27,11 @@ struct ManualSetup: View {
 
     var body: some View {
         ZStack {
-            // [Background Hierarchy]
             OnboardingChoiceBackgroundView(glowAnimated: false)
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
 
-                    // [Navigation Context]
                     HStack {
                         Spacer()
                         StepIndicatorView(step: 2, totalSteps: 3)
@@ -107,7 +105,7 @@ struct ManualSetup: View {
                     .padding(.horizontal, 24).padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
 
-                    // MARK: Sleep Hours — calculated display
+                    // MARK: Sleep Hours
                     SectionCard(title: "Calculated Sleep", icon: "clock.fill", iconColor: Color(uiColor: .nazeitTeal)) {
                         HStack {
                             Text(String(format: "%.1f hours", sleepDuration))
@@ -160,8 +158,6 @@ struct ManualSetup: View {
         }
     }
 }
-
-// MARK: - SectionCard — card container untuk setiap input section
 
 #Preview {
     NavigationStack { ManualSetup().environmentObject(AppState()) }

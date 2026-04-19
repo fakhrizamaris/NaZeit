@@ -14,7 +14,6 @@ struct HealthScreeningModal: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                // Header
                 VStack(spacing: 10) {
                     Text("Routine Check")
                         .font(.system(.title2, design: .rounded).weight(.bold))
@@ -27,21 +26,18 @@ struct HealthScreeningModal: View {
                 }
                 .padding(.top, 24) 
 
-                // Options
                 VStack(spacing: 12) {
                     ScreeningOptionRow(title: "Clinical Insomnia", icon: "moon.zzz", selected: $selectedCondition)
                     ScreeningOptionRow(title: "Elderly (>65 years)", icon: "figure.walk", selected: $selectedCondition)
                     ScreeningOptionRow(title: "Normal Sleep Pattern", icon: "checkmark.shield", selected: $selectedCondition)
                 }
 
-                // Medical Warning
                 if let condition = selectedCondition, condition != "Normal Sleep Pattern" {
                     MedicalWarningView()
                 }
 
                 Spacer(minLength: 16)
 
-                // Action Button
                 Button {
                     isAccepted = true
                 } label: {

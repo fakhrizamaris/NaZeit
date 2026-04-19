@@ -10,7 +10,6 @@ struct LoadingPhaseView: View {
     @State private var selectedDayIndex: Int = 0 
     @State private var navigatetoDashboard: Bool = false
     
-    // MARK: - Data Models
     let offsets = [3, 2, 1]
     let sleepTargets = [
         "10:00 PM - 06:00 AM", 
@@ -47,7 +46,6 @@ struct LoadingPhaseView: View {
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
                             
-                            // MARK: - Header
                             VStack(spacing: 6) {
                                 Text("Pre-flight Loading Phase")
                                     .font(.system(.title2, design: .rounded).weight(.bold))
@@ -61,11 +59,9 @@ struct LoadingPhaseView: View {
                             }
                             .padding(.top, 8)
                             
-                            // MARK: - Progress Tracker
                             DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: selectedDayIndex, activeColor: baseColor)
                                 .padding(.horizontal, 24)
                             
-                            // MARK: - Content Cards
                             VStack(spacing: 24) {
                                 HeroSleepTargetView(
                                     title: "Tonight's Sleep Target",
@@ -110,7 +106,7 @@ struct LoadingPhaseView: View {
                         }
                     }
                     
-                    // MARK: - Bottom Navigation Bar
+                    // MARK: Bottom Navigation
                     HStack(spacing: 16) {
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -133,7 +129,6 @@ struct LoadingPhaseView: View {
                                 if selectedDayIndex < offsets.count - 1 { 
                                     selectedDayIndex += 1 
                                 } else {
-                                    // TODO: Handle completion navigation
                                     navigatetoDashboard = true
                                 }
                             }

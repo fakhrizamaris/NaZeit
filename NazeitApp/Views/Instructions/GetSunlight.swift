@@ -2,7 +2,6 @@
 //  GetSunlight.swift
 //  KamBing
 //
-//  Screen 4: Get Sunlight — Instruksi paparan cahaya pagi
 
 import SwiftUI
 
@@ -17,8 +16,6 @@ struct Screen4GetSunlight: View {
         ZStack {
             VStack(spacing: 0) {
 
-                // Phase chip + state bar
-                //  [Materi Disorientation Relief]: Dual Timeline mengurangi beban kognitif.
                 HStack(alignment: .center, spacing: 10) {
                     DualTimeView(localTime: "07:40", isDaytime: true)
                     
@@ -28,12 +25,13 @@ struct Screen4GetSunlight: View {
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
                     }
                 }
-                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 20)
+                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
 
-                Spacer()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 32)
 
-                // Main Instruction Card
-                VStack(spacing: 14) {
+                        VStack(spacing: 14) {
                     Image(systemName: "sun.max.fill")
                         .font(.system(size: heroIconSize))
                         .foregroundStyle(Color.orange)
@@ -69,9 +67,8 @@ struct Screen4GetSunlight: View {
                 .shadow(color: Color.black.opacity(0.05), radius: 20, y: 8)
                 .padding(.horizontal, 24)
 
-                Spacer()
+                Spacer(minLength: 40)
 
-                // Why chip
                 VStack(spacing: 8) {
                     Button {
                         withAnimation(.spring(response: 0.4)) { showWhy.toggle() }
@@ -94,19 +91,19 @@ struct Screen4GetSunlight: View {
 
                 NavDots(total: 3, current: 1).padding(.bottom, 20)
 
-                // Up next chip
                 HStack(spacing: 6) {
                     Image(systemName: "clock.arrow.circlepath").font(.caption)
                     Text("Up next: Eat at 12:00").font(.caption).fontWeight(.medium)
                     Spacer()
-                    Image(systemName: "chevron.right").font(.caption2)
                 }
                 .foregroundStyle(Color(uiColor: .secondaryLabel))
                 .padding(.horizontal, 14).padding(.vertical, 10)
                 .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal, 24).padding(.bottom, 12)
+            }
+        }
 
-                NavigationLink {
+        NavigationLink {
                     Screen5AvoidBrightLight().environmentObject(appState)
                 } label: {
                     HStack(spacing: 8) {

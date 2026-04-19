@@ -119,7 +119,7 @@ struct OnboardingChoice: View {
     }
 }
 
-// MARK: - Reusable Components
+// MARK: - Components
 
 struct OnboardingChoiceBackgroundView: View {
     var glowAnimated: Bool

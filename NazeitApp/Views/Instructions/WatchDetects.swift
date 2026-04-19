@@ -2,9 +2,6 @@
 //  WatchDetects.swift
 //  KamBing
 //
-//  Screen NEW A: Watch Detects Misalignment
-//  Transisi screen — singkat, informatif.
-//  Animasi loading dots → button muncul setelah recalculation selesai.
 
 import SwiftUI
 
@@ -21,9 +18,6 @@ struct ScreenNewA_WatchDetects: View {
             VStack(spacing: 28) {
                 Spacer()
 
-                // MARK: Apple Watch icon
-                // .pulse animation sama dengan Screen 1 — konsistensi makna:
-                // "watch sedang aktif membaca data." (HIG: animasi bermakna konsisten)
                 ZStack {
                     Circle()
                         .fill(Color.mint.opacity(0.12))
@@ -34,7 +28,6 @@ struct ScreenNewA_WatchDetects: View {
                         .symbolEffect(.pulse)
                 }
 
-                // MARK: Detection info — faktual, tidak menghakimi
                 VStack(spacing: 12) {
                     Text("Sleep detected at 01:30 AM")
                         .font(.system(.title2, design: .rounded).weight(.bold))
@@ -46,7 +39,6 @@ struct ScreenNewA_WatchDetects: View {
                 }
                 .padding(.horizontal, 36)
 
-                // MARK: Recalculating indicator dengan animated dots
                 if isRecalculating {
                     HStack(spacing: 5) {
                         Image(systemName: "arrow.triangle.2.circlepath")
@@ -74,8 +66,6 @@ struct ScreenNewA_WatchDetects: View {
 
                 Spacer()
 
-                // MARK: CTA — muncul setelah recalculation selesai
-                // Tidak auto-navigate karena HIG: user harus in control setiap perpindahan.
                 if !isRecalculating {
                     VStack(spacing: 12) {
                         HStack(spacing: 6) {
