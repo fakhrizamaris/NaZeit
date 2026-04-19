@@ -56,12 +56,6 @@ struct YourTrip: View {
                                 .foregroundStyle(Color(uiColor: .secondaryLabel))
                         }
                         Spacer()
-                        Label(appState.inputMethod == .watch ? "Watch" : "Manual",
-                              systemImage: appState.inputMethod == .watch ? "applewatch" : "hand.tap.fill")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(appState.inputMethod == .watch ? baseColor : Color.indigo)
-                            .padding(.horizontal, 12).padding(.vertical, 6)
-                            .background((appState.inputMethod == .watch ? baseColor : Color.indigo).opacity(0.12), in: Capsule())
                     }
                     .padding(.horizontal, 24).padding(.bottom, 32)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)

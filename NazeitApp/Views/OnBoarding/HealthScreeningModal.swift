@@ -25,7 +25,7 @@ struct HealthScreeningModal: View {
                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.center)
                 }
-                .padding(.top, 24)
+                .padding(.top, 24) 
 
                 // Options
                 VStack(spacing: 12) {
