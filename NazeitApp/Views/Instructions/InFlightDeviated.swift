@@ -1,6 +1,6 @@
 //
 //  InFlightDeviated.swift
-//  KamBing
+//  NazeitApp
 //
 
 import SwiftUI
@@ -15,7 +15,6 @@ struct ScreenNewC_InFlightDeviated: View {
     @State private var showWhy  = false
     @State private var appeared = false
     
-    // Allows toggling for preview/testing, in a real app this would be passed during navigation.
     var deviationType: InFlightDeviationType = .stayedAwake
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64

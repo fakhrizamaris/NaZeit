@@ -1,6 +1,6 @@
 //
 //  AvoidBrightLight.swift
-//  KamBing
+//  NazeitApp
 //
 
 import SwiftUI
@@ -83,7 +83,7 @@ struct Screen5AvoidBrightLight: View {
         // MARK: Dual CTA
         VStack(spacing: 10) {
                     NavigationLink {
-                        RecoveryPhaseView().environmentObject(appState) // End of normal instruction flow naturally goes to Recovery
+                        RecoveryPhaseView().environmentObject(appState)
                     } label: {
                         PrimaryBtn(title: "Done — lights dimmed ✓")
                     }

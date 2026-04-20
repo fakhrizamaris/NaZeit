@@ -1,6 +1,6 @@
 //
 //  WatchDetects.swift
-//  KamBing
+//  NazeitApp
 //
 
 import SwiftUI

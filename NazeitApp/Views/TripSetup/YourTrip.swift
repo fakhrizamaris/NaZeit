@@ -117,6 +117,7 @@ struct YourTrip: View {
                             DatePicker("", selection: $appState.departureDate,
                                        in: Date()..., displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.wheel).labelsHidden()
+                            .environment(\.timeZone, appState.fromTimeZone)
                             .padding(.horizontal, 24)
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
@@ -163,6 +164,7 @@ struct YourTrip: View {
                             DatePicker("", selection: $appState.arrivalDate,
                                        in: appState.departureDate..., displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(.wheel).labelsHidden()
+                            .environment(\.timeZone, appState.toTimeZone)
                             .padding(.horizontal, 24)
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
@@ -188,8 +190,9 @@ struct YourTrip: View {
                                     TextField("Transit City (e.g. Dubai)", text: $appState.transitCity)
                                         .font(.body)
                                         .foregroundStyle(Color(uiColor: .label))
+                                        .frame(height: 52)
                                 }
-                                .padding(.horizontal, 16).padding(.vertical, 14)
+                                .padding(.horizontal, 16)
                                 .background(Color(uiColor: .secondarySystemBackground))
                                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
@@ -338,7 +341,8 @@ private struct TripField: View {
             TextField(placeholder, text: $text)
                 .font(.body)
                 .foregroundStyle(Color(uiColor: .label))
-                .padding(.horizontal, 16).padding(.vertical, 14)
+                .frame(height: 52)
+                .padding(.horizontal, 16)
                 .background(Color(uiColor: .secondarySystemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(

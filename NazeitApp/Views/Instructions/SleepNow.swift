@@ -1,6 +1,6 @@
 //
 //  SleepNow.swift
-//  KamBing
+//  NazeitApp
 //
 
 import SwiftUI

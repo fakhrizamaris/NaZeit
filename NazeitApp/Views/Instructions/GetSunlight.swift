@@ -1,6 +1,6 @@
 //
 //  GetSunlight.swift
-//  KamBing
+//  NazeitApp
 //
 
 import SwiftUI

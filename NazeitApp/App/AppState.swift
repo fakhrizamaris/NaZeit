@@ -1,6 +1,6 @@
 //
 //  Appstate.swift
-//  KamBing
+//  NazeitApp
 //
 //  Created by Fakhri Djamaris on 14/04/26.
 //
@@ -35,6 +35,10 @@ class AppState: ObservableObject {
     @Published var daysRemaining: Int = 2
     @Published var isSleepDisorder = false
     @Published var selectedDisorder = ""
+    
+    // MARK: Phase Day Index Persistence
+    @Published var loadingPhaseDayIndex: Int = 0
+    @Published var recoveryPhaseDayIndex: Int = 0
 }
 
 

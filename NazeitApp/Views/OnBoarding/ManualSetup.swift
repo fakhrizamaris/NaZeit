@@ -1,6 +1,6 @@
 //
 //  ManualSetup.swift
-//  KamBing
+//  NazeitApp
 //
 
 import SwiftUI

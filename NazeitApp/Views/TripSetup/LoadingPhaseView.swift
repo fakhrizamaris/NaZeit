@@ -1,13 +1,12 @@
 //
 //  LoadingPhaseView.swift
-//  KamBing
+//  NazeitApp
 //
 
 import SwiftUI
 
 struct LoadingPhaseView: View {
     @EnvironmentObject var appState: AppState
-    @State private var selectedDayIndex: Int = 0 
     @State private var navigatetoDashboard: Bool = false
     
     let offsets = [3, 2, 1]
@@ -59,14 +58,14 @@ struct LoadingPhaseView: View {
                             }
                             .padding(.top, 8)
                             
-                            DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: selectedDayIndex, activeColor: baseColor)
+                            DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: appState.loadingPhaseDayIndex, activeColor: baseColor)
                                 .padding(.horizontal, 24)
                             
                             VStack(spacing: 24) {
                                 HeroSleepTargetView(
                                     title: "Tonight's Sleep Target",
-                                    timeRange: sleepTargets[selectedDayIndex],
-                                    shiftLabel: shifts[selectedDayIndex],
+                                    timeRange: sleepTargets[appState.loadingPhaseDayIndex],
+                                    shiftLabel: shifts[appState.loadingPhaseDayIndex],
                                     color: baseColor
                                 )
                                 .padding(.horizontal, 24)
@@ -96,7 +95,7 @@ struct LoadingPhaseView: View {
                                     .padding(.horizontal, 24)
                                 }
                             }
-                            .id(selectedDayIndex)
+                            .id(appState.loadingPhaseDayIndex)
                             .transition(.asymmetric(
                                 insertion: .move(edge: .trailing).combined(with: .opacity),
                                 removal: .move(edge: .leading).combined(with: .opacity)
@@ -110,42 +109,42 @@ struct LoadingPhaseView: View {
                     HStack(spacing: 16) {
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                if selectedDayIndex > 0 { selectedDayIndex -= 1 }
+                                if appState.loadingPhaseDayIndex > 0 { appState.loadingPhaseDayIndex -= 1 }
                             } 
                         } label: {
                             Image(systemName: "arrow.left")
                                 .font(.headline)
-                                .foregroundStyle(selectedDayIndex > 0 ? baseColor : Color(uiColor: .tertiaryLabel))
+                                .foregroundStyle(appState.loadingPhaseDayIndex > 0 ? baseColor : Color(uiColor: .tertiaryLabel))
                                 .frame(width: 56, height: 56)
                                 .background(Color(uiColor: .secondarySystemBackground))
                                 .clipShape(Circle())
                                 .overlay(Circle().stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
-                                .shadow(color: Color.black.opacity(selectedDayIndex > 0 ? 0.05 : 0), radius: 8, y: 4)
+                                .shadow(color: Color.black.opacity(appState.loadingPhaseDayIndex > 0 ? 0.05 : 0), radius: 8, y: 4)
                         }
-                        .disabled(selectedDayIndex == 0)
+                        .disabled(appState.loadingPhaseDayIndex == 0)
                         
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                if selectedDayIndex < offsets.count - 1 { 
-                                    selectedDayIndex += 1 
+                                if appState.loadingPhaseDayIndex < offsets.count - 1 { 
+                                    appState.loadingPhaseDayIndex += 1 
                                 } else {
                                     navigatetoDashboard = true
                                 }
                             }
                         } label: {
                             HStack(spacing: 8) {
-                                Text(selectedDayIndex == offsets.count - 1 ? "Commit to Plan" : "Next Day")
-                                if selectedDayIndex < offsets.count - 1 {
+                                Text(appState.loadingPhaseDayIndex == offsets.count - 1 ? "Commit to Plan" : "Next Day")
+                                if appState.loadingPhaseDayIndex < offsets.count - 1 {
                                     Image(systemName: "arrow.right")
                                 } else {
                                     Image(systemName: "checkmark.circle.fill")
                                 }
                             }
                             .font(.headline)
-                            .foregroundStyle(selectedDayIndex == offsets.count - 1 ? .white : Color(uiColor: .label))
+                            .foregroundStyle(appState.loadingPhaseDayIndex == offsets.count - 1 ? .white : Color(uiColor: .label))
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(selectedDayIndex == offsets.count - 1 ? baseColor : Color(uiColor: .secondarySystemBackground))
+                            .background(appState.loadingPhaseDayIndex == offsets.count - 1 ? baseColor : Color(uiColor: .secondarySystemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 100, style: .continuous))
                             .overlay(RoundedRectangle(cornerRadius: 100, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
                             .shadow(color: Color.black.opacity(0.05), radius: 8, y: 4)

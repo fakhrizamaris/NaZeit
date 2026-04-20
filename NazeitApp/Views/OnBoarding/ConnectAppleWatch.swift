@@ -1,6 +1,6 @@
 //
 //  ConnectAppleWatch.swift
-//  KamBing
+//  NazeitApp
 //
 
 import SwiftUI

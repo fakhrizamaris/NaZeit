@@ -1,6 +1,6 @@
 //
 //  ProgressSuccess.swift
-//  KamBing
+//  NazeitApp
 //
 //  Created by Fakhri Djamaris on 13/04/26.
 //
@@ -73,18 +73,31 @@ struct Screen6YourAdaptation: View {
                                    iconColor: .circadianTeal,
                                    trend: "↑")
                     } else {
-                        MetricCard(value: "\(appState.daysRemaining)d",
-                                   label: "Remaining",
-                                   icon: "calendar.badge.clock",
-                                   iconColor: .circadianTeal,
-                                   trend: nil)
+                        if appState.adaptationPercent >= 1.0 {
+                            MetricCard(value: "In Sync",
+                                       label: "Status",
+                                       icon: "checkmark.circle.fill",
+                                       iconColor: .circadianTeal,
+                                       trend: nil)
+                        } else {
+                            MetricCard(value: "\(appState.daysRemaining)d",
+                                       label: "Remaining",
+                                       icon: "calendar.badge.clock",
+                                       iconColor: .circadianTeal,
+                                       trend: nil)
+                        }
                     }
                 }
                 .padding(.horizontal, 24).padding(.bottom, 20)
                 
                 VStack(spacing: 8) {
-                    Text("Keep going — \(appState.daysRemaining) days left")
-                        .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                    if appState.adaptationPercent >= 1.0 {
+                        Text("Adaptation successful")
+                            .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                    } else {
+                        Text("Keep going — \(appState.daysRemaining) days left")
+                            .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                    }
                     
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
@@ -240,6 +253,8 @@ struct Screen7FullyAdapted: View {
                             appState.arrivalDate = Date().addingTimeInterval(3600 * 15)
                             appState.adaptationPercent = 0.0
                             appState.daysRemaining = 3
+                            appState.loadingPhaseDayIndex = 0
+                            appState.recoveryPhaseDayIndex = 0
                         }
                 } label: {
                     PrimaryBtn(title: "Plan next trip")

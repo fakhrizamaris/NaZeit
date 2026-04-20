@@ -1,6 +1,6 @@
 //
 //  CircadianComponents.swift
-//  KamBing
+//  NazeitApp
 //
 
 import SwiftUI

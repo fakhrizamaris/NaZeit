@@ -1,6 +1,6 @@
 //
 //  OnBoardingChoice.swift
-//  KamBing
+//  NazeitApp
 //
 //  Created by Fakhri Djamaris on 14/04/26.
 //

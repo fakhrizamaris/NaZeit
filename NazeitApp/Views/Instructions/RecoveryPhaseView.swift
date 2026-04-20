@@ -7,7 +7,6 @@ import SwiftUI
 
 struct RecoveryPhaseView: View {
     @EnvironmentObject var appState: AppState
-    @State private var selectedDayIndex: Int = 0 
     @State private var navigatetoDashboard: Bool = false
     
     let offsets = [1, 2, 3] // Days AFTER arrival
@@ -58,14 +57,14 @@ struct RecoveryPhaseView: View {
                         }
                         .padding(.top, 8)
                         
-                        DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: selectedDayIndex, activeColor: baseColor, dayLabelPrefix: "Day +")
+                        DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: appState.recoveryPhaseDayIndex, activeColor: baseColor, dayLabelPrefix: "Day +")
                             .padding(.horizontal, 24)
                         
                         VStack(spacing: 24) {
                             HeroSleepTargetView(
                                 title: "Tonight's Sleep Window",
-                                timeRange: sleepTargets[selectedDayIndex],
-                                shiftLabel: shifts[selectedDayIndex],
+                                timeRange: sleepTargets[appState.recoveryPhaseDayIndex],
+                                shiftLabel: shifts[appState.recoveryPhaseDayIndex],
                                 color: baseColor
                             )
                             .padding(.horizontal, 24)
@@ -89,13 +88,13 @@ struct RecoveryPhaseView: View {
                                     
                                     ProtocolCard(
                                         icon: "moon.fill", iconTint: .mint,
-                                        title: "Sleep Strictness", detail: "Go to bed exactly at \(sleepTargets[selectedDayIndex].prefix(5)) local time."
+                                        title: "Sleep Strictness", detail: "Go to bed exactly at \(sleepTargets[appState.recoveryPhaseDayIndex].prefix(5)) local time."
                                     )
                                 }
                                 .padding(.horizontal, 24)
                             }
                         }
-                        .id(selectedDayIndex)
+                        .id(appState.recoveryPhaseDayIndex)
                         .transition(.asymmetric(
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
@@ -109,42 +108,43 @@ struct RecoveryPhaseView: View {
                 HStack(spacing: 16) {
                     Button {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                            if selectedDayIndex > 0 { selectedDayIndex -= 1 }
+                            if appState.recoveryPhaseDayIndex > 0 { appState.recoveryPhaseDayIndex -= 1 }
                         } 
                     } label: {
                         Image(systemName: "arrow.left")
                             .font(.headline)
-                            .foregroundStyle(selectedDayIndex > 0 ? baseColor : Color(uiColor: .tertiaryLabel))
+                            .foregroundStyle(appState.recoveryPhaseDayIndex > 0 ? baseColor : Color(uiColor: .tertiaryLabel))
                             .frame(width: 56, height: 56)
                             .background(Color(uiColor: .secondarySystemBackground))
                             .clipShape(Circle())
                             .overlay(Circle().stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
-                            .shadow(color: Color.black.opacity(selectedDayIndex > 0 ? 0.05 : 0), radius: 8, y: 4)
+                            .shadow(color: Color.black.opacity(appState.recoveryPhaseDayIndex > 0 ? 0.05 : 0), radius: 8, y: 4)
                     }
-                    .disabled(selectedDayIndex == 0)
+                    .disabled(appState.recoveryPhaseDayIndex == 0)
                     
                     Button {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                            if selectedDayIndex < offsets.count - 1 { 
-                                selectedDayIndex += 1 
+                            if appState.recoveryPhaseDayIndex < offsets.count - 1 { 
+                                appState.recoveryPhaseDayIndex += 1 
                             } else {
+                                appState.adaptationPercent = 1.0
                                 navigatetoDashboard = true
                             }
                         }
                     } label: {
                         HStack(spacing: 8) {
-                            Text(selectedDayIndex == offsets.count - 1 ? "Start Recovery" : "Next Day")
-                            if selectedDayIndex < offsets.count - 1 {
+                            Text(appState.recoveryPhaseDayIndex == offsets.count - 1 ? "Start Recovery" : "Next Day")
+                            if appState.recoveryPhaseDayIndex < offsets.count - 1 {
                                 Image(systemName: "arrow.right")
                             } else {
                                 Image(systemName: "checkmark.circle.fill")
                             }
                         }
                         .font(.headline)
-                        .foregroundStyle(selectedDayIndex == offsets.count - 1 ? .white : Color(uiColor: .label))
+                        .foregroundStyle(appState.recoveryPhaseDayIndex == offsets.count - 1 ? .white : Color(uiColor: .label))
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(selectedDayIndex == offsets.count - 1 ? baseColor : Color(uiColor: .secondarySystemBackground))
+                        .background(appState.recoveryPhaseDayIndex == offsets.count - 1 ? baseColor : Color(uiColor: .secondarySystemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 100, style: .continuous))
                         .overlay(RoundedRectangle(cornerRadius: 100, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
                         .shadow(color: Color.black.opacity(0.05), radius: 8, y: 4)
