@@ -96,7 +96,8 @@ struct OnboardingChoice: View {
                 subtitle: "Automatic & Highly accurate",
                 detail: "Sync with Apple Watch and proceed to trip setup.",
                 tint: Color.teal,
-                badge: "Recommended"
+                badge: "Recommended",
+                badgeIcon: "star.fill"
             )
         }
         .simultaneousGesture(TapGesture().onEnded { appState.inputMethod = .watch })
@@ -112,7 +113,8 @@ struct OnboardingChoice: View {
                 subtitle: "Without Wearable",
                 detail: "Manually enter your typical sleep schedule.",
                 tint: Color.indigo,
-                badge: "Alternative"
+                badge: "Alternative",
+                badgeIcon: "arrow.triangle.branch"
             )
         }
         .simultaneousGesture(TapGesture().onEnded { appState.inputMethod = .manual })
@@ -205,11 +207,12 @@ struct ChoiceCard: View {
     let detail: String
     let tint: Color
     let badge: String
+    let badgeIcon: String
     
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack {
-                Label(badge, systemImage: "sparkles")
+                Label(badge, systemImage: badgeIcon)
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(tint)
