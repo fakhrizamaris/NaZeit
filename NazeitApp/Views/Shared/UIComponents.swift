@@ -8,7 +8,7 @@ extension Color {
 
 struct PrimaryBtn: View {
     let title: String
-
+    
     var body: some View {
         Text(title)
             .font(.body)
@@ -30,7 +30,7 @@ struct PrimaryBtn: View {
 
 private struct InstructionCardModifier: ViewModifier {
     var isAdjusted: Bool
-
+    
     func body(content: Content) -> some View {
         content
             .padding(28)

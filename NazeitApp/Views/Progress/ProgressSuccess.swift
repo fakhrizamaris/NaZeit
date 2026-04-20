@@ -12,28 +12,28 @@ struct Screen6YourAdaptation: View {
     @EnvironmentObject var appState: AppState
     @State private var ringProgress: Double = 0
     @State private var appeared = false
-
+    
     var body: some View {
         ZStack {
             Color(.systemBackground).ignoresSafeArea()
-
+            
             VStack(spacing: 0) {
-
-                Text("Your adaptation")
+                
+                Text("Your Adaptation")
                     .font(.system(.title, design: .rounded).weight(.bold))
                     .foregroundStyle(Color(uiColor: .label))
                     .padding(.top, 24).padding(.bottom, 8)
-
-                Text("Based on your \(appState.inputMethod == .watch ? "Apple Watch data" : "sleep schedule")")
+                
+                Text("Based on your \(appState.inputMethod == .watch ? "Apple Watch data" : "Sleep Schedule")")
                     .font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
                     .padding(.bottom, 32)
-
+                
                 // MARK: Progress Ring
                 ZStack {
                     Circle()
                         .stroke(Color(.systemGray5), lineWidth: 14)
                         .frame(width: 160, height: 160)
-
+                    
                     Circle()
                         .trim(from: 0, to: ringProgress)
                         .stroke(AngularGradient(
@@ -48,21 +48,21 @@ struct Screen6YourAdaptation: View {
                         ), style: StrokeStyle(lineWidth: 14, lineCap: .round))
                         .frame(width: 160, height: 160)
                         .rotationEffect(.degrees(-90))
-
+                    
                     VStack(spacing: 2) {
                         Text("\(Int(appState.adaptationPercent * 100))%")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
                             .foregroundStyle(Color(uiColor: .label))
-                        Text("adapted")
+                        Text("Adapted")
                             .font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
                     }
                 }
                 .padding(.bottom, 32)
-
+                
                 // MARK: Metric Cards
                 HStack(spacing: 12) {
                     MetricCard(value: String(format: "%.1f", appState.sleepHours) + "h",
-                               label: "sleep",
+                               label: "Sleep",
                                icon: "moon.zzz.fill",
                                iconColor: Color.indigo,
                                trend: nil)
@@ -74,24 +74,24 @@ struct Screen6YourAdaptation: View {
                                    trend: "↑")
                     } else {
                         MetricCard(value: "\(appState.daysRemaining)d",
-                                   label: "remaining",
+                                   label: "Remaining",
                                    icon: "calendar.badge.clock",
                                    iconColor: .circadianTeal,
                                    trend: nil)
                     }
                 }
                 .padding(.horizontal, 24).padding(.bottom, 20)
-
+                
                 VStack(spacing: 8) {
                     Text("Keep going — \(appState.daysRemaining) days left")
                         .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
-
+                    
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             Capsule().fill(Color(.systemGray5)).frame(height: 4)
                             Capsule()
                                 .fill(LinearGradient(colors: [Color.cyan, .circadianTeal],
-                                                      startPoint: .leading, endPoint: .trailing))
+                                                     startPoint: .leading, endPoint: .trailing))
                                 .frame(width: geo.size.width * ringProgress, height: 4)
                         }
                     }
@@ -99,24 +99,42 @@ struct Screen6YourAdaptation: View {
                     .padding(.horizontal, 40)
                 }
                 .padding(.bottom, 32)
-
+                
                 Spacer()
-
-                NavigationLink {
-                    Screen7FullyAdapted().environmentObject(appState)
-                } label: {
-                    HStack(spacing: 8) {
-                        Text("See today's next instruction")
-                        Image(systemName: "arrow.right").fontWeight(.semibold)
+                
+                if appState.adaptationPercent >= 1.0 {
+                    NavigationLink {
+                        Screen7FullyAdapted().environmentObject(appState)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Text("View Journey Result")
+                            Image(systemName: "flag.checkered").fontWeight(.semibold)
+                        }
+                        .font(.body).fontWeight(.semibold).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity).padding(.vertical, 16)
+                        .background(LinearGradient(colors: [Color.mint, Color(uiColor: .nazeitTeal)],
+                                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                                    in: RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: Color.mint.opacity(0.3), radius: 10, y: 5)
                     }
-                    .font(.body).fontWeight(.semibold).foregroundStyle(.white)
-                    .frame(maxWidth: .infinity).padding(.vertical, 16)
-                    .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing),
-                                in: RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+                    .padding(.horizontal, 24).padding(.bottom, 32)
+                } else {
+                    NavigationLink {
+                        Screen3SleepNow().environmentObject(appState)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Text("See today's next instruction")
+                            Image(systemName: "arrow.right").fontWeight(.semibold)
+                        }
+                        .font(.body).fontWeight(.semibold).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity).padding(.vertical, 16)
+                        .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
+                                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                                    in: RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+                    }
+                    .padding(.horizontal, 24).padding(.bottom, 32)
                 }
-                .padding(.horizontal, 24).padding(.bottom, 32)
             }
             .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 16)
         }
@@ -136,27 +154,27 @@ struct Screen7FullyAdapted: View {
     @State private var showText   = false
     @State private var ringScale: CGFloat = 0.4
     @State private var particlesOn = false
-
+    
     var body: some View {
         ZStack {
             if particlesOn { SuccessParticles() }
-
+            
             VStack(spacing: 0) {
                 Spacer()
-
+                
                 ZStack {
                     Circle()
                         .fill(Color.circadianTeal.opacity(0.15))
                         .frame(width: 140)
                         .scaleEffect(ringScale)
                         .animation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.1), value: ringScale)
-
+                    
                     Circle()
                         .fill(Color.circadianTeal.opacity(0.25))
                         .frame(width: 104)
                         .scaleEffect(showCheck ? 1.0 : 0.2)
                         .animation(.spring(response: 0.5, dampingFraction: 0.65), value: showCheck)
-
+                    
                     Image(systemName: "checkmark")
                         .font(.system(.largeTitle).weight(.semibold))
                         .foregroundStyle(Color.circadianTeal)
@@ -165,20 +183,20 @@ struct Screen7FullyAdapted: View {
                         .animation(.spring(response: 0.5, dampingFraction: 0.5, blendDuration: 0).delay(0.15), value: showCheck)
                 }
                 .padding(.bottom, 32)
-
+                
                 VStack(spacing: 8) {
                     Text("Fully adapted!")
                         .font(.system(.title, design: .rounded).weight(.bold))
                         .foregroundStyle(Color(uiColor: .label))
                         .opacity(showText ? 1 : 0).offset(y: showText ? 0 : 12)
                         .animation(.spring(response: 0.5).delay(0.25), value: showText)
-
+                    
                     Text("Body clock is in sync with local time zone")
                         .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.center)
                         .opacity(showText ? 1 : 0).offset(y: showText ? 0 : 8)
                         .animation(.spring(response: 0.5).delay(0.35), value: showText)
-
+                    
                     HStack(spacing: 14) {
                         Label("3 days", systemImage: "calendar").font(.caption2)
                         Divider().frame(height: 12)
@@ -191,9 +209,9 @@ struct Screen7FullyAdapted: View {
                     .animation(.spring(response: 0.5).delay(0.45), value: showText)
                 }
                 .padding(.horizontal, 32)
-
+                
                 Spacer()
-
+                
                 NavigationLink {
                     YourTrip()
                         .environmentObject(appState)

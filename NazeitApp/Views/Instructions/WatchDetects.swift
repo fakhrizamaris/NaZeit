@@ -12,12 +12,12 @@ struct ScreenNewA_WatchDetects: View {
     @State private var appeared      = false
     
     @ScaledMetric(relativeTo: .largeTitle) private var watchIconSize: CGFloat = 44
-
+    
     var body: some View {
         ZStack {
             VStack(spacing: 28) {
                 Spacer()
-
+                
                 ZStack {
                     Circle()
                         .fill(Color.mint.opacity(0.12))
@@ -27,22 +27,22 @@ struct ScreenNewA_WatchDetects: View {
                         .foregroundStyle(Color.mint)
                         .symbolEffect(.pulse)
                 }
-
+                
                 VStack(spacing: 12) {
                     Text(appState.inputMethod == .watch
                          ? "Sleep detected at 01:30 AM"
                          : "Late sleep detected")
-                        .font(.system(.title2, design: .rounded).weight(.bold))
-                        .foregroundStyle(Color(uiColor: .label))
-                        .multilineTextAlignment(.center)
+                    .font(.system(.title2, design: .rounded).weight(.bold))
+                    .foregroundStyle(Color(uiColor: .label))
+                    .multilineTextAlignment(.center)
                     Text(appState.inputMethod == .watch
                          ? "That's later than your recommended window (22:30)"
                          : "You slept later than your planned schedule (22:30)")
-                        .font(.body).foregroundStyle(Color(uiColor: .secondaryLabel))
-                        .multilineTextAlignment(.center)
+                    .font(.body).foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .multilineTextAlignment(.center)
                 }
                 .padding(.horizontal, 36)
-
+                
                 if isRecalculating {
                     HStack(spacing: 5) {
                         Image(systemName: "arrow.triangle.2.circlepath")
@@ -52,7 +52,7 @@ struct ScreenNewA_WatchDetects: View {
                                        value: isRecalculating)
                         Text("Recalculating your plan" + String(repeating: ".", count: dotCount))
                             .font(.subheadline).foregroundStyle(Color.mint)
-                      
+                        
                     }
                     .frame(maxWidth: .infinity)
                     .onAppear {
@@ -67,9 +67,9 @@ struct ScreenNewA_WatchDetects: View {
                         }
                     }
                 }
-
+                
                 Spacer()
-
+                
                 if !isRecalculating {
                     VStack(spacing: 12) {
                         HStack(spacing: 6) {
@@ -77,7 +77,7 @@ struct ScreenNewA_WatchDetects: View {
                             Text("New plan ready").font(.caption).fontWeight(.medium).foregroundStyle(Color(uiColor: .secondaryLabel))
                         }
                         .font(.caption2)
-
+                        
                         NavigationLink {
                             ScreenNewB_RecalculatedInstruction().environmentObject(appState)
                         } label: {
@@ -87,7 +87,7 @@ struct ScreenNewA_WatchDetects: View {
                     .padding(.horizontal, 24)
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
-
+                
                 if !isRecalculating { Spacer(minLength: 32) } else { Color.clear.frame(height: 120) }
             }
         }

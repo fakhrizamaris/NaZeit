@@ -111,11 +111,11 @@ struct MetricCard: View {
     let icon: String
     let iconColor: Color
     let trend: String?
-
+    
     private var trendColor: Color {
         Color(uiColor: .nazeitTeal)
     }
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             ZStack {
@@ -192,7 +192,7 @@ struct DayProgressTracker: View {
                             Text("Day -\(offsets[index])")
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(index == selectedIndex ? activeColor : Color(uiColor: .secondaryLabel))
-                                
+                            
                             Text(dateProvider(offsets[index]))
                                 .font(.caption2)
                                 .foregroundStyle(Color(uiColor: .tertiaryLabel))
@@ -318,7 +318,7 @@ struct SectionCard<Content: View>: View {
     let icon: String
     let iconColor: Color
     @ViewBuilder let content: () -> Content
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
@@ -343,7 +343,7 @@ struct SectionCard<Content: View>: View {
 struct TimeRow: View {
     let label: String
     let isExpanded: Bool
-
+    
     var body: some View {
         HStack {
             Text(label).font(.body).foregroundStyle(Color(uiColor: .label))

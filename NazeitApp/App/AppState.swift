@@ -23,6 +23,10 @@ class AppState: ObservableObject {
     @Published var fromTimeZone: TimeZone = .current
     @Published var toTimeZone: TimeZone = .current
     
+    @Published var hasTransit: Bool = false
+    @Published var transitCity: String = ""
+    @Published var layoverDuration: Int = 2
+    
     @Published var departureDate: Date = Date()
     @Published var arrivalDate: Date = Date().addingTimeInterval(3600 * 15)
     @Published var adaptationPercent: Double = 0.65
@@ -35,16 +39,16 @@ class AppState: ObservableObject {
 extension UIColor {
     static let nazeitTeal = UIColor { trait in
         return trait.userInterfaceStyle == .dark ?
-            UIColor(red: 0.10, green: 0.50, blue: 0.38, alpha: 1.0) :
-            UIColor(red: 0.12, green: 0.62, blue: 0.52, alpha: 1.0)
+        UIColor(red: 0.10, green: 0.50, blue: 0.38, alpha: 1.0) :
+        UIColor(red: 0.12, green: 0.62, blue: 0.52, alpha: 1.0)
     }
     
     static let circadianTeal = UIColor.nazeitTeal
     
     static let nazeitBackground = UIColor { trait in
         return trait.userInterfaceStyle == .dark ?
-            UIColor(red: 0.04, green: 0.04, blue: 0.16, alpha: 1.0) :
-            UIColor(red: 0.96, green: 0.97, blue: 1.00, alpha: 1.0)
+        UIColor(red: 0.04, green: 0.04, blue: 0.16, alpha: 1.0) :
+        UIColor(red: 0.96, green: 0.97, blue: 1.00, alpha: 1.0)
     }
 }
 

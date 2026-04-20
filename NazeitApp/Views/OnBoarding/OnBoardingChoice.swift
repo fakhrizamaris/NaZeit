@@ -12,14 +12,14 @@ struct OnboardingChoice: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showContent = false
     @State private var glowAnimated = false
-
+    
     private var usesVerticalCards: Bool { horizontalSizeClass == .compact }
     
     var body: some View {
         NavigationStack {
             ZStack {
                 OnboardingChoiceBackgroundView(glowAnimated: glowAnimated)
-
+                
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         StepIndicatorView(step: 1, totalSteps: 3)
@@ -29,14 +29,14 @@ struct OnboardingChoice: View {
                         HeaderSectionView()
                             .opacity(showContent ? 1 : 0)
                             .offset(y: showContent ? 0 : 20)
-
+                        
                         VStack(alignment: .leading, spacing: 16) {
                             Text("Select input method")
                                 .font(.callout)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 .padding(.horizontal, 24)
-
+                            
                             Group {
                                 if usesVerticalCards {
                                     VStack(spacing: 16) {
@@ -55,7 +55,7 @@ struct OnboardingChoice: View {
                         .padding(.top, 32)
                         .opacity(showContent ? 1 : 0)
                         .offset(y: showContent ? 0 : 30)
-
+                        
                         HStack(spacing: 8) {
                             Image(systemName: "shield.checkered")
                                 .imageScale(.large)
@@ -85,7 +85,7 @@ struct OnboardingChoice: View {
             showContent = true
         }
     }
-
+    
     private var watchChoice: some View {
         NavigationLink {
             ConnectAppleWatch().environmentObject(appState)
@@ -101,7 +101,7 @@ struct OnboardingChoice: View {
         }
         .simultaneousGesture(TapGesture().onEnded { appState.inputMethod = .watch })
     }
-
+    
     private var manualChoice: some View {
         NavigationLink {
             ManualSetup().environmentObject(appState)
@@ -176,18 +176,18 @@ struct HeaderSectionView: View {
                     .frame(width: 72, height: 72)
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
-
+            
             VStack(spacing: 12) {
                 Text("NAZEIT")
                     .font(.system(.largeTitle, design: .rounded).weight(.bold))
                     .tracking(8)
                     .foregroundStyle(Color(uiColor: .label))
-
+                
                 Text("Master your biological time")
                     .font(.title3)
                     .fontWeight(.semibold)
                     .foregroundStyle(Color(uiColor: .label))
-
+                
                 Text("Choose your data source. We will tailor a step-by-step time zone adaptation guide.")
                     .font(.body)
                     .multilineTextAlignment(.center)
@@ -223,13 +223,13 @@ struct ChoiceCard: View {
                     .font(.body.weight(.semibold))
                     .foregroundStyle(Color(uiColor: .tertiaryLabel))
             }
-
+            
             Spacer(minLength: 4)
-
+            
             Image(systemName: icon)
                 .font(.title)
                 .foregroundStyle(tint)
-
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)

@@ -19,7 +19,7 @@ struct LoadingPhaseView: View {
     let shifts = ["-1 Hour Shift", "-2 Hour Shift", "-3 Hour Shift"]
     
     private var baseColor: Color { Color(uiColor: .nazeitTeal) }
-
+    
     private func dateString(for offset: Int) -> String {
         let date = Calendar.current.date(byAdding: .day, value: -offset, to: appState.departureDate) ?? Date()
         let f = DateFormatter()
@@ -41,7 +41,7 @@ struct LoadingPhaseView: View {
                     .frame(maxWidth: 400)
                     .blur(radius: 120)
                     .offset(x: -80, y: -200)
-
+                
                 VStack(spacing: 0) {
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
@@ -168,7 +168,9 @@ struct LoadingPhaseView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(isPresented: $navigatetoDashboard) {
-                Screen3SleepNow()
+                // [UX Routing]: Mengarahkan pengguna ke halaman Beranda/Dashboard utama (Screen6YourAdaptation), karena setelah menyelesaikan jadwal pra-penerbangan (Pre-flight), pengguna masih berada di rumah. Sangat salah jika langsung dilempar ke Screen3SleepNow yang merupakan instruksi spesifik ketika sudah berada di dalam pesawat.
+                Screen6YourAdaptation()
+                    .environmentObject(appState)
             }
         }
     }

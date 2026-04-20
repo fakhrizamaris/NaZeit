@@ -10,7 +10,7 @@ struct ManualSetup: View {
     @State private var showBedtimePicker  = false
     @State private var showWakePicker     = false
     @State private var appeared           = false
-
+    
     private var sleepDuration: Double {
         let wake = appState.preferredWakeTime.timeIntervalSinceReferenceDate
         var bed  = appState.preferredBedtime.timeIntervalSinceReferenceDate
@@ -18,20 +18,20 @@ struct ManualSetup: View {
         let diff = (wake - bed) / 3600
         return max(0, min(12, diff))
     }
-
+    
     private func timeString(_ date: Date) -> String {
         let f = DateFormatter()
         f.timeStyle = .short
         return f.string(from: date)
     }
-
+    
     var body: some View {
         ZStack {
             OnboardingChoiceBackgroundView(glowAnimated: false)
-
+            
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-
+                    
                     HStack {
                         Spacer()
                         StepIndicatorView(step: 2, totalSteps: 3)
@@ -40,18 +40,18 @@ struct ManualSetup: View {
                     .padding(.top, 12)
                     .padding(.bottom, 24)
                     .opacity(appeared ? 1 : 0)
-
+                    
                     // MARK: Header
                     VStack(alignment: .leading, spacing: 8) {
                         Image(systemName: "hand.tap.fill")
                             .font(.largeTitle.weight(.light))
                             .foregroundStyle(Color.indigo)
                             .padding(.bottom, 8)
-                            
+                        
                         Text("Manual Setup")
                             .font(.system(.title2, design: .rounded).weight(.bold))
                             .foregroundStyle(Color(uiColor: .label))
-                            
+                        
                         Text("Enter your daily sleep schedule so we can provide accurate adaptation instructions.")
                             .font(.body)
                             .foregroundStyle(Color(uiColor: .secondaryLabel))
@@ -60,7 +60,7 @@ struct ManualSetup: View {
                     .padding(.bottom, 32)
                     .opacity(appeared ? 1 : 0)
                     .offset(y: appeared ? 0 : 20)
-
+                    
                     // MARK: Bedtime Picker
                     SectionCard(title: "Usual Bedtime", icon: "moon.fill", iconColor: .indigo) {
                         Button {
@@ -72,17 +72,17 @@ struct ManualSetup: View {
                         if showBedtimePicker {
                             DatePicker("", selection: $appState.preferredBedtime,
                                        displayedComponents: .hourAndMinute)
-                                .datePickerStyle(.wheel)
-                                .labelsHidden()
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                                .onChange(of: appState.preferredBedtime) { _, _ in
-                                    appState.sleepHours = sleepDuration
-                                }
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                            .onChange(of: appState.preferredBedtime) { _, _ in
+                                appState.sleepHours = sleepDuration
+                            }
                         }
                     }
                     .padding(.horizontal, 24).padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
-
+                    
                     // MARK: Wake Time Picker
                     SectionCard(title: "Usual Wake Time", icon: "sun.horizon.fill", iconColor: Color.cyan) {
                         Button {
@@ -94,30 +94,30 @@ struct ManualSetup: View {
                         if showWakePicker {
                             DatePicker("", selection: $appState.preferredWakeTime,
                                        displayedComponents: .hourAndMinute)
-                                .datePickerStyle(.wheel)
-                                .labelsHidden()
-                                .transition(.opacity.combined(with: .move(edge: .top)))
-                                .onChange(of: appState.preferredWakeTime) { _, _ in
-                                    appState.sleepHours = sleepDuration
-                                }
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                            .onChange(of: appState.preferredWakeTime) { _, _ in
+                                appState.sleepHours = sleepDuration
+                            }
                         }
                     }
                     .padding(.horizontal, 24).padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
-
+                    
                     // MARK: Sleep Hours
                     SectionCard(title: "Calculated Sleep", icon: "clock.fill", iconColor: Color(uiColor: .nazeitTeal)) {
                         HStack {
                             Text(String(format: "%.1f hours", sleepDuration))
                                 .font(.title3).fontWeight(.semibold)
                                 .foregroundStyle(Color(uiColor: .label))
-                                
+                            
                             Spacer()
                             
                             let qualityColor: Color = sleepDuration >= 7
-                                ? Color(uiColor: .nazeitTeal)
-                                : (sleepDuration >= 6 ? Color.mint : Color.cyan.opacity(0.8))
-
+                            ? Color(uiColor: .nazeitTeal)
+                            : (sleepDuration >= 6 ? Color.mint : Color.cyan.opacity(0.8))
+                            
                             Text(sleepDuration >= 7 ? "Good" : sleepDuration >= 6 ? "Fair" : "Low")
                                 .font(.caption).fontWeight(.bold)
                                 .foregroundStyle(qualityColor)
@@ -128,7 +128,7 @@ struct ManualSetup: View {
                     }
                     .padding(.horizontal, 24).padding(.bottom, 40)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
-
+                    
                     // MARK: CTA
                     NavigationLink {
                         YourTrip().environmentObject(appState)

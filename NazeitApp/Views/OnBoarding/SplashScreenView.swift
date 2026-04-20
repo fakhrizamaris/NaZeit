@@ -25,7 +25,7 @@ struct SplashScreenView: View {
             triggerAnimations()
         }
     }
-
+    
     private func triggerAnimations() {
         withAnimation(.easeInOut(duration: 3.5).repeatForever(autoreverses: true)) {
             animateBackground = true

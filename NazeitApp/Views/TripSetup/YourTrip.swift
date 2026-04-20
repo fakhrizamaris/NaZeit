@@ -9,7 +9,7 @@ struct YourTrip: View {
     
     @State private var isGeocodingTo   = false
     @State private var isGeocodingFrom = false
-
+    
     private var isValid: Bool { !appState.fromCity.isEmpty && !appState.toCity.isEmpty }
     private var dateLabel: String {
         let f = DateFormatter()
@@ -32,17 +32,17 @@ struct YourTrip: View {
         let toSeconds = appState.toTimeZone.secondsFromGMT(for: appState.arrivalDate)
         return (toSeconds - fromSeconds) / 3600
     }
-
+    
     private var baseColor: Color { Color(uiColor: .nazeitTeal) }
-
+    
     var body: some View {
         ZStack {
             OnboardingChoiceBackgroundView(glowAnimated: false)
                 .onTapGesture { hideKeyboard() }
-
+            
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-
+                    
                     HStack {
                         Spacer()
                         StepIndicatorView(step: 3, totalSteps: 3)
@@ -51,7 +51,7 @@ struct YourTrip: View {
                     .padding(.top, 12)
                     .padding(.bottom, 24)
                     .opacity(appeared ? 1 : 0)
-
+                    
                     // MARK: Header
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 6) {
@@ -67,17 +67,17 @@ struct YourTrip: View {
                     }
                     .padding(.horizontal, 24).padding(.bottom, 32)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
-
+                    
                     // MARK: From
                     TripField(label: "From", placeholder: "e.g. Jakarta (JKT)", text: $appState.fromCity, tintColor: baseColor)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
-
+                    
                     // MARK: To
                     TripField(label: "To", placeholder: "e.g. Los Angeles (LAX)", text: $appState.toCity, tintColor: baseColor)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
-
+                    
                     // MARK: Departure
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Departure Date & Time")
@@ -116,14 +116,14 @@ struct YourTrip: View {
                         if showDatePicker {
                             DatePicker("", selection: $appState.departureDate,
                                        in: Date()..., displayedComponents: [.date, .hourAndMinute])
-                                .datePickerStyle(.wheel).labelsHidden()
-                                .padding(.horizontal, 24)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
+                            .datePickerStyle(.wheel).labelsHidden()
+                            .padding(.horizontal, 24)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                     }
                     .padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
-
+                    
                     // MARK: Arrival
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Arrival Date & Time (Local)")
@@ -162,14 +162,63 @@ struct YourTrip: View {
                         if showArrivalDatePicker {
                             DatePicker("", selection: $appState.arrivalDate,
                                        in: appState.departureDate..., displayedComponents: [.date, .hourAndMinute])
-                                .datePickerStyle(.wheel).labelsHidden()
-                                .padding(.horizontal, 24)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
+                            .datePickerStyle(.wheel).labelsHidden()
+                            .padding(.horizontal, 24)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                     }
                     .padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
-
+                    
+                    // MARK: Transit Option
+                    VStack(alignment: .leading, spacing: 12) {
+                        Toggle(isOn: $appState.hasTransit.animation(.spring(response: 0.4))) {
+                            Text("Add Transit / Layover")
+                                .font(.footnote).fontWeight(.semibold)
+                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        }
+                        .tint(baseColor)
+                        .padding(.horizontal, 28)
+                        
+                        if appState.hasTransit {
+                            VStack(spacing: 12) {
+                                HStack {
+                                    Image(systemName: "building.2").font(.title3).foregroundStyle(Color.mint)
+                                        .frame(width: 32)
+                                    TextField("Transit City (e.g. Dubai)", text: $appState.transitCity)
+                                        .font(.body)
+                                        .foregroundStyle(Color(uiColor: .label))
+                                }
+                                .padding(.horizontal, 16).padding(.vertical, 14)
+                                .background(Color(uiColor: .secondarySystemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
+                                
+                                HStack {
+                                    Image(systemName: "hourglass").font(.title3).foregroundStyle(Color.mint)
+                                        .frame(width: 32)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Layover")
+                                            .font(.body).foregroundStyle(Color(uiColor: .label))
+                                        Text("\(appState.layoverDuration) hours")
+                                            .font(.footnote.weight(.medium)).foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    }
+                                    Spacer()
+                                    Stepper("", value: $appState.layoverDuration, in: 1...24)
+                                        .labelsHidden()
+                                }
+                                .padding(.horizontal, 16).padding(.vertical, 10)
+                                .background(Color(uiColor: .secondarySystemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
+                            }
+                            .padding(.horizontal, 24)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+                    }
+                    .padding(.bottom, 16)
+                    .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
+                    
                     if timezoneShift != 0 && !appState.toCity.isEmpty {
                         HStack(spacing: 8) {
                             if isGeocodingTo || isGeocodingFrom {
@@ -189,7 +238,7 @@ struct YourTrip: View {
                         .transition(.scale(scale: 0.95).combined(with: .opacity))
                         .animation(.spring, value: isGeocodingTo)
                     }
-
+                    
                     if isValid {
                         HStack(spacing: 12) {
                             Image(systemName: "sparkles")
@@ -208,7 +257,7 @@ struct YourTrip: View {
                         .padding(.horizontal, 24).padding(.bottom, 32)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
-
+                    
                     // MARK: CTA
                     NavigationLink {
                         LoadingPhaseView().environmentObject(appState)
@@ -303,8 +352,8 @@ private struct TripField: View {
     }
 }
 
-#Preview { 
-    NavigationStack { YourTrip().environmentObject(AppState()) } 
+#Preview {
+    NavigationStack { YourTrip().environmentObject(AppState()) }
 }
 
 // MARK: - Keyboard Dismissal Helper

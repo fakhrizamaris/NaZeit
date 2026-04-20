@@ -83,7 +83,7 @@ struct Screen5AvoidBrightLight: View {
         // MARK: Dual CTA
         VStack(spacing: 10) {
                     NavigationLink {
-                        Screen6YourAdaptation().environmentObject(appState)
+                        RecoveryPhaseView().environmentObject(appState) // End of normal instruction flow naturally goes to Recovery
                     } label: {
                         PrimaryBtn(title: "Done — lights dimmed ✓")
                     }

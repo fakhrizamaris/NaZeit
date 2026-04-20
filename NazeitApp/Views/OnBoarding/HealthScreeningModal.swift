@@ -24,20 +24,20 @@ struct HealthScreeningModal: View {
                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.center)
                 }
-                .padding(.top, 24) 
-
+                .padding(.top, 24)
+                
                 VStack(spacing: 12) {
                     ScreeningOptionRow(title: "Clinical Insomnia", icon: "moon.zzz", selected: $selectedCondition)
                     ScreeningOptionRow(title: "Elderly (>65 years)", icon: "figure.walk", selected: $selectedCondition)
                     ScreeningOptionRow(title: "Normal Sleep Pattern", icon: "checkmark.shield", selected: $selectedCondition)
                 }
-
+                
                 if let condition = selectedCondition, condition != "Normal Sleep Pattern" {
                     MedicalWarningView()
                 }
-
+                
                 Spacer(minLength: 16)
-
+                
                 Button {
                     isAccepted = true
                 } label: {

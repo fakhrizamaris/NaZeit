@@ -9,11 +9,11 @@ struct ConnectAppleWatch: View {
     @EnvironmentObject var appState: AppState
     @State private var isSynced    = false
     @State private var isAnimating = false
-
+    
     var body: some View {
         ZStack {
             OnboardingChoiceBackgroundView(glowAnimated: isAnimating)
-
+            
             VStack(spacing: 0) {
                 StepIndicatorView(step: 2, totalSteps: 3)
                     .padding(.top, 12)
@@ -22,19 +22,19 @@ struct ConnectAppleWatch: View {
                 
                 AnimatedWatchIcon(isAnimating: isAnimating, isSynced: isSynced)
                     .padding(.bottom, 40)
-
+                
                 Text(isSynced ? "Watch Connected!" : "Connect Apple Watch")
                     .font(.system(.title2, design: .rounded).weight(.bold))
                     .foregroundStyle(Color(uiColor: .label))
                     .contentTransition(.opacity)
                     .animation(.easeInOut(duration: 0.3), value: isSynced)
                     .padding(.bottom, 8)
-
+                
                 Text("We'll read your biometric data in real-time.")
                     .font(.body)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                     .padding(.bottom, 36)
-
+                
                 VStack(spacing: 8) {
                     WatchDataChip(icon: "heart.fill", label: "Heart Rate", value: "82 BPM", color: .pink, isSynced: isSynced)
                     WatchDataChip(icon: "waveform.path", label: "HRV Variability", value: "52 ms", color: Color(uiColor: .nazeitTeal), isSynced: isSynced)
@@ -42,7 +42,7 @@ struct ConnectAppleWatch: View {
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 44)
-
+                
                 Button {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                         isSynced = true
@@ -69,7 +69,7 @@ struct ConnectAppleWatch: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
                 .disabled(isSynced)
-
+                
                 NavigationLink {
                     YourTrip().environmentObject(appState)
                 } label: {
@@ -83,7 +83,7 @@ struct ConnectAppleWatch: View {
                 }
                 .disabled(!isSynced)
                 .animation(.easeInOut, value: isSynced)
-
+                
                 Spacer()
             }
         }
