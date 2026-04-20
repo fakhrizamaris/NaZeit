@@ -15,7 +15,7 @@ struct HealthScreeningModal: View {
         NavigationStack {
             VStack(spacing: 24) {
                 VStack(spacing: 10) {
-                    Text("Routine Check")
+                    Text("Health Profile")
                         .font(.system(.title2, design: .rounded).weight(.bold))
                         .foregroundStyle(Color(uiColor: .label))
                     

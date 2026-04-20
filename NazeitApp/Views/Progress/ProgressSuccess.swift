@@ -53,7 +53,7 @@ struct Screen6YourAdaptation: View {
                         Text("\(Int(appState.adaptationPercent * 100))%")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
                             .foregroundStyle(Color(uiColor: .label))
-                        Text("Adapted")
+                        Text(appState.adaptationPercent < 0.4 ? "Misaligned" : (appState.adaptationPercent < 1.0 ? "Adjusting" : "Aligned"))
                             .font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
                     }
                 }
