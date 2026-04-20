@@ -74,7 +74,7 @@ struct MedicalWarningView: View {
                     .font(.subheadline)
                     .fontWeight(.bold)
             }
-            .foregroundStyle(Color.mint)
+            .foregroundStyle(Color.orange)
             
             Text("Light exposure instructions may not be as effective because your biological clock has special characteristics.")
                 .font(.footnote)
@@ -83,11 +83,11 @@ struct MedicalWarningView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.mint.opacity(0.12))
+        .background(Color.yellow.opacity(0.10))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.mint.opacity(0.3), lineWidth: 1)
+                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
         )
         .transition(.scale(scale: 0.95).combined(with: .opacity))
     }

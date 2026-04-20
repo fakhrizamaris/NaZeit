@@ -10,6 +10,7 @@ import Combine
 import UIKit
 
 enum InputMethod { case watch, manual }
+enum TravelPhase { case preflight, inflight, postflight }
 
 class AppState: ObservableObject {
     @Published var inputMethod: InputMethod = .watch
@@ -30,6 +31,7 @@ class AppState: ObservableObject {
     @Published var departureDate: Date = Date()
     @Published var arrivalDate: Date = Date().addingTimeInterval(3600 * 15)
     @Published var adaptationPercent: Double = 0.65
+    @Published var travelPhase: TravelPhase = .inflight
     @Published var daysRemaining: Int = 2
     @Published var isSleepDisorder = false
     @Published var selectedDisorder = ""

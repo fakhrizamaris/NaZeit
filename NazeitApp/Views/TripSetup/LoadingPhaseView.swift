@@ -168,9 +168,9 @@ struct LoadingPhaseView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(isPresented: $navigatetoDashboard) {
-                // [UX Routing]: Mengarahkan pengguna ke halaman Beranda/Dashboard utama (Screen6YourAdaptation), karena setelah menyelesaikan jadwal pra-penerbangan (Pre-flight), pengguna masih berada di rumah. Sangat salah jika langsung dilempar ke Screen3SleepNow yang merupakan instruksi spesifik ketika sudah berada di dalam pesawat.
                 Screen6YourAdaptation()
                     .environmentObject(appState)
+                    .onAppear { appState.travelPhase = .inflight }
             }
         }
     }

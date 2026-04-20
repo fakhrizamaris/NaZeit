@@ -145,6 +145,7 @@ struct DayProgressTracker: View {
     let dateProvider: (Int) -> String
     var selectedIndex: Int
     let activeColor: Color
+    var dayLabelPrefix: String = "Day -"
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -189,7 +190,7 @@ struct DayProgressTracker: View {
                         }
                         
                         VStack(spacing: 2) {
-                            Text("Day -\(offsets[index])")
+                            Text("\(dayLabelPrefix)\(offsets[index])")
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(index == selectedIndex ? activeColor : Color(uiColor: .secondaryLabel))
                             

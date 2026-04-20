@@ -90,7 +90,7 @@ struct ScreenNewC_InFlightDeviated: View {
                 }
                 
                 NavigationLink {
-                    Screen4GetSunlight().environmentObject(appState)
+                    RecoveryPhaseView().environmentObject(appState)
                 } label: {
                     PrimaryBtn(title: "Got it")
                 }

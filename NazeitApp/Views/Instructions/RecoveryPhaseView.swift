@@ -58,7 +58,7 @@ struct RecoveryPhaseView: View {
                         }
                         .padding(.top, 8)
                         
-                        DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: selectedDayIndex, activeColor: baseColor)
+                        DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: selectedDayIndex, activeColor: baseColor, dayLabelPrefix: "Day +")
                             .padding(.horizontal, 24)
                         
                         VStack(spacing: 24) {
@@ -170,6 +170,7 @@ struct RecoveryPhaseView: View {
         .navigationDestination(isPresented: $navigatetoDashboard) {
             Screen6YourAdaptation()
                 .environmentObject(appState)
+                .onAppear { appState.travelPhase = .postflight }
         }
     }
 }

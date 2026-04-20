@@ -125,7 +125,7 @@ struct ScreenNewB_RecalculatedInstruction: View {
                 }
                 
                 NavigationLink {
-                    ScreenNewC_InFlightDeviated().environmentObject(appState)
+                    RecoveryPhaseView().environmentObject(appState)
                 } label: {
                     HStack(spacing: 8) {
                         Text("Got it — I'll do this now")

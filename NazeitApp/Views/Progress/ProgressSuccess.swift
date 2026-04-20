@@ -118,13 +118,13 @@ struct Screen6YourAdaptation: View {
                         .shadow(color: Color.mint.opacity(0.3), radius: 10, y: 5)
                     }
                     .padding(.horizontal, 24).padding(.bottom, 32)
-                } else {
+                } else if appState.travelPhase == .inflight {
                     NavigationLink {
                         Screen3SleepNow().environmentObject(appState)
                     } label: {
                         HStack(spacing: 8) {
-                            Text("See today's next instruction")
-                            Image(systemName: "arrow.right").fontWeight(.semibold)
+                            Text("Start in-flight protocol")
+                            Image(systemName: "airplane").fontWeight(.semibold)
                         }
                         .font(.body).fontWeight(.semibold).foregroundStyle(.white)
                         .frame(maxWidth: .infinity).padding(.vertical, 16)
@@ -132,6 +132,22 @@ struct Screen6YourAdaptation: View {
                                                    startPoint: .topLeading, endPoint: .bottomTrailing),
                                     in: RoundedRectangle(cornerRadius: 16))
                         .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+                    }
+                    .padding(.horizontal, 24).padding(.bottom, 32)
+                } else {
+                    NavigationLink {
+                        RecoveryPhaseView().environmentObject(appState)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Text("Continue recovery protocol")
+                            Image(systemName: "figure.walk").fontWeight(.semibold)
+                        }
+                        .font(.body).fontWeight(.semibold).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity).padding(.vertical, 16)
+                        .background(LinearGradient(colors: [Color.cyan, Color(uiColor: .nazeitTeal)],
+                                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                                    in: RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: Color.cyan.opacity(0.20), radius: 10, y: 5)
                     }
                     .padding(.horizontal, 24).padding(.bottom, 32)
                 }
