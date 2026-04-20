@@ -110,6 +110,7 @@ struct ScreeningOptionRow: View {
                 Image(systemName: icon)
                     .font(.title2)
                     .frame(width: 32)
+                    .foregroundStyle(isSelected ? Color(uiColor: .nazeitTeal) : Color(uiColor: .secondaryLabel))
                 
                 Text(title)
                     .font(.body)

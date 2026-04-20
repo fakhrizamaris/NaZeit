@@ -69,12 +69,12 @@ struct YourTrip: View {
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
                     // MARK: From
-                    TripField(label: "From (City Name)", placeholder: "e.g. Batam", text: $appState.fromCity, tintColor: baseColor)
+                    SearchableTripField(label: "From (City Name)", placeholder: "e.g. Batam", text: $appState.fromCity, tintColor: baseColor)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
                     // MARK: To
-                    TripField(label: "To (City Name)", placeholder: "e.g. Los Angeles", text: $appState.toCity, tintColor: baseColor)
+                    SearchableTripField(label: "To (City Name)", placeholder: "e.g. Los Angeles", text: $appState.toCity, tintColor: baseColor)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
@@ -100,6 +100,7 @@ struct YourTrip: View {
                                     }
                                 } icon: {
                                     Image(systemName: "airplane.departure")
+                                        .foregroundStyle(Color(.nazeitTeal))
                                 }
                                 .font(.body)
                                 .foregroundStyle(Color(uiColor: .label))
@@ -147,6 +148,7 @@ struct YourTrip: View {
                                     }
                                 } icon: {
                                     Image(systemName: "airplane.arrival")
+                                        .foregroundStyle(Color(.nazeitTeal))
                                 }
                                 .font(.body)
                                 .foregroundStyle(Color(uiColor: .label))
@@ -325,11 +327,48 @@ struct YourTrip: View {
     }
 }
 
-private struct TripField: View {
+// private struct TripField: View {
+//     let label: String
+//     let placeholder: String
+//     @Binding var text: String
+//     let tintColor: Color
+    
+//     var body: some View {
+//         VStack(alignment: .leading, spacing: 8) {
+//             Text(label)
+//                 .font(.footnote).fontWeight(.semibold)
+//                 .foregroundStyle(Color(uiColor: .secondaryLabel))
+//                 .padding(.horizontal, 4)
+            
+//             TextField(placeholder, text: $text)
+//                 .font(.body)
+//                 .foregroundStyle(Color(uiColor: .label))
+//                 .frame(height: 52)
+//                 .padding(.horizontal, 16)
+//                 .background(Color(uiColor: .secondarySystemBackground))
+//                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+//                 .overlay(
+//                     RoundedRectangle(cornerRadius: 16, style: .continuous)
+//                         .stroke(text.isEmpty ? Color(uiColor: .quaternaryLabel) : tintColor.opacity(0.6), lineWidth: text.isEmpty ? 0.5 : 1.5)
+//                 )
+//                 .autocorrectionDisabled()
+//                 .textInputAutocapitalization(.words)
+//                 .animation(.spring(response: 0.3), value: text.isEmpty)
+//         }
+//     }
+// }
+
+private struct SearchableTripField: View {
     let label: String
     let placeholder: String
     @Binding var text: String
     let tintColor: Color
+    
+    // Ini mesin yang kamu rakit di Misi 1:
+    @StateObject private var searchService = LocationSearchService()
+    
+    // Variabel bawaan Apple untuk nge-detect apakah keyboard lagi ngetik di kotak ini
+    @FocusState private var isFocused: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -338,7 +377,9 @@ private struct TripField: View {
                 .foregroundStyle(Color(uiColor: .secondaryLabel))
                 .padding(.horizontal, 4)
             
-            TextField(placeholder, text: $text)
+            // Kotak Input
+            TextField(placeholder, text: $searchService.searchQuery)
+                .focused($isFocused)
                 .font(.body)
                 .foregroundStyle(Color(uiColor: .label))
                 .frame(height: 52)
@@ -347,14 +388,62 @@ private struct TripField: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(text.isEmpty ? Color(uiColor: .quaternaryLabel) : tintColor.opacity(0.6), lineWidth: text.isEmpty ? 0.5 : 1.5)
+                        .stroke(searchService.searchQuery.isEmpty ? Color(uiColor: .quaternaryLabel) : tintColor.opacity(0.6), lineWidth: searchService.searchQuery.isEmpty ? 0.5 : 1.5)
                 )
                 .autocorrectionDisabled()
-                .textInputAutocapitalization(.words)
-                .animation(.spring(response: 0.3), value: text.isEmpty)
+                // Menyinkronkan ketikan ke otak aplikasi (AppState)
+                .onChange(of: searchService.searchQuery) { newValue in
+                    text = newValue
+                }
+                .onAppear {
+                    searchService.searchQuery = text
+                }
+            
+            // Dropdown List (Akan muncul SECARA AJAIB pas lagi ngetik)
+            if isFocused && !searchService.searchQuery.isEmpty && !searchService.searchResults.isEmpty {
+                VStack(spacing: 0) {
+                    ForEach(searchService.searchResults, id: \.self) { result in
+                        Button {
+                            // Kalau user nge-klik kota tebakan Apple
+                            searchService.searchQuery = result.title // e.g. "Los Angeles"
+                            text = result.title
+                            isFocused = false // Tutup keyboard
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(result.title) // Nama kota
+                                    .font(.body)
+                                    .foregroundStyle(Color(uiColor: .label))
+                                if !result.subtitle.isEmpty {
+                                    Text(result.subtitle) // Keterangan negara/provinsi (ex: "CA, United States")
+                                        .font(.caption)
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                }
+                            }
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 16)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        
+                        if result != searchService.searchResults.last {
+                            Divider().padding(.horizontal, 16)
+                        }
+                    }
+                }
+                .background(Color(uiColor: .secondarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
+                .padding(.top, 4)
+                .shadow(color: Color.black.opacity(0.05), radius: 10, y: 5)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+                // ZIndex 1 memastikan dropdown melayang di atas elemen bawahnya
+                .zIndex(1)
+            }
         }
+        .animation(.spring(response: 0.3), value: searchService.searchQuery.isEmpty)
+        .animation(.snappy, value: isFocused)
     }
 }
+
 
 #Preview {
     NavigationStack { YourTrip().environmentObject(AppState()) }

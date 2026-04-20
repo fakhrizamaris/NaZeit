@@ -249,10 +249,11 @@ struct HeroSleepTargetView: View {
 
 // MARK: - Lists & Actions
 struct ProtocolCard: View {
+    let time: String
     let icon: String
-    let iconTint: Color
     let title: String
     let detail: String
+    let reasoning: String
     
     @State private var isCompleted = false
     
@@ -264,26 +265,38 @@ struct ProtocolCard: View {
                 isCompleted.toggle()
             }
         } label: {
-            HStack(spacing: 14) {
-                ZStack {
-                    Circle()
-                        .fill(iconTint.opacity(0.12))
-                        .frame(width: 38, height: 38)
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 6) {
+                        Image(systemName: icon)
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .font(.subheadline)
+                        
+                        Text(time)
+                            .font(.caption).fontWeight(.bold)
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(Color(uiColor: .tertiarySystemFill), in: Capsule())
+                    }
                     
-                    Image(systemName: icon)
-                        .font(.body)
-                        .foregroundStyle(iconTint)
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.headline)
                         .foregroundStyle(Color(uiColor: .label))
                     
                     Text(detail)
-                        .font(.footnote)
+                        .font(.subheadline)
                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.leading)
+                    
+                    HStack(alignment: .top, spacing: 4) {
+                        Image(systemName: "info.circle.fill")
+                            .font(.caption2)
+                            .padding(.top, 2)
+                        Text(reasoning)
+                            .font(.caption)
+                    }
+                    .foregroundStyle(Color(uiColor: .nazeitTeal))
+                    .padding(.top, 4)
                 }
                 
                 Spacer(minLength: 0)
@@ -291,11 +304,11 @@ struct ProtocolCard: View {
                 ZStack {
                     Circle()
                         .stroke(isCompleted ? .clear : Color(uiColor: .quaternaryLabel), lineWidth: 2)
-                        .frame(width: 24, height: 24)
+                        .frame(width: 28, height: 28)
                     
                     if isCompleted {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.title3)
+                            .font(.system(size: 28))
                             .foregroundStyle(Color(uiColor: .nazeitTeal))
                             .transition(.scale(scale: 0.5).combined(with: .opacity))
                     }
@@ -325,7 +338,7 @@ struct SectionCard<Content: View>: View {
             HStack(spacing: 8) {
                 Image(systemName: icon).font(.caption).foregroundStyle(iconColor)
                 Text(title)
-                    .font(.footnote)
+                    .font(.default)
                     .fontWeight(.semibold)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }

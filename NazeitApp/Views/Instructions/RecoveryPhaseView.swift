@@ -70,25 +70,40 @@ struct RecoveryPhaseView: View {
                             .padding(.horizontal, 24)
                             
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("Daily Protocol")
-                                    .font(.system(.title3, design: .rounded).weight(.bold))
-                                    .foregroundStyle(Color(uiColor: .label))
-                                    .padding(.horizontal, 32)
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Daily Protocol")
+                                        .font(.system(.title3, design: .rounded).weight(.bold))
+                                        .foregroundStyle(Color(uiColor: .label))
+                                    
+                                    Text("Strict adherence to these daily tasks will rapidly clear your sleep debt and adjust your body clock.")
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                }
+                                .padding(.horizontal, 32)
                                 
                                 VStack(spacing: 12) {
                                     ProtocolCard(
-                                        icon: "figure.walk", iconTint: .cyan,
-                                        title: "Light Exercise", detail: "Do a light 20-min exercise under the sun at 3:00 PM."
+                                        time: "03:00 PM",
+                                        icon: "figure.walk",
+                                        title: "Light Exercise",
+                                        detail: "Do a 20-min walk under the sun.",
+                                        reasoning: "Late afternoon light exposure pushes your body clock later to match the local timezone."
                                     )
                                     
                                     ProtocolCard(
-                                        icon: "fork.knife", iconTint: baseColor,
-                                        title: "Strategic Meals", detail: "Eat heavy meals during daylight hours only."
+                                        time: "Daytime",
+                                        icon: "fork.knife",
+                                        title: "Strategic Meals",
+                                        detail: "Eat heavy meals during daylight hours only.",
+                                        reasoning: "Food tells your digestive organs what time of day it is, aiding total-body alignment."
                                     )
                                     
                                     ProtocolCard(
-                                        icon: "moon.fill", iconTint: .mint,
-                                        title: "Sleep Strictness", detail: "Go to bed exactly at \(sleepTargets[appState.recoveryPhaseDayIndex].prefix(5)) local time."
+                                        time: String(sleepTargets[appState.recoveryPhaseDayIndex].prefix(5)),
+                                        icon: "moon.fill",
+                                        title: "Sleep Strictness",
+                                        detail: "Go to bed exactly at local target time.",
+                                        reasoning: "Strictly anchoring your sleep builds biological consistency to clear jet lag faster."
                                     )
                                 }
                                 .padding(.horizontal, 24)

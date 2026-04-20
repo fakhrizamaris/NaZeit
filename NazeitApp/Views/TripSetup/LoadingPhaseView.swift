@@ -71,25 +71,40 @@ struct LoadingPhaseView: View {
                                 .padding(.horizontal, 24)
                                 
                                 VStack(alignment: .leading, spacing: 12) {
-                                    Text("Daily Protocol")
-                                        .font(.system(.title3, design: .rounded).weight(.bold))
-                                        .foregroundStyle(Color(uiColor: .label))
-                                        .padding(.horizontal, 32)
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text("Daily Protocol")
+                                            .font(.system(.title3, design: .rounded).weight(.bold))
+                                            .foregroundStyle(Color(uiColor: .label))
+                                        
+                                        Text("Complete these tasks to begin syncing your circadian rhythm even before your flight.")
+                                            .font(.subheadline)
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    }
+                                    .padding(.horizontal, 32)
                                     
                                     VStack(spacing: 12) {
                                         ProtocolCard(
-                                            icon: "sun.max.fill", iconTint: .cyan,
-                                            title: "Seek Morning Light", detail: "Get 15 mins of sunlight immediately after waking up."
+                                            time: "06:00 AM",
+                                            icon: "sun.max.fill",
+                                            title: "Seek Morning Light",
+                                            detail: "Get 15 mins of sunlight immediately after waking up.",
+                                            reasoning: "Early bright light halts melatonin production and anchors your circadian rhythm."
                                         )
                                         
                                         ProtocolCard(
-                                            icon: "cup.and.saucer.fill", iconTint: baseColor,
-                                            title: "Caffeine Cutoff", detail: "No coffee or tea after 02:00 PM today."
+                                            time: "02:00 PM",
+                                            icon: "cup.and.saucer.fill",
+                                            title: "Caffeine Cutoff",
+                                            detail: "Limit coffee or tea intake after this time.",
+                                            reasoning: "Caffeine masks sleep pressure, making it harder to shift your bedtime earlier."
                                         )
                                         
                                         ProtocolCard(
-                                            icon: "moon.fill", iconTint: .mint,
-                                            title: "Dim the Lights", detail: "Use warm lights or blue-light blocking glasses 2 hours before bed."
+                                            time: "08:00 PM",
+                                            icon: "moon.fill",
+                                            title: "Dim the Lights",
+                                            detail: "Switch to warm lights, use blue-light blockers, or simply wear an eye mask.",
+                                            reasoning: "Dim light signals your brain that night is approaching, naturally inducing sleep."
                                         )
                                     }
                                     .padding(.horizontal, 24)
