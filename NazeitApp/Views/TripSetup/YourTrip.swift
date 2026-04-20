@@ -69,12 +69,12 @@ struct YourTrip: View {
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
                     // MARK: From
-                    TripField(label: "From", placeholder: "e.g. Jakarta (JKT)", text: $appState.fromCity, tintColor: baseColor)
+                    TripField(label: "From (City Name)", placeholder: "e.g. Batam", text: $appState.fromCity, tintColor: baseColor)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
                     // MARK: To
-                    TripField(label: "To", placeholder: "e.g. Los Angeles (LAX)", text: $appState.toCity, tintColor: baseColor)
+                    TripField(label: "To (City Name)", placeholder: "e.g. Los Angeles", text: $appState.toCity, tintColor: baseColor)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     

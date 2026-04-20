@@ -30,7 +30,7 @@ struct NazeitApp: App {
                 }
             }
             .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                     withAnimation { isSplashActive = false }
                 }
             }

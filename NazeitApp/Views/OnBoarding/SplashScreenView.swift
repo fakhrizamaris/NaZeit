@@ -30,13 +30,12 @@ struct SplashScreenView: View {
         withAnimation(.easeInOut(duration: 3.5).repeatForever(autoreverses: true)) {
             animateBackground = true
         }
-        
-        withAnimation(.spring(response: 0.7, dampingFraction: 0.6, blendDuration: 0.5)) {
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.6, blendDuration: 0.3)) {
             animateLogo = true
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            withAnimation(.easeOut(duration: 0.8)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(.easeOut(duration: 0.6)) {
                 animateText = true
             }
         }
