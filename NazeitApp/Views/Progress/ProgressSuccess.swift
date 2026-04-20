@@ -80,7 +80,7 @@ struct Screen6YourAdaptation: View {
                                        iconColor: .circadianTeal,
                                        trend: nil)
                         } else {
-                            MetricCard(value: "\(appState.daysRemaining)d",
+                            MetricCard(value: "\(appState.daysRemaining) days",
                                        label: "Remaining",
                                        icon: "calendar.badge.clock",
                                        iconColor: .circadianTeal,
