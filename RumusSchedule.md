@@ -8,11 +8,6 @@ Dokumen ini memuat rumus dan logika sirkadian *end-to-end* untuk aplikasi Nazeit
 
 Sebelum algoritma berjalan, sistem harus mengunci 3 data fundamental dari pengguna.
 
-### A0. Standar Waktu Global (UTC)
-- Semua perhitungan mesin dilakukan dalam basis UTC.
-- Simpan zona waktu sebagai `IANA Time Zone` (contoh: `Asia/Jakarta`) dan `UTC Offset` saat event terjadi.
-- Untuk rumus adaptasi lintas zona, gunakan selisih `UTC Offset` sebagai sumber kebenaran (bukan label GMT).
-
 ### A. Perhitungan Titik Nadir (CBTmin)
 CBTmin (*Core Body Temperature minimum*) adalah titik referensi utama untuk semua instruksi cahaya dan tidur.
 - **Mode Apple Watch:** Diambil dari titik waktu di mana metrik `Wrist Temperature` menunjukkan suhu paling rendah selama fase *Deep Sleep*.

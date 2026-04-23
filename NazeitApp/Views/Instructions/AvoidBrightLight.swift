@@ -2,15 +2,28 @@
 //  AvoidBrightLight.swift
 //  NazeitApp
 //
+//  In-flight instruction: Avoid Bright Light — driven by tripPlan light windows.
+//
 
 import SwiftUI
 
-struct Screen5AvoidBrightLight: View {
+struct AvoidBrightLightView: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy  = false
-    @State private var appeared = false
+    @State private var isCompleted = false
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
+
+    /// Avoid light window from Circadian engine
+    private var avoidEndTime: String {
+        guard let plan = appState.tripPlan,
+              let inflight = plan.inflightProtocol else { return "local bedtime" }
+        return PlanBuilder.time(inflight.sleepWindow.bedtime)
+    }
+
+    private var inflightLabel: String {
+        appState.tripPlan?.inflightProtocol?.shiftLabel ?? "In-Flight"
+    }
 
     var body: some View {
         ZStack {
@@ -18,90 +31,147 @@ struct Screen5AvoidBrightLight: View {
 
             VStack(spacing: 0) {
 
-                HStack(alignment: .center, spacing: 10) {
-                    DualTimeView(isDaytime: false)
-                    
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 3) {
-                        Text("CIRCADIAN STATE")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                            .tracking(0.5)
-                        CircadianStateBar(level: appState.circadianLevel, compact: true)
-                    }
-                }
-                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
-
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        Spacer(minLength: 32)
+                    VStack(spacing: 14) {
+                        CircadianHeroCard(
+                            level: appState.circadianLevel,
+                            hrv: appState.inputMethod == .watch ? appState.currentHRV : nil,
+                            dayLabel: inflightLabel,
+                            phaseTitle: "In-Flight",
+                            bedtime: appState.inputMethod == .manual ? appState.bedtimeString : nil,
+                            wakeTime: appState.inputMethod == .manual ? appState.wakeTimeString : nil
+                        )
+                            .padding(.top, 16)
 
-                        VStack(spacing: 14) {
-                    Image(systemName: "moon.stars.fill")
-                        .font(.system(size: heroIconSize))
-                        .foregroundStyle(Color.indigo)
-                        .scaleEffect(appeared ? 1.0 : 0.6)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "moon.stars.fill")
+                                    .font(.system(size: heroIconSize * 0.56))
+                                    .foregroundStyle(Color.semanticWarningAmber)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text("Avoid bright light")
+                                        .font(.system(.title2, design: .rounded).weight(.bold))
+                                        .foregroundStyle(Color(uiColor: .label))
+                                    Text("Until \(avoidEndTime)")
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                }
+                            }
 
-                    Text("Avoid bright light")
-                        .font(.system(.title, design: .rounded).weight(.bold))
-                        .foregroundStyle(Color(uiColor: .label))
+                            if showWhy {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Why now?")
+                                        .font(.title3.weight(.bold))
+                                        .foregroundStyle(Color.semanticWarningAmber)
+                                    Text("Bright light late in the evening delays melatonin and pushes sleep timing later. Keeping light low protects your target bedtime.")
+                                        .font(.body.weight(.medium))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(14)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color(uiColor: .tertiarySystemFill), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .padding(.top, 10)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                            }
+                        }
+                        .padding(20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                    Text("Dim screens until 22:00")
-                        .font(.subheadline).foregroundStyle(Color(uiColor: .label))
+                        Button {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                showWhy.toggle()
+                            }
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "info.circle")
+                                Text(showWhy ? "Hide why" : "Why now?")
+                                Image(systemName: showWhy ? "chevron.up" : "chevron.down")
+                            }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color.semanticPrimaryTeal)
+                        }
 
-                    VStack(spacing: 5) {
-                        Text("Prevents your clock from shifting back")
-                            .font(.caption).foregroundStyle(Color(uiColor: .label))
-                        Text("Based on your circadian phase")
-                            .font(.caption).foregroundStyle(Color(uiColor: .label).opacity(0.85))
+                        if isCompleted {
+                            VStack(spacing: 12) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 40, weight: .bold))
+                                        .foregroundStyle(.white)
+                                    Text("Done!")
+                                        .font(.system(.title, design: .rounded).weight(.bold))
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    Text("Light avoidance logged")
+                                        .font(.title3.weight(.medium))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                }
+                                .padding(22)
+                                .frame(maxWidth: .infinity)
+                                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                                HStack(spacing: 10) {
+                                    Image(systemName: "bed.double.fill")
+                                        .font(.title3)
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Up next")
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                        Text("Sleep at \(avoidEndTime)")
+                                            .font(.title3.weight(.bold))
+                                            .foregroundStyle(Color(uiColor: .label))
+                                    }
+                                    Spacer()
+                                }
+                                .padding(14)
+                                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+                                NavigationLink {
+                                    RecoveryPhaseView().environmentObject(appState)
+                                } label: {
+                                    HStack(spacing: 7) {
+                                        Text("Continue")
+                                        Image(systemName: "arrow.right")
+                                    }
+                                    .appPrimaryCTAStyle()
+                                }
+                            }
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                        } else {
+                            NavDots(total: 3, current: 2)
+
+                            Button {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                    isCompleted = true
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Text("Done")
+                                    Image(systemName: "checkmark")
+                                }
+                                .appPrimaryCTAStyle()
+                            }
+                        }
+
+                        NavigationLink {
+                            ScreenNewA_WatchDetects().environmentObject(appState)
+                        } label: {
+                            Text("I can't avoid light right now")
+                                .appInteractiveTextStyle()
+                        }
+                        .padding(.bottom, 28)
                     }
+                    .padding(.horizontal, 24)
                 }
-                .instructionCard()
-                .padding(.horizontal, 24)
-
-                Spacer(minLength: 40)
-
-                WhyChip(isShown: $showWhy, explanation:
-                    "Light after 8 PM in your new time zone tells your brain it's still daytime, delaying melatonin and pushing your sleep window later — the opposite of what we need.")
-                    .padding(.bottom, 16)
-
-                NavDots(total: 3, current: 2).padding(.bottom, 20)
-
-                HStack(spacing: 6) {
-                    Image(systemName: "clock.arrow.circlepath").font(.caption)
-                    Text("Up next: Sleep at 22:30").font(.caption).fontWeight(.medium)
-                    Spacer()
+                .safeAreaInset(edge: .bottom) {
+                    Color.clear.frame(height: 20)
                 }
-                .foregroundStyle(Color(uiColor: .label))
-                .padding(.horizontal, 14).padding(.vertical, 10)
-                .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(.horizontal, 24).padding(.bottom, 12)
-            }
-        }
-
-        // MARK: Dual CTA
-        VStack(spacing: 10) {
-                    NavigationLink {
-                        RecoveryPhaseView().environmentObject(appState)
-                    } label: {
-                        PrimaryBtn(title: "Done — lights dimmed ✓")
-                    }
-
-                    NavigationLink {
-                        ScreenNewA_WatchDetects().environmentObject(appState)
-                    } label: {
-                        Text("I can't avoid light right now")
-                            .appInteractiveTextStyle()
-                    }
-                }
-                .padding(.horizontal, 24).padding(.bottom, 32)
             }
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .onAppear { withAnimation { appeared = true } }
     }
 }
 
-#Preview { NavigationStack { Screen5AvoidBrightLight().environmentObject(AppState()) } }
+#Preview { NavigationStack { AvoidBrightLightView().environmentObject(AppState()) } }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 // MARK: - Screen 6: Your Adaptation
-struct Screen6YourAdaptation: View {
+struct AdaptationProgressView: View {
     @EnvironmentObject var appState: AppState
     @State private var ringProgress: Double = 0
     @State private var appeared = false
@@ -117,7 +117,7 @@ struct Screen6YourAdaptation: View {
                 
                 if appState.adaptationPercent >= 1.0 {
                     NavigationLink {
-                        Screen7FullyAdapted().environmentObject(appState)
+                        FullyAdaptedView().environmentObject(appState)
                     } label: {
                         HStack(spacing: 8) {
                             Text("View Journey Result")
@@ -133,7 +133,7 @@ struct Screen6YourAdaptation: View {
                     .padding(.horizontal, 24).padding(.bottom, 32)
                 } else if appState.travelPhase == .inflight {
                     NavigationLink {
-                        Screen3SleepNow().environmentObject(appState)
+                        SleepNowView().environmentObject(appState)
                     } label: {
                         HStack(spacing: 8) {
                             Text("Start in-flight protocol")
@@ -176,8 +176,8 @@ struct Screen6YourAdaptation: View {
 }
 
 
-// MARK: - Screen 7: Fully Adapted
-struct Screen7FullyAdapted: View {
+// MARK: - Fully Adapted
+struct FullyAdaptedView: View {
     @EnvironmentObject var appState: AppState
     @State private var showCheck  = false
     @State private var showText   = false
@@ -245,16 +245,7 @@ struct Screen7FullyAdapted: View {
                     YourTrip()
                         .environmentObject(appState)
                         .onAppear {
-                            appState.fromCity = ""
-                            appState.toCity = ""
-                            appState.fromTimeZone = .current
-                            appState.toTimeZone = .current
-                            appState.departureDate = Date()
-                            appState.arrivalDate = Date().addingTimeInterval(3600 * 15)
-                            appState.adaptationPercent = 0.0
-                            appState.daysRemaining = 3
-                            appState.loadingPhaseDayIndex = 0
-                            appState.recoveryPhaseDayIndex = 0
+                            appState.resetForNewTrip()
                         }
                 } label: {
                     PrimaryBtn(title: "Plan Next Trip")
@@ -276,5 +267,5 @@ struct Screen7FullyAdapted: View {
     }
 }
 
-#Preview("Screen 6") { NavigationStack { Screen6YourAdaptation().environmentObject(AppState()) } }
-#Preview("Screen 7") { NavigationStack { Screen7FullyAdapted().environmentObject(AppState()) } }
+#Preview("Screen 6") { NavigationStack { AdaptationProgressView().environmentObject(AppState()) } }
+#Preview("Screen 7") { NavigationStack { FullyAdaptedView().environmentObject(AppState()) } }

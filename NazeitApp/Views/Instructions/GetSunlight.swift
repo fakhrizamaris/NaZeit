@@ -2,125 +2,164 @@
 //  GetSunlight.swift
 //  NazeitApp
 //
+//  In-flight instruction: Get Sunlight — driven by tripPlan.inflightProtocol.
+//
 
 import SwiftUI
 
-struct Screen4GetSunlight: View {
+struct GetSunlightView: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy  = false
-    @State private var appeared = false
+    @State private var isCompleted = false
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
-    
+
+    /// Second instruction from in-flight protocol (type: .wake or .seekLight)
+    private var lightInstruction: Instruction? {
+        let inflight = appState.tripPlan?.inflightProtocol?.instructions ?? []
+        return inflight.first(where: { $0.type == .wake || $0.type == .seekLight })
+    }
+
+    private var inflightLabel: String {
+        appState.tripPlan?.inflightProtocol?.shiftLabel ?? "In-Flight"
+    }
+
+    /// Dynamic time subtitle
+    private var timeDetail: String {
+        guard let inst = lightInstruction else { return "20 min · seek bright light" }
+        if let dur = inst.duration {
+            return "\(Int(dur / 60)) min · \(PlanBuilder.time(inst.scheduledTime))"
+        }
+        return PlanBuilder.time(inst.scheduledTime)
+    }
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                
-                HStack(alignment: .center, spacing: 10) {
-                    DualTimeView(isDaytime: true)
-                    
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 3) {
-                        Text("CIRCADIAN STATE")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                            .tracking(0.5)
-                        CircadianStateBar(level: appState.circadianLevel, compact: true)
-                    }
-                }
-                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
-                
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        Spacer(minLength: 32)
-                        
-                        VStack(spacing: 14) {
-                            Image(systemName: "sun.max.fill")
-                                .font(.system(size: heroIconSize))
-                                .foregroundStyle(Color.orange)
-                                .scaleEffect(appeared ? 1.0 : 0.6)
-                                .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
-                                .shadow(color: Color.bgMorning.opacity(0.6), radius: 20)
-                            
-                            Text("Get sunlight")
-                                .font(.system(.title, design: .rounded).weight(.bold))
-                                .foregroundStyle(Color(uiColor: .label))
-                            
-                            Text("Go outside for 20 min")
-                                .font(.subheadline).foregroundStyle(Color(uiColor: .label))
-                            
-                            VStack(spacing: 5) {
-                                HStack(spacing: 5) {
-                                    Image(systemName: "clock.badge.exclamationmark").font(.caption)
-                                    Text("Best before 7:00 AM")
-                                        .font(.subheadline).fontWeight(.bold)
+                    VStack(spacing: 14) {
+                        CircadianHeroCard(
+                            level: appState.circadianLevel,
+                            hrv: appState.inputMethod == .watch ? appState.currentHRV : nil,
+                            dayLabel: inflightLabel,
+                            phaseTitle: "In-Flight",
+                            bedtime: appState.inputMethod == .manual ? appState.bedtimeString : nil,
+                            wakeTime: appState.inputMethod == .manual ? appState.wakeTimeString : nil
+                        )
+                            .padding(.top, 16)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 12) {
+                                Image(systemName: lightInstruction?.iconName ?? "sun.max.fill")
+                                    .font(.system(size: heroIconSize * 0.56))
+                                    .foregroundStyle(Color.semanticWarningAmber)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(lightInstruction?.title ?? "Get sunlight")
+                                        .font(.system(.title2, design: .rounded).weight(.bold))
+                                        .foregroundStyle(Color(uiColor: .label))
+                                    Text(timeDetail)
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
-                                .foregroundStyle(Color.mint)
-                                .padding(.horizontal, 12).padding(.vertical, 5)
-                                .background(Color(uiColor: .secondarySystemBackground)).clipShape(Capsule())
-                                
-                                Text("Resets your body clock · Based on your circadian phase")
-                                    .font(.caption).foregroundStyle(Color(uiColor: .tertiaryLabel))
-                                    .multilineTextAlignment(.center)
                             }
-                        }
-                        .padding(28).frame(maxWidth: .infinity)
-                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
-                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 1))
-                        .shadow(color: Color.black.opacity(0.05), radius: 20, y: 8)
-                        .padding(.horizontal, 24)
-                        
-                        Spacer(minLength: 40)
-                        
-                        VStack(spacing: 8) {
-                            Button {
-                                withAnimation(.spring(response: 0.4)) { showWhy.toggle() }
-                            } label: {
-                                HStack(spacing: 5) {
-                                    Image(systemName: "info.circle").font(.caption2)
-                                    Text(showWhy ? "Hide" : "Why sunlight?").font(.caption).fontWeight(.medium)
-                                    Image(systemName: showWhy ? "chevron.up" : "chevron.down").font(.caption2)
-                                }
-                                .foregroundStyle(Color.teal)
-                            }
+
                             if showWhy {
-                                Text("Morning light suppresses melatonin and signals your brain it's daytime in the new time zone — the fastest way to shift your circadian clock forward.")
-                                    .font(.caption).foregroundStyle(Color(uiColor: .label))
-                                    .multilineTextAlignment(.center).padding(.horizontal, 32)
-                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Why now?")
+                                        .font(.title3.weight(.bold))
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    Text(lightInstruction?.reasoning
+                                         ?? "Morning light suppresses melatonin and signals your brain it is daytime in the new time zone.")
+                                        .font(.body.weight(.medium))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(14)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color(uiColor: .tertiarySystemFill), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .padding(.top, 10)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                         }
-                        .padding(.bottom, 16)
-                        
-                        NavDots(total: 3, current: 1).padding(.bottom, 20)
-                        
-                        HStack(spacing: 6) {
-                            Image(systemName: "clock.arrow.circlepath").font(.caption)
-                            Text("Up next: Eat at 12:00").font(.caption).fontWeight(.medium)
-                            Spacer()
+                        .padding(20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                        Button {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                showWhy.toggle()
+                            }
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "info.circle")
+                                Text(showWhy ? "Hide why" : "Why now?")
+                                Image(systemName: showWhy ? "chevron.up" : "chevron.down")
+                            }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color.semanticPrimaryTeal)
                         }
-                        .foregroundStyle(Color(uiColor: .label))
-                        .padding(.horizontal, 14).padding(.vertical, 10)
-                        .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
-                        .padding(.horizontal, 24).padding(.bottom, 12)
+
+                        if isCompleted {
+                            VStack(spacing: 12) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 40, weight: .bold))
+                                        .foregroundStyle(.white)
+                                    Text("Done!")
+                                        .font(.system(.title, design: .rounded).weight(.bold))
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    Text("Sunlight exposure logged")
+                                        .font(.title3.weight(.medium))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                }
+                                .padding(22)
+                                .frame(maxWidth: .infinity)
+                                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                                NavigationLink {
+                                    AvoidBrightLightView().environmentObject(appState)
+                                } label: {
+                                    HStack(spacing: 7) {
+                                        Text("Continue")
+                                        Image(systemName: "arrow.right")
+                                    }
+                                    .appPrimaryCTAStyle()
+                                }
+                            }
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                        } else {
+                            NavDots(total: 3, current: 1)
+
+                            Button {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                    isCompleted = true
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Text("Done")
+                                    Image(systemName: "checkmark")
+                                }
+                                .appPrimaryCTAStyle()
+                            }
+                        }
+
+                        NavigationLink {
+                            ScreenNewB_RecalculatedInstruction().environmentObject(appState)
+                        } label: {
+                            Text("Can't do this now")
+                                .appInteractiveTextStyle()
+                        }
+                        .padding(.bottom, 28)
                     }
+                    .padding(.horizontal, 24)
                 }
-                
-                NavigationLink {
-                    Screen5AvoidBrightLight().environmentObject(appState)
-                } label: {
-                    HStack(spacing: 8) {
-                        Text("Done — mark as complete")
-                        Image(systemName: "checkmark").fontWeight(.semibold)
-                    }
-                    .appPrimaryCTAStyle()
+                .safeAreaInset(edge: .bottom) {
+                    Color.clear.frame(height: 20)
                 }
-                .padding(.horizontal, 24).padding(.bottom, 32)
             }
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
-        .onAppear { withAnimation { appeared = true } }
     }
 }
 
-#Preview { NavigationStack { Screen4GetSunlight().environmentObject(AppState()) } }
+#Preview { NavigationStack { GetSunlightView().environmentObject(AppState()) } }

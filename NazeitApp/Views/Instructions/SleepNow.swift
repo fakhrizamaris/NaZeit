@@ -2,158 +2,310 @@
 //  SleepNow.swift
 //  NazeitApp
 //
+//  Instruction views for in-flight phase — driven by tripPlan.inflightProtocol.
+//
 
 import SwiftUI
 
-// MARK: - CircadianStateBar
-struct CircadianStateBar: View {
+// MARK: - Circadian Hero Card (Shared Component)
+struct CircadianHeroCard: View {
     let level: Double
-    var compact: Bool = false
+    var hrv: Double? = nil
+    var dayLabel: String = ""
+    var phaseTitle: String = ""
+    var deltaText: String? = nil
+    var etaText: String? = nil
+    var bedtime: String? = nil
+    var wakeTime: String? = nil
 
-    @State private var animated: Double = 0
-
-    private var stateLabel: String {
-        level < 0.35 ? "Misaligned" : level < 0.65 ? "Adjusting" : "Aligned"
-    }
-    private var stateColor: Color {
-        level < 0.35 ? .red.opacity(0.85) : level < 0.65 ? .mint : .circadianTeal
-    }
+    private let circleSize: CGFloat = 120
+    private var baseColor: Color { Color(uiColor: .nazeitTeal) }
 
     var body: some View {
-        HStack(spacing: compact ? 6 : 8) {
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color(.systemGray5).opacity(0.6))
-                    .frame(width: compact ? 52 : 64, height: compact ? 4 : 5)
-                Capsule()
-                    .fill(LinearGradient(
-                        colors: [Color.red.opacity(0.8), Color.mint, Color.circadianTeal],
-                        startPoint: .leading, endPoint: .trailing))
-                    .frame(width: max(compact ? 4 : 5, (compact ? 52 : 64) * animated), height: compact ? 4 : 5)
-            }
+        VStack(spacing: 12) {
+            HStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .stroke(Color(uiColor: .quaternaryLabel), lineWidth: 5)
+                        .frame(width: circleSize, height: circleSize)
+                    Circle()
+                        .trim(from: 0, to: level)
+                        .stroke(baseColor, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                        .frame(width: circleSize, height: circleSize)
+                        .rotationEffect(.degrees(-90))
+                        .animation(.easeInOut(duration: 0.6), value: level)
 
-            Text(stateLabel)
-                .font(compact ? .caption2.weight(.medium) : .caption2)
-                .fontWeight(.medium)
-                .foregroundStyle(stateColor)
+                    VStack(spacing: 2) {
+                        Text("\(Int(level * 100))%")
+                            .font(.system(.title2, design: .rounded).weight(.bold))
+                            .foregroundStyle(Color(uiColor: .label))
+                        Text(Circadian.stateLabel(for: level))
+                            .font(.system(.caption2, design: .rounded).weight(.semibold))
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(phaseTitle)
+                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .foregroundStyle(baseColor)
+                        Text(dayLabel)
+                            .font(.system(.headline, design: .rounded).weight(.bold))
+                            .foregroundStyle(Color(uiColor: .label))
+                    }
+
+                    if let hrv {
+                        HStack(spacing: 4) {
+                            Image(systemName: "heart.fill").foregroundStyle(.red)
+                            Text("HRV \(Int(hrv)) ms")
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    }
+
+                    if let bedtime, let wakeTime {
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "moon.fill").foregroundStyle(.indigo)
+                                Text("Bed: \(bedtime)")
+                            }
+                            HStack(spacing: 4) {
+                                Image(systemName: "sunrise.fill").foregroundStyle(.orange)
+                                Text("Wake: \(wakeTime)")
+                            }
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    }
+
+                    if let delta = deltaText {
+                        Text(delta)
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(Color.semanticWarningAmber)
+                    }
+
+                    if let eta = etaText {
+                        Text(eta)
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(Color(uiColor: .tertiaryLabel))
+                    }
+                }
+            }
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Circadian state")
-        .accessibilityValue("\(stateLabel), \(Int(level * 100)) percent")
-        .onAppear {
-            withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) { animated = level }
-        }
-        .onChange(of: level) { _, new in
-            withAnimation(.spring(response: 0.6)) { animated = new }
-        }
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .padding(.horizontal, 24)
     }
 }
 
-// MARK: - Screen 3: Sleep Now
-struct Screen3SleepNow: View {
+// MARK: - Stars Background (In-Flight)
+struct StarsBackground: View {
+    @State private var twinkle = false
+    var body: some View {
+        Color(uiColor: .systemBackground).ignoresSafeArea()
+    }
+}
+
+// MARK: - Moon Decoration
+struct MoonDecoration: View {
+    var body: some View {
+        Color(uiColor: .systemBackground).ignoresSafeArea()
+    }
+}
+
+// MARK: - Adaptation Progress View (placeholder)
+struct AdaptationProgressView: View {
+    @EnvironmentObject var appState: AppState
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 64))
+                .foregroundStyle(Color(uiColor: .nazeitTeal))
+            Text("Adaptation Progress")
+                .font(.system(.title2, design: .rounded).weight(.bold))
+            Text("Phase: \(appState.travelPhase.rawValue)")
+                .font(.subheadline)
+                .foregroundStyle(Color(uiColor: .secondaryLabel))
+            Spacer()
+        }
+        .navigationTitle("Progress")
+    }
+}
+
+
+// MARK: - Sleep Now (In-Flight Instruction 1)
+struct SleepNowView: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy = false
-    @State private var appeared = false
+    @State private var isCompleted = false
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
+
+    /// First instruction from in-flight protocol (type: .sleep)
+    private var sleepInstruction: Instruction? {
+        appState.tripPlan?.inflightProtocol?.instructions.first(where: { $0.type == .sleep })
+    }
+
+    /// In-flight protocol label
+    private var inflightLabel: String {
+        appState.tripPlan?.inflightProtocol?.shiftLabel ?? "In-Flight"
+    }
+
+    /// Dynamic subtitle
+    private var subtitle: String {
+        guard let inst = sleepInstruction else { return "Prepare for arrival" }
+        return PlanBuilder.time(inst.scheduledTime)
+    }
 
     var body: some View {
         ZStack {
             Color(uiColor: .systemBackground).ignoresSafeArea()
 
             VStack(spacing: 0) {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 14) {
+                        CircadianHeroCard(
+                            level: appState.circadianLevel,
+                            hrv: appState.inputMethod == .watch ? appState.currentHRV : nil,
+                            dayLabel: inflightLabel,
+                            phaseTitle: "In-Flight",
+                            bedtime: appState.inputMethod == .manual ? appState.bedtimeString : nil,
+                            wakeTime: appState.inputMethod == .manual ? appState.wakeTimeString : nil
+                        )
+                            .padding(.top, 16)
 
-                // MARK: Phase chip + Circadian state bar
-                HStack(alignment: .center) {
-                    Label("In-Flight", systemImage: "airplane.circle.fill")
-                        .font(.subheadline).fontWeight(.semibold)
-                        .foregroundStyle(Color.indigo)
-                        .padding(.horizontal, 12).padding(.vertical, 8)
-                        .background(Color.indigo.opacity(0.12))
-                        .clipShape(Capsule())
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 12) {
+                                Image(systemName: sleepInstruction?.iconName ?? "moon.zzz.fill")
+                                    .font(.system(size: heroIconSize * 0.56))
+                                    .foregroundStyle(Color(uiColor: .label))
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(sleepInstruction?.title ?? "Sleep now")
+                                        .font(.system(.title2, design: .rounded).weight(.bold))
+                                        .foregroundStyle(Color(uiColor: .label))
+                                    Text(sleepInstruction?.detail ?? "4 hrs before destination arrival")
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                }
+                            }
 
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("CIRCADIAN STATE")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                            .tracking(1.0)
-                        CircadianStateBar(level: appState.circadianLevel, compact: true)
-                    }
-                }
-                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 20)
-
-                Spacer()
-
-                // MARK: Main Instruction
-                VStack(spacing: 20) {
-                    Image(systemName: "moon.zzz.fill")
-                        .font(.system(size: heroIconSize))
-                        .foregroundStyle(Color.indigo)
-                        .scaleEffect(appeared ? 1.0 : 0.7)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.1), value: appeared)
-
-                    Text("Sleep Now")
-                        .font(.system(.title, design: .rounded).weight(.bold))
-                        .foregroundStyle(Color(uiColor: .label))
-
-                    Text("4 hrs to destination")
-                        .font(.headline).foregroundStyle(Color(uiColor: .label))
-
-                    HStack(spacing: 6) {
-                        Image(systemName: appState.inputMethod == .watch ? "applewatch" : "bed.double.fill")
-                            .font(.caption2).foregroundStyle(Color.indigo)
-                        Text(appState.inputMethod == .watch
-                             ? "Based on HRV · \(appState.currentHRV)ms"
-                             : "Based on sleep schedule")
-                            .font(.caption)
-                    }
-                    .foregroundStyle(Color(uiColor: .label))
-                    .padding(.horizontal, 14).padding(.vertical, 8)
-                    .background(Color.indigo.opacity(0.10)).clipShape(Capsule())
-                }
-                .padding(.vertical, 40)
-                .frame(maxWidth: .infinity)
-                .background(Color(uiColor: .secondarySystemFill), in: RoundedRectangle(cornerRadius: 32, style: .continuous))
-                .padding(.horizontal, 24)
-
-                Spacer()
-
-                // MARK: Why chip
-                WhyChip(isShown: $showWhy, explanation: appState.inputMethod == .watch ?
-                    "Your HRV is optimal (\(appState.currentHRV)ms), indicating your body is rest-ready. Sleeping now advances your circadian clock toward the destination time zone by up to 3 hours." :
-                    "Based on your usual schedule, your body's melatonin cycle is beginning. Sleeping now helps shift your circadian clock toward the destination time zone by up to 3 hours.")
-                    .padding(.bottom, 16)
-
-                NavDots(total: 3, current: 0)
-                    .padding(.bottom, 20)
-
-                // MARK: Dual CTA
-                VStack(spacing: 12) {
-                    NavigationLink {
-                        Screen4GetSunlight().environmentObject(appState)
-                    } label: {
-                        HStack(spacing: 8) {
-                            Text("Done — I woke up")
-                            Image(systemName: "checkmark").fontWeight(.semibold)
+                            if showWhy {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Why now?")
+                                        .font(.title3.weight(.bold))
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    Text(sleepInstruction?.reasoning
+                                         ?? "Sleeping now anchors melatonin timing to destination night.")
+                                        .font(.body.weight(.medium))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(14)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color(uiColor: .tertiarySystemFill), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .padding(.top, 10)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                            }
                         }
-                        .appPrimaryCTAStyle()
-                    }
+                        .padding(20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                    NavigationLink {
-                        ScreenNewC_InFlightDeviated().environmentObject(appState)
-                    } label: {
-                        Text("Can't sleep right now")
-                            .appInteractiveTextStyle()
+                        Button {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                showWhy.toggle()
+                            }
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "info.circle")
+                                Text(showWhy ? "Hide why" : "Why now?")
+                                Image(systemName: showWhy ? "chevron.up" : "chevron.down")
+                            }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color.semanticPrimaryTeal)
+                        }
+
+                        if isCompleted {
+                            VStack(spacing: 12) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 40, weight: .bold))
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    Text("Done!")
+                                        .font(.system(.title, design: .rounded).weight(.bold))
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    Text("Sleep logged")
+                                        .font(.title3.weight(.medium))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                }
+                                .padding(22)
+                                .frame(maxWidth: .infinity)
+                                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                                HStack(spacing: 10) {
+                                    Image(systemName: "sun.max.fill")
+                                        .font(.title3)
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Up next")
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                        Text("Get sunlight")
+                                            .font(.title3.weight(.bold))
+                                            .foregroundStyle(Color(uiColor: .label))
+                                    }
+                                    Spacer()
+                                }
+                                .padding(14)
+                                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+                                NavigationLink {
+                                    GetSunlightView().environmentObject(appState)
+                                } label: {
+                                    HStack(spacing: 7) {
+                                        Text("Continue")
+                                        Image(systemName: "arrow.right")
+                                    }
+                                    .appPrimaryCTAStyle()
+                                }
+                            }
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                        } else {
+                            NavDots(total: 3, current: 0)
+
+                            Button {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                    isCompleted = true
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Text("Done")
+                                    Image(systemName: "checkmark")
+                                }
+                                .appPrimaryCTAStyle()
+                            }
+                        }
+
+                        NavigationLink {
+                            ScreenNewC_InFlightDeviated().environmentObject(appState)
+                        } label: {
+                            Text("Can't sleep right now")
+                                .appInteractiveTextStyle()
+                        }
+                        .padding(.bottom, 28)
                     }
+                    .padding(.horizontal, 24)
                 }
-                .padding(.horizontal, 24).padding(.bottom, 32)
+                .safeAreaInset(edge: .bottom) {
+                    Color.clear.frame(height: 20)
+                }
             }
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .onAppear { withAnimation { appeared = true } }
     }
 }
 
@@ -203,5 +355,5 @@ struct NavDots: View {
 
 
 #Preview {
-    NavigationStack { Screen3SleepNow().environmentObject(AppState()) }
+    NavigationStack { SleepNowView().environmentObject(AppState()) }
 }

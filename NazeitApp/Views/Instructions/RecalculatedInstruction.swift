@@ -2,142 +2,182 @@
 //  RecalculatedInstruction.swift
 //  NazeitApp
 //
+//  Shown when a user deviates from schedule — displays the recalculated instruction.
+//  Now reads dynamic times and respects §4.1 recalcCount.
+//
 
 import SwiftUI
 
 struct ScreenNewB_RecalculatedInstruction: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy  = false
-    @State private var appeared = false
+    @State private var isCompleted = false
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
-    
-    let originalTime = "7 AM"
-    let adjustedTime = "9 AM"
+
+    /// The light/wake instruction from in-flight protocol
+    private var lightInstruction: Instruction? {
+        let inflight = appState.tripPlan?.inflightProtocol?.instructions ?? []
+        return inflight.first(where: { $0.type == .wake || $0.type == .seekLight })
+    }
+
+    /// Original vs adjusted time (shifted +2h for recalculation)
+    private var originalTime: String {
+        guard let inst = lightInstruction else { return "7:00 AM" }
+        return PlanBuilder.time(inst.scheduledTime)
+    }
+
+    private var adjustedTime: String {
+        guard let inst = lightInstruction else { return "9:00 AM" }
+        // Recalculated: shift by grace window (60-90 min → use 2h for readability)
+        let shifted = inst.scheduledTime.addingTimeInterval(2 * 3600)
+        return PlanBuilder.time(shifted)
+    }
+
+    private var inflightLabel: String {
+        appState.tripPlan?.inflightProtocol?.shiftLabel ?? "In-Flight"
+    }
+
+    /// Recalc count display
+    private var recalcLabel: String {
+        let count = appState.tripPlan?.recalcCount ?? 0
+        return "Recalculated from \(originalTime) (#\(count + 1))"
+    }
+
+    /// Whether recalc is still allowed
+    private var canRecalculate: Bool {
+        (appState.tripPlan?.recalcCount ?? 0) < 2
+    }
     
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                
-                HStack(alignment: .center, spacing: 10) {
-                    Label("Day 1 · 09:00 AM", systemImage: "sun.horizon.fill")
-                        .font(.caption).fontWeight(.bold)
-                        .foregroundStyle(Color.mint.opacity(0.85))
-                        .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(Color(uiColor: .secondarySystemBackground)).clipShape(Capsule())
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 3) {
-                        Text("CIRCADIAN STATE")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                            .tracking(0.5)
-                        CircadianStateBar(level: appState.circadianLevel, compact: true)
-                    }
-                }
-                .padding(.horizontal, 24).padding(.top, 16).padding(.bottom, 8)
-                
-                // MARK: Plan updated banner
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.triangle.2.circlepath").font(.caption)
-                    Text("Plan updated based on last night").font(.caption).fontWeight(.medium)
-                    Spacer()
-                    Text("was \(originalTime)").font(.caption2).foregroundStyle(Color.mint.opacity(0.75))
-                }
-                .foregroundStyle(Color.mint)
-                .padding(.horizontal, 14).padding(.vertical, 8)
-                .background(Color.mint.opacity(0.12))
-                .overlay(Rectangle().frame(height: 0.5).foregroundStyle(Color.mint.opacity(0.3)),
-                         alignment: .bottom)
-                .padding(.horizontal, 24).padding(.bottom, 14)
-                
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        Spacer(minLength: 24)
-                        
-                        VStack(spacing: 14) {
-                            Image(systemName: "sun.max.fill")
-                                .font(.system(size: heroIconSize))
-                                .foregroundStyle(Color.orange)
-                                .scaleEffect(appeared ? 1.0 : 0.6)
-                                .animation(.spring(response: 0.5, dampingFraction: 0.55).delay(0.1), value: appeared)
-                                .shadow(color: Color.bgMorning.opacity(0.6), radius: 20)
-                            
-                            Text("Get sunlight at \(adjustedTime)")
-                                .font(.system(.title, design: .rounded).weight(.bold))
-                                .foregroundStyle(Color(uiColor: .label))
-                            
-                            Text("Go outside for 20 min")
-                                .font(.subheadline).foregroundStyle(Color(uiColor: .label))
-                            
-                            VStack(spacing: 6) {
-                                HStack(spacing: 5) {
-                                    Image(systemName: "arrow.triangle.2.circlepath").font(.caption2)
-                                    Text("Adjusted · was \(originalTime)").font(.caption).fontWeight(.bold)
+                    VStack(spacing: 14) {
+                        CircadianHeroCard(
+                            level: appState.circadianLevel,
+                            hrv: appState.inputMethod == .watch ? appState.currentHRV : nil,
+                            dayLabel: inflightLabel,
+                            phaseTitle: "In-Flight",
+                            deltaText: canRecalculate ? recalcLabel : "Conservative mode active",
+                            etaText: canRecalculate
+                                ? "Plan shifted to stay aligned"
+                                : "Max adjustments reached — safe defaults applied",
+                            bedtime: appState.inputMethod == .manual ? appState.bedtimeString : nil,
+                            wakeTime: appState.inputMethod == .manual ? appState.wakeTimeString : nil
+                        )
+                        .padding(.top, 16)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 12) {
+                                Image(systemName: lightInstruction?.iconName ?? "sun.max.fill")
+                                    .font(.system(size: heroIconSize * 0.56))
+                                    .foregroundStyle(Color.semanticWarningAmber)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text("Get sunlight at \(adjustedTime)")
+                                        .font(.system(.title2, design: .rounded).weight(.bold))
+                                        .foregroundStyle(Color(uiColor: .label))
+                                    Text("20 min · adjusted from \(originalTime)")
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
-                                .foregroundStyle(Color.mint)
-                                .padding(.horizontal, 12).padding(.vertical, 5)
-                                .background(Color.mint.opacity(0.10)).clipShape(Capsule())
-                                
-                                Text(appState.inputMethod == .watch
-                                     ? "Based on your actual sleep · HRV"
-                                     : "Based on your sleep schedule")
-                                  .font(.caption).foregroundStyle(Color(uiColor: .label).opacity(0.9))
                             }
-                        }
-                        .padding(28).frame(maxWidth: .infinity)
-                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
-                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.mint.opacity(0.45), lineWidth: 1.5))
-                        .shadow(color: Color.mint.opacity(0.15), radius: 20, y: 8)
-                        .padding(.horizontal, 24)
-                        
-                        Spacer(minLength: 32)
-                        
-                        VStack(spacing: 8) {
-                            Button {
-                                withAnimation(.spring(response: 0.4)) { showWhy.toggle() }
-                            } label: {
-                                HStack(spacing: 5) {
-                                    Image(systemName: "info.circle").font(.caption2)
-                                    Text(showWhy ? "Hide" : "Why adjusted?").font(.caption).fontWeight(.medium)
-                                    Image(systemName: showWhy ? "chevron.up" : "chevron.down").font(.caption2)
-                                }
-                                .foregroundStyle(Color.teal)
-                            }
+
                             if showWhy {
-                                Text("Because you slept later, your circadian phase shifted. Sunlight at 9 AM (instead of 7 AM) still resets your clock — just 2 hours later than the optimal window.")
-                                    .font(.caption).foregroundStyle(Color(uiColor: .label))
-                                    .multilineTextAlignment(.center).padding(.horizontal, 32)
-                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Why adjusted?")
+                                        .font(.title3.weight(.bold))
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    Text("Because your sleep time shifted, the sunlight window also needs to shift. This update keeps your circadian direction on track without forcing your body.")
+                                        .font(.body.weight(.medium))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(14)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color(uiColor: .tertiarySystemFill), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .padding(.top, 10)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                         }
-                        .padding(.bottom, 16)
-                        
-                        HStack(spacing: 6) {
-                            Image(systemName: "clock.arrow.circlepath").font(.caption)
-                            Text("Up next: Eat at 13:00 (was 12:00)").font(.caption).fontWeight(.medium)
-                            Spacer()
+                        .padding(20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                        Button {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                showWhy.toggle()
+                            }
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "info.circle")
+                                Text(showWhy ? "Hide why" : "Why now?")
+                                Image(systemName: showWhy ? "chevron.up" : "chevron.down")
+                            }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color.semanticPrimaryTeal)
                         }
-                        .foregroundStyle(Color(uiColor: .label))
-                        .padding(.horizontal, 14).padding(.vertical, 10)
-                        .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
-                        .padding(.horizontal, 24).padding(.bottom, 12)
+
+                        if isCompleted {
+                            VStack(spacing: 12) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 40, weight: .bold))
+                                        .foregroundStyle(.white)
+                                    Text("Plan Updated")
+                                        .font(.system(.title, design: .rounded).weight(.bold))
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
+                                    Text("New sunlight window confirmed")
+                                        .font(.title3.weight(.medium))
+                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                }
+                                .padding(22)
+                                .frame(maxWidth: .infinity)
+                                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                                NavigationLink {
+                                    RecoveryPhaseView().environmentObject(appState)
+                                } label: {
+                                    HStack(spacing: 7) {
+                                        Text("Continue")
+                                        Image(systemName: "arrow.right")
+                                    }
+                                    .appPrimaryCTAStyle()
+                                }
+                            }
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                        } else {
+                            Button {
+                                // Trigger recalculation per §4.1
+                                appState.recalculatePlanIfAllowed()
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                    isCompleted = true
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Text("Got it")
+                                    Image(systemName: "checkmark")
+                                }
+                                .appPrimaryCTAStyle()
+                            }
+                        }
+
+                        NavigationLink {
+                            RecoveryPhaseView().environmentObject(appState)
+                        } label: {
+                            Text("Can't do this now")
+                                .appInteractiveTextStyle()
+                        }
+                        .padding(.bottom, 28)
                     }
+                    .padding(.horizontal, 24)
                 }
-                
-                NavigationLink {
-                    RecoveryPhaseView().environmentObject(appState)
-                } label: {
-                    HStack(spacing: 8) {
-                        Text("Got it — I'll do this now")
-                        Image(systemName: "arrow.right").fontWeight(.semibold)
-                    }
-                    .appPrimaryCTAStyle()
+                .safeAreaInset(edge: .bottom) {
+                    Color.clear.frame(height: 20)
                 }
-                .padding(.horizontal, 24).padding(.bottom, 32)
             }
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
-        .onAppear { withAnimation { appeared = true } }
     }
 }
 

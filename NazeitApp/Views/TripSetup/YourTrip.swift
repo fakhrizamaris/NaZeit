@@ -78,7 +78,7 @@ struct YourTrip: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Departure Date & Time")
                             .font(.footnote).fontWeight(.semibold)
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .foregroundStyle(Color(uiColor: .label))
                             .padding(.horizontal, 28)
                         
                         Button {
@@ -126,7 +126,7 @@ struct YourTrip: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Arrival Date & Time (Local)")
                             .font(.footnote).fontWeight(.semibold)
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .foregroundStyle(Color(uiColor: .label))
                             .padding(.horizontal, 28)
                         
                         Button {
@@ -175,7 +175,7 @@ struct YourTrip: View {
                         Toggle(isOn: $appState.hasTransit.animation(.spring(response: 0.4))) {
                             Text("Add Transit / Layover")
                                 .font(.footnote).fontWeight(.semibold)
-                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                .foregroundStyle(Color(uiColor: .label))
                         }
                         .tint(baseColor)
                         .padding(.horizontal, 28)
@@ -225,33 +225,31 @@ struct YourTrip: View {
                     if timezoneShift != 0 && !appState.toCity.isEmpty {
                         HStack(spacing: 16) {
                             if isGeocodingTo || isGeocodingFrom {
-                                ProgressView().tint(.white).scaleEffect(0.9)
+                                ProgressView().tint(baseColor).scaleEffect(0.9)
                             } else {
                                 Image(systemName: "globe.americas.fill")
                                     .font(.title2)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(baseColor)
                                     .symbolEffect(.bounce, value: timezoneShift)
                             }
                             
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Time Zone Shift")
                                     .font(.caption2).fontWeight(.bold)
-                                    .foregroundStyle(.white.opacity(0.8))
+                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
                                     .textCase(.uppercase)
                                 
                                 let sign = timezoneShift > 0 ? "+" : ""
                                 Text("\(sign)\(timezoneShift) Hours Difference")
                                     .font(.headline)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(Color(uiColor: .label))
                             }
                             Spacer()
                         }
                         .padding(16)
-                        .background(
-                            LinearGradient(colors: [Color.mint, baseColor], startPoint: .topLeading, endPoint: .bottomTrailing)
-                        )
+                        .background(baseColor.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .shadow(color: baseColor.opacity(0.3), radius: 10, y: 5)
+                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(baseColor.opacity(0.3), lineWidth: 1))
                         .padding(.horizontal, 24).padding(.bottom, 24)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isGeocodingTo)
@@ -287,6 +285,9 @@ struct YourTrip: View {
                         .appPrimaryCTAStyle(isEnabled: isValid)
                     }
                     .disabled(!isValid)
+                    .simultaneousGesture(TapGesture().onEnded {
+                        appState.generatePlan()
+                    })
                     .padding(.horizontal, 24).padding(.bottom, 48)
                     .opacity(appeared ? 1 : 0)
                     .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isValid)
@@ -345,7 +346,7 @@ private struct SearchableTripField: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
                 .font(.footnote).fontWeight(.semibold)
-                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                .foregroundStyle(Color(uiColor: .label))
                 .padding(.horizontal, 4)
             
             TextField(placeholder, text: $searchService.searchQuery)

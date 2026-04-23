@@ -2,33 +2,59 @@
 //  RecoveryPhaseView.swift
 //  NazeitApp
 //
+//  Displays the Post-Flight Recovery Phase — driven by tripPlan from PlanBuilder.
+//
 
 import SwiftUI
 
 struct RecoveryPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var navigatetoDashboard: Bool = false
-    
-    let offsets = [1, 2, 3] // Days AFTER arrival
-    let sleepTargets = [
-        "10:30 PM - 06:30 AM",
-        "10:00 PM - 06:00 AM",
-        "10:00 PM - 06:00 AM"
-    ]
-    let shifts = ["Arrival Day", "Recovery Day 2", "Fully Adapted"]
-    
+
     private var baseColor: Color { Color(uiColor: .nazeitTeal) }
+
+    /// Dynamically read from tripPlan
+    private var days: [DailyProtocol] {
+        appState.tripPlan?.recoveryPhase ?? []
+    }
+
+    private var dayCount: Int { max(days.count, 1) }
+
+    /// Offsets for DayProgressTracker (days after arrival)
+    private var offsets: [Int] {
+        guard !days.isEmpty else { return [1] }
+        return days.map { $0.dayIndex + 1 }
+    }
+
     private static let dayFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return formatter
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f
     }()
 
     private func dateString(for offset: Int) -> String {
         let date = Calendar.current.date(byAdding: .day, value: offset, to: appState.arrivalDate) ?? Date()
         return Self.dayFormatter.string(from: date)
     }
-    
+
+    /// Current day's protocol
+    private var currentDay: DailyProtocol? {
+        guard !days.isEmpty, appState.recoveryPhaseDayIndex < days.count else { return nil }
+        return days[appState.recoveryPhaseDayIndex]
+    }
+
+    /// Sleep target string from the plan
+    private var sleepTargetString: String {
+        guard let day = currentDay else { return "--:-- - --:--" }
+        return "\(PlanBuilder.time(day.sleepWindow.bedtime)) - \(PlanBuilder.time(day.sleepWindow.wakeTime))"
+    }
+
+    /// Adaptation progress for this phase
+    private var currentAdaptation: Double {
+        guard dayCount > 0 else { return 0 }
+        return min(1.0, Double(appState.recoveryPhaseDayIndex + 1) / Double(dayCount))
+    }
+
     var body: some View {
         ZStack {
             LinearGradient(
@@ -36,7 +62,7 @@ struct RecoveryPhaseView: View {
                 startPoint: .topLeading, endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            
+
             Circle()
                 .fill(baseColor.opacity(0.12))
                 .frame(maxWidth: 400)
@@ -46,32 +72,40 @@ struct RecoveryPhaseView: View {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
-                        
+
                         VStack(spacing: 6) {
                             Text("Post-flight Recovery")
                                 .font(.system(.title2, design: .rounded).weight(.bold))
                                 .foregroundStyle(Color(uiColor: .label))
-                            
-                            Text("You have arrived at your destination. Follow this protocol to log your circadian shift.")
-                                .font(.subheadline)
-                                .foregroundStyle(Color(uiColor: .secondaryLabel))
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 24)
+
+                            if let plan = appState.tripPlan {
+                                Text("You have arrived. \(plan.direction == .eastward ? "Phase Advance" : "Phase Delay") recovery — est. \(plan.estimatedRecoveryDays) days to full sync.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 24)
+                            } else {
+                                Text("Follow this protocol to sync your circadian rhythm at your destination.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 24)
+                            }
                         }
                         .padding(.top, 8)
-                        
+
                         DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: appState.recoveryPhaseDayIndex, activeColor: baseColor, dayLabelPrefix: "Day +")
                             .padding(.horizontal, 24)
-                        
+
                         VStack(spacing: 24) {
                             HeroSleepTargetView(
                                 title: "Tonight's Sleep Window",
-                                timeRange: sleepTargets[appState.recoveryPhaseDayIndex],
-                                shiftLabel: shifts[appState.recoveryPhaseDayIndex],
+                                timeRange: sleepTargetString,
+                                shiftLabel: currentDay?.shiftLabel ?? "—",
                                 color: baseColor
                             )
                             .padding(.horizontal, 24)
-                            
+
                             VStack(alignment: .leading, spacing: 12) {
                                 VStack(alignment: .leading, spacing: 6) {
                                     HStack(alignment: .center) {
@@ -83,40 +117,27 @@ struct RecoveryPhaseView: View {
 
                                         CurrentTimeBadge(title: "Now", timeZone: appState.toTimeZone, accentColor: baseColor, isProminent: true)
                                     }
-                                    
+
                                     Text("Strict adherence to these daily tasks will rapidly clear your sleep debt and adjust your body clock.")
                                         .font(.subheadline)
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
                                 .padding(.horizontal, 32)
-                                
+
+                                // Dynamic protocol cards from the plan
                                 VStack(spacing: 12) {
-                                    ProtocolCard(
-                                        time: "03:00 PM",
-                                        icon: "figure.walk",
-                                        title: "Light Exercise",
-                                        detail: "Do a 20-min walk under the sun.",
-                                        reasoning: "Late afternoon light exposure pushes your body clock later to match the local timezone.",
-                                        accentColor: .orange
-                                    )
-                                    
-                                    ProtocolCard(
-                                        time: "Daytime",
-                                        icon: "fork.knife",
-                                        title: "Strategic Meals",
-                                        detail: "Eat heavy meals during daylight hours only.",
-                                        reasoning: "Food tells your digestive organs what time of day it is, aiding total-body alignment.",
-                                        accentColor: .indigo
-                                    )
-                                    
-                                    ProtocolCard(
-                                        time: String(sleepTargets[appState.recoveryPhaseDayIndex].prefix(5)),
-                                        icon: "moon.fill",
-                                        title: "Sleep Strictness",
-                                        detail: "Go to bed exactly at local target time.",
-                                        reasoning: "Strictly anchoring your sleep builds biological consistency to clear jet lag faster.",
-                                        accentColor: .cyan
-                                    )
+                                    if let day = currentDay {
+                                        ForEach(day.instructions) { instruction in
+                                            ProtocolCard(
+                                                time: PlanBuilder.time(instruction.scheduledTime),
+                                                icon: instruction.iconName,
+                                                title: instruction.title,
+                                                detail: instruction.detail,
+                                                reasoning: instruction.reasoning,
+                                                accentColor: Color(instruction.accentColorName)
+                                            )
+                                        }
+                                    }
                                 }
                                 .padding(.horizontal, 24)
                             }
@@ -126,17 +147,20 @@ struct RecoveryPhaseView: View {
                             insertion: .move(edge: .trailing).combined(with: .opacity),
                             removal: .move(edge: .leading).combined(with: .opacity)
                         ))
-                        
+
                         Spacer(minLength: 24)
                     }
                 }
-                
+                .safeAreaInset(edge: .bottom) {
+                    Color.clear.frame(height: 20)
+                }
+
                 // MARK: Bottom Navigation
                 HStack(spacing: 16) {
                     Button {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                             if appState.recoveryPhaseDayIndex > 0 { appState.recoveryPhaseDayIndex -= 1 }
-                        } 
+                        }
                     } label: {
                         Image(systemName: "arrow.left")
                             .font(.headline)
@@ -148,35 +172,35 @@ struct RecoveryPhaseView: View {
                             .shadow(color: Color.black.opacity(appState.recoveryPhaseDayIndex > 0 ? 0.05 : 0), radius: 8, y: 4)
                     }
                     .disabled(appState.recoveryPhaseDayIndex == 0)
-                    
+
                     Button {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                            if appState.recoveryPhaseDayIndex < offsets.count - 1 { 
-                                appState.recoveryPhaseDayIndex += 1 
+                            if appState.recoveryPhaseDayIndex < dayCount - 1 {
+                                appState.recoveryPhaseDayIndex += 1
                             } else {
-                                appState.adaptationPercent = 1.0
+                                appState.adaptationPercent = currentAdaptation
                                 navigatetoDashboard = true
                             }
                         }
                     } label: {
                         HStack(spacing: 8) {
-                            Text(appState.recoveryPhaseDayIndex == offsets.count - 1 ? "View Adaptation Status" : "Next Day")
-                            if appState.recoveryPhaseDayIndex < offsets.count - 1 {
+                            Text(appState.recoveryPhaseDayIndex == dayCount - 1 ? "View Adaptation Status" : "Next Day")
+                            if appState.recoveryPhaseDayIndex < dayCount - 1 {
                                 Image(systemName: "arrow.right")
                             } else {
                                 Image(systemName: "checkmark.circle.fill")
                             }
                         }
                         .font(.headline)
-                        .foregroundStyle(appState.recoveryPhaseDayIndex == offsets.count - 1 ? .white : baseColor)
+                        .foregroundStyle(appState.recoveryPhaseDayIndex == dayCount - 1 ? .white : baseColor)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(appState.recoveryPhaseDayIndex == offsets.count - 1 ? baseColor : baseColor.opacity(0.12))
+                        .background(appState.recoveryPhaseDayIndex == dayCount - 1 ? baseColor : baseColor.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 100, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 100, style: .continuous)
                                 .stroke(
-                                    appState.recoveryPhaseDayIndex == offsets.count - 1
+                                    appState.recoveryPhaseDayIndex == dayCount - 1
                                     ? Color.clear
                                     : baseColor.opacity(0.35),
                                     lineWidth: 1
@@ -204,9 +228,9 @@ struct RecoveryPhaseView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .navigationDestination(isPresented: $navigatetoDashboard) {
-            Screen6YourAdaptation()
+            AdaptationProgressView()
                 .environmentObject(appState)
-                .onAppear { appState.travelPhase = .postflight }
+                .onAppear { appState.transitionPhase(to: .postflight) }
         }
     }
 }

@@ -403,6 +403,7 @@ struct ProtocolCard: View {
                             .transition(.scale(scale: 0.5).combined(with: .opacity))
                     }
                 }
+                .frame(width: 28, height: 28)
             }
             .padding(14)
             .background(Color(uiColor: .secondarySystemBackground))

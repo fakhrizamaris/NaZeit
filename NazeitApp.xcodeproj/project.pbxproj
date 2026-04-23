@@ -6,11 +6,27 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		415CE5802F9A75A200D2DDDB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 417A78FE2F9262A1002CB98C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 417A79052F9262A1002CB98C;
+			remoteInfo = NazeitApp;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		415CE57C2F9A75A200D2DDDB /* NazeitAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NazeitAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		417A79062F9262A1002CB98C /* NazeitApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NazeitApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		415CE57D2F9A75A200D2DDDB /* NazeitAppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = NazeitAppTests;
+			sourceTree = "<group>";
+		};
 		417A79082F9262A1002CB98C /* NazeitApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = NazeitApp;
@@ -19,6 +35,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		415CE5792F9A75A200D2DDDB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		417A79032F9262A1002CB98C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				417A79082F9262A1002CB98C /* NazeitApp */,
+				415CE57D2F9A75A200D2DDDB /* NazeitAppTests */,
 				417A79072F9262A1002CB98C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				417A79062F9262A1002CB98C /* NazeitApp.app */,
+				415CE57C2F9A75A200D2DDDB /* NazeitAppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,6 +73,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		415CE57B2F9A75A200D2DDDB /* NazeitAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 415CE5822F9A75A200D2DDDB /* Build configuration list for PBXNativeTarget "NazeitAppTests" */;
+			buildPhases = (
+				415CE5782F9A75A200D2DDDB /* Sources */,
+				415CE5792F9A75A200D2DDDB /* Frameworks */,
+				415CE57A2F9A75A200D2DDDB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				415CE5812F9A75A200D2DDDB /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				415CE57D2F9A75A200D2DDDB /* NazeitAppTests */,
+			);
+			name = NazeitAppTests;
+			packageProductDependencies = (
+			);
+			productName = NazeitAppTests;
+			productReference = 415CE57C2F9A75A200D2DDDB /* NazeitAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		417A79052F9262A1002CB98C /* NazeitApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 417A79132F9262A1002CB98C /* Build configuration list for PBXNativeTarget "NazeitApp" */;
@@ -80,6 +128,10 @@
 				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
+					415CE57B2F9A75A200D2DDDB = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = 417A79052F9262A1002CB98C;
+					};
 					417A79052F9262A1002CB98C = {
 						CreatedOnToolsVersion = 26.4;
 					};
@@ -100,11 +152,19 @@
 			projectRoot = "";
 			targets = (
 				417A79052F9262A1002CB98C /* NazeitApp */,
+				415CE57B2F9A75A200D2DDDB /* NazeitAppTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		415CE57A2F9A75A200D2DDDB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		417A79042F9262A1002CB98C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +175,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		415CE5782F9A75A200D2DDDB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		417A79022F9262A1002CB98C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,7 +191,57 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		415CE5812F9A75A200D2DDDB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 417A79052F9262A1002CB98C /* NazeitApp */;
+			targetProxy = 415CE5802F9A75A200D2DDDB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		415CE5832F9A75A200D2DDDB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 878Q92457C;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fakhri.NazeitApp.NazeitAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NazeitApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/NazeitApp";
+			};
+			name = Debug;
+		};
+		415CE5842F9A75A200D2DDDB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 878Q92457C;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fakhri.NazeitApp.NazeitAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NazeitApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/NazeitApp";
+			};
+			name = Release;
+		};
 		417A79112F9262A1002CB98C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -315,6 +432,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		415CE5822F9A75A200D2DDDB /* Build configuration list for PBXNativeTarget "NazeitAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				415CE5832F9A75A200D2DDDB /* Debug */,
+				415CE5842F9A75A200D2DDDB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		417A79012F9262A1002CB98C /* Build configuration list for PBXProject "NazeitApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

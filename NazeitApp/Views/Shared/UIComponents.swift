@@ -5,6 +5,10 @@ extension Color {
     static let bgOnboarding = Color(uiColor: .bgOnboarding)
     static let bgMorning = Color(red: 0.99, green: 0.78, blue: 0.26)
     static let nazeitTeal = Color(uiColor: .nazeitTeal)
+    static let semanticPrimaryTeal = Color(uiColor: .nazeitTeal)
+    static let semanticSecondaryTeal = Color(red: 0.40, green: 0.79, blue: 0.70)
+    static let semanticWarningAmber = Color(red: 0.95, green: 0.67, blue: 0.16)
+    static let semanticDecorativeGray = Color(uiColor: .secondaryLabel)
 }
 
 enum AppVisual {

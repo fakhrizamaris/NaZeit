@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct HealthScreeningModal: View {
+    @EnvironmentObject var appState: AppState
     @Binding var isAccepted: Bool
     @State private var selectedCondition: String? = nil
     
@@ -39,6 +40,17 @@ struct HealthScreeningModal: View {
                 Spacer(minLength: 16)
                 
                 Button {
+                    // Map selection to AdaptationProfile
+                    switch selectedCondition {
+                    case "Clinical Insomnia":
+                        appState.adaptationProfile = .insomnia
+                        appState.isSleepDisorder = true
+                        appState.selectedDisorder = "Clinical Insomnia"
+                    case "Elderly (>65 years)":
+                        appState.adaptationProfile = .gentle
+                    default:
+                        appState.adaptationProfile = .normal
+                    }
                     isAccepted = true
                 } label: {
                     Text("Continue Setup")
@@ -128,4 +140,5 @@ struct ScreeningOptionRow: View {
 
 #Preview {
     HealthScreeningModal(isAccepted: .constant(false))
+        .environmentObject(AppState())
 }

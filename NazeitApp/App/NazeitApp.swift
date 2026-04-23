@@ -25,11 +25,20 @@ struct NazeitApp: App {
                         .environmentObject(appState)
                         .sheet(isPresented: disclaimerSheetBinding) {
                             HealthScreeningModal(isAccepted: $hasAcceptedDisclaimer)
+                                .environmentObject(appState)
                                 .interactiveDismissDisabled()
                         }
                 }
             }
             .onAppear {
+                // Restore persisted state
+                appState.loadFromDisk()
+                
+                // Request notification permission
+                Task {
+                    await NotificationService.shared.requestAuthorization()
+                }
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                     withAnimation { isSplashActive = false }
                 }
