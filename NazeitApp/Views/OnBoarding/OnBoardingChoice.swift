@@ -70,7 +70,7 @@ struct OnboardingChoice: View {
                     }
                 }
             }
-            .navigationBarHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
             .onAppear {
                 triggerApparition()
             }
@@ -122,7 +122,6 @@ struct OnboardingChoice: View {
 }
 
 // MARK: - Components
-
 struct OnboardingChoiceBackgroundView: View {
     var glowAnimated: Bool
     
@@ -165,6 +164,7 @@ struct StepIndicatorView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
             .background(Color(uiColor: .tertiarySystemFill), in: Capsule())
+            .accessibilityLabel("Step \(step) of \(totalSteps)")
     }
 }
 
@@ -221,7 +221,7 @@ struct ChoiceCard: View {
                     .background(tint.opacity(0.15), in: Capsule())
                 
                 Spacer()
-                
+                    
                 Image(systemName: "chevron.right")
                     .font(.body.weight(.semibold))
                     .foregroundStyle(Color(uiColor: .tertiaryLabel))
@@ -261,6 +261,8 @@ struct ChoiceCard: View {
                 .stroke(tint.opacity(0.5), lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 12, y: 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Double tap to continue with \(title) setup")
     }
 }
 

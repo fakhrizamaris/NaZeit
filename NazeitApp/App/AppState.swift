@@ -12,7 +12,8 @@ import UIKit
 enum InputMethod { case watch, manual }
 enum TravelPhase { case preflight, inflight, postflight }
 
-class AppState: ObservableObject {
+@MainActor
+final class AppState: ObservableObject {
     @Published var inputMethod: InputMethod = .watch
     @Published var circadianLevel: Double = 0.45
     @Published var currentHRV: Int = 52

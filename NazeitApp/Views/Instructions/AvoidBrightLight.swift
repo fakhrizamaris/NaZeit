@@ -19,12 +19,12 @@ struct Screen5AvoidBrightLight: View {
             VStack(spacing: 0) {
 
                 HStack(alignment: .center, spacing: 10) {
-                    DualTimeView(localTime: "20:40", isDaytime: false)
+                    DualTimeView(isDaytime: false)
                     
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
                         Text("CIRCADIAN STATE")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.caption2.weight(.bold))
                             .foregroundStyle(Color(uiColor: .secondaryLabel))
                             .tracking(0.5)
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
@@ -48,13 +48,13 @@ struct Screen5AvoidBrightLight: View {
                         .foregroundStyle(Color(uiColor: .label))
 
                     Text("Dim screens until 22:00")
-                        .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .font(.subheadline).foregroundStyle(Color(uiColor: .label))
 
                     VStack(spacing: 5) {
                         Text("Prevents your clock from shifting back")
-                            .font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .font(.caption).foregroundStyle(Color(uiColor: .label))
                         Text("Based on your circadian phase")
-                            .font(.caption).foregroundStyle(Color(uiColor: .tertiaryLabel))
+                            .font(.caption).foregroundStyle(Color(uiColor: .label).opacity(0.85))
                     }
                 }
                 .instructionCard()
@@ -73,7 +73,7 @@ struct Screen5AvoidBrightLight: View {
                     Text("Up next: Sleep at 22:30").font(.caption).fontWeight(.medium)
                     Spacer()
                 }
-                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                .foregroundStyle(Color(uiColor: .label))
                 .padding(.horizontal, 14).padding(.vertical, 10)
                 .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(.horizontal, 24).padding(.bottom, 12)
@@ -92,8 +92,7 @@ struct Screen5AvoidBrightLight: View {
                         ScreenNewA_WatchDetects().environmentObject(appState)
                     } label: {
                         Text("I can't avoid light right now")
-                            .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
-                            .frame(maxWidth: .infinity).padding(.vertical, 12)
+                            .appInteractiveTextStyle()
                     }
                 }
                 .padding(.horizontal, 24).padding(.bottom, 32)

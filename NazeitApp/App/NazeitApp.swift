@@ -12,7 +12,7 @@ struct NazeitApp: App {
     @StateObject var appState = AppState()
     
     @State private var isSplashActive = true
-    @State private var hasAcceptedDisclaimer = false
+    @AppStorage("hasAcceptedDisclaimer") private var hasAcceptedDisclaimer = false
 
     var body: some Scene {
         WindowGroup {
@@ -23,7 +23,7 @@ struct NazeitApp: App {
                 } else {
                     OnboardingChoice()
                         .environmentObject(appState)
-                        .sheet(isPresented: .constant(!hasAcceptedDisclaimer)) {
+                        .sheet(isPresented: disclaimerSheetBinding) {
                             HealthScreeningModal(isAccepted: $hasAcceptedDisclaimer)
                                 .interactiveDismissDisabled()
                         }
@@ -35,5 +35,16 @@ struct NazeitApp: App {
                 }
             }
         }
+    }
+
+    private var disclaimerSheetBinding: Binding<Bool> {
+        Binding(
+            get: { !hasAcceptedDisclaimer },
+            set: { showing in
+                if !showing {
+                    hasAcceptedDisclaimer = true
+                }
+            }
+        )
     }
 }

@@ -17,12 +17,12 @@ struct Screen4GetSunlight: View {
             VStack(spacing: 0) {
                 
                 HStack(alignment: .center, spacing: 10) {
-                    DualTimeView(localTime: "07:40", isDaytime: true)
+                    DualTimeView(isDaytime: true)
                     
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
                         Text("CIRCADIAN STATE")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.caption2.weight(.bold))
                             .foregroundStyle(Color(uiColor: .secondaryLabel))
                             .tracking(0.5)
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
@@ -47,7 +47,7 @@ struct Screen4GetSunlight: View {
                                 .foregroundStyle(Color(uiColor: .label))
                             
                             Text("Go outside for 20 min")
-                                .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                                .font(.subheadline).foregroundStyle(Color(uiColor: .label))
                             
                             VStack(spacing: 5) {
                                 HStack(spacing: 5) {
@@ -85,7 +85,7 @@ struct Screen4GetSunlight: View {
                             }
                             if showWhy {
                                 Text("Morning light suppresses melatonin and signals your brain it's daytime in the new time zone — the fastest way to shift your circadian clock forward.")
-                                    .font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    .font(.caption).foregroundStyle(Color(uiColor: .label))
                                     .multilineTextAlignment(.center).padding(.horizontal, 32)
                                     .transition(.opacity.combined(with: .move(edge: .top)))
                             }
@@ -99,7 +99,7 @@ struct Screen4GetSunlight: View {
                             Text("Up next: Eat at 12:00").font(.caption).fontWeight(.medium)
                             Spacer()
                         }
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .foregroundStyle(Color(uiColor: .label))
                         .padding(.horizontal, 14).padding(.vertical, 10)
                         .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
                         .padding(.horizontal, 24).padding(.bottom, 12)
@@ -113,12 +113,7 @@ struct Screen4GetSunlight: View {
                         Text("Done — mark as complete")
                         Image(systemName: "checkmark").fontWeight(.semibold)
                     }
-                    .font(.body).fontWeight(.semibold).foregroundStyle(.white)
-                    .frame(maxWidth: .infinity).padding(.vertical, 16)
-                    .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing),
-                                in: RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+                    .appPrimaryCTAStyle()
                 }
                 .padding(.horizontal, 24).padding(.bottom, 32)
             }

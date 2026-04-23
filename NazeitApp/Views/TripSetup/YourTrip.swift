@@ -12,19 +12,15 @@ struct YourTrip: View {
     
     private var isValid: Bool { !appState.fromCity.isEmpty && !appState.toCity.isEmpty }
     private var dateLabel: String {
-        let f = DateFormatter()
-        f.timeZone = appState.fromTimeZone
-        f.dateStyle = .medium
-        f.timeStyle = .short
-        return f.string(from: appState.departureDate)
+        var format = Date.FormatStyle.dateTime.year().month(.abbreviated).day().hour().minute()
+        format.timeZone = appState.fromTimeZone
+        return appState.departureDate.formatted(format)
     }
     
     private var arrivalDateLabel: String {
-        let f = DateFormatter()
-        f.timeZone = appState.toTimeZone
-        f.dateStyle = .medium
-        f.timeStyle = .short
-        return f.string(from: appState.arrivalDate)
+        var format = Date.FormatStyle.dateTime.year().month(.abbreviated).day().hour().minute()
+        format.timeZone = appState.toTimeZone
+        return appState.arrivalDate.formatted(format)
     }
     
     private var timezoneShift: Int {
@@ -192,7 +188,7 @@ struct YourTrip: View {
                                     TextField("Transit City (e.g. Dubai)", text: $appState.transitCity)
                                         .font(.body)
                                         .foregroundStyle(Color(uiColor: .label))
-                                        .frame(height: 52)
+                                        .frame(minHeight: 52)
                                 }
                                 .padding(.horizontal, 16)
                                 .background(Color(uiColor: .secondarySystemBackground))
@@ -211,6 +207,8 @@ struct YourTrip: View {
                                     Spacer()
                                     Stepper("", value: $appState.layoverDuration, in: 1...24)
                                         .labelsHidden()
+                                        .accessibilityLabel("Layover duration")
+                                        .accessibilityValue("\(appState.layoverDuration) hours")
                                 }
                                 .padding(.horizontal, 16).padding(.vertical, 10)
                                 .background(Color(uiColor: .secondarySystemBackground))
@@ -225,23 +223,38 @@ struct YourTrip: View {
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
                     if timezoneShift != 0 && !appState.toCity.isEmpty {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 16) {
                             if isGeocodingTo || isGeocodingFrom {
-                                ProgressView().tint(Color.mint).scaleEffect(0.8)
+                                ProgressView().tint(.white).scaleEffect(0.9)
                             } else {
-                                Image(systemName: "clock.arrow.2.circlepath").font(.subheadline)
+                                Image(systemName: "globe.americas.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.white)
+                                    .symbolEffect(.bounce, value: timezoneShift)
                             }
                             
-                            let sign = timezoneShift > 0 ? "+" : ""
-                            Text("\(sign)\(timezoneShift) hr time zone shift detected")
-                                .font(.caption.weight(.bold))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Time Zone Shift")
+                                    .font(.caption2).fontWeight(.bold)
+                                    .foregroundStyle(.white.opacity(0.8))
+                                    .textCase(.uppercase)
+                                
+                                let sign = timezoneShift > 0 ? "+" : ""
+                                Text("\(sign)\(timezoneShift) Hours Difference")
+                                    .font(.headline)
+                                    .foregroundStyle(.white)
+                            }
+                            Spacer()
                         }
-                        .foregroundStyle(Color.mint)
-                        .padding(.horizontal, 14).padding(.vertical, 8)
-                        .background(Color.mint.opacity(0.12), in: Capsule())
+                        .padding(16)
+                        .background(
+                            LinearGradient(colors: [Color.mint, baseColor], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .shadow(color: baseColor.opacity(0.3), radius: 10, y: 5)
                         .padding(.horizontal, 24).padding(.bottom, 24)
-                        .transition(.scale(scale: 0.95).combined(with: .opacity))
-                        .animation(.spring, value: isGeocodingTo)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isGeocodingTo)
                     }
                     
                     if isValid {
@@ -271,28 +284,18 @@ struct YourTrip: View {
                             Text("Generate Plan")
                             Image(systemName: "wand.and.stars")
                         }
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity).padding(.vertical, 16)
-                        .background(
-                            isValid
-                            ? AnyShapeStyle(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
-                                                           startPoint: .topLeading, endPoint: .bottomTrailing))
-                            : AnyShapeStyle(Color(uiColor: .quaternaryLabel))
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .shadow(color: isValid ? Color.teal.opacity(0.20) : .clear, radius: 10, y: 5)
+                        .appPrimaryCTAStyle(isEnabled: isValid)
                     }
                     .disabled(!isValid)
                     .padding(.horizontal, 24).padding(.bottom, 48)
                     .opacity(appeared ? 1 : 0)
+                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isValid)
                 }
             }
         }
         .onTapGesture { hideKeyboard() }
         .navigationBarTitleDisplayMode(.inline)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: appState.toCity.isEmpty)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: timezoneShift)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isValid)
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.1)) { appeared = true }
         }
@@ -300,7 +303,7 @@ struct YourTrip: View {
             guard !appState.fromCity.isEmpty else { appState.fromTimeZone = .current; return }
             isGeocodingFrom = true
             do {
-                try await Task.sleep(nanoseconds: 1_200_000_000)
+                try await Task.sleep(for: .milliseconds(400))
                 if let request = MKGeocodingRequest(addressString: appState.fromCity) {
                     let mapItems = try await request.mapItems
                     if let tz = mapItems.first?.timeZone {
@@ -314,7 +317,7 @@ struct YourTrip: View {
             guard !appState.toCity.isEmpty else { return }
             isGeocodingTo = true
             do {
-                try await Task.sleep(nanoseconds: 1_200_000_000)
+                try await Task.sleep(for: .milliseconds(400))
                 if let request = MKGeocodingRequest(addressString: appState.toCity) {
                     let mapItems = try await request.mapItems
                     if let tz = mapItems.first?.timeZone {
@@ -327,47 +330,15 @@ struct YourTrip: View {
     }
 }
 
-// private struct TripField: View {
-//     let label: String
-//     let placeholder: String
-//     @Binding var text: String
-//     let tintColor: Color
-    
-//     var body: some View {
-//         VStack(alignment: .leading, spacing: 8) {
-//             Text(label)
-//                 .font(.footnote).fontWeight(.semibold)
-//                 .foregroundStyle(Color(uiColor: .secondaryLabel))
-//                 .padding(.horizontal, 4)
-            
-//             TextField(placeholder, text: $text)
-//                 .font(.body)
-//                 .foregroundStyle(Color(uiColor: .label))
-//                 .frame(height: 52)
-//                 .padding(.horizontal, 16)
-//                 .background(Color(uiColor: .secondarySystemBackground))
-//                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-//                 .overlay(
-//                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-//                         .stroke(text.isEmpty ? Color(uiColor: .quaternaryLabel) : tintColor.opacity(0.6), lineWidth: text.isEmpty ? 0.5 : 1.5)
-//                 )
-//                 .autocorrectionDisabled()
-//                 .textInputAutocapitalization(.words)
-//                 .animation(.spring(response: 0.3), value: text.isEmpty)
-//         }
-//     }
-// }
-
 private struct SearchableTripField: View {
     let label: String
     let placeholder: String
     @Binding var text: String
     let tintColor: Color
     
-    // Ini mesin yang kamu rakit di Misi 1:
+ 
     @StateObject private var searchService = LocationSearchService()
     
-    // Variabel bawaan Apple untuk nge-detect apakah keyboard lagi ngetik di kotak ini
     @FocusState private var isFocused: Bool
     
     var body: some View {
@@ -377,12 +348,11 @@ private struct SearchableTripField: View {
                 .foregroundStyle(Color(uiColor: .secondaryLabel))
                 .padding(.horizontal, 4)
             
-            // Kotak Input
             TextField(placeholder, text: $searchService.searchQuery)
                 .focused($isFocused)
                 .font(.body)
                 .foregroundStyle(Color(uiColor: .label))
-                .frame(height: 52)
+                .frame(minHeight: 52)
                 .padding(.horizontal, 16)
                 .background(Color(uiColor: .secondarySystemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -391,30 +361,29 @@ private struct SearchableTripField: View {
                         .stroke(searchService.searchQuery.isEmpty ? Color(uiColor: .quaternaryLabel) : tintColor.opacity(0.6), lineWidth: searchService.searchQuery.isEmpty ? 0.5 : 1.5)
                 )
                 .autocorrectionDisabled()
-                // Menyinkronkan ketikan ke otak aplikasi (AppState)
-                .onChange(of: searchService.searchQuery) { newValue in
+                .accessibilityLabel(label)
+                .accessibilityHint("Enter city name")
+                .onChange(of: searchService.searchQuery) { _, newValue in
                     text = newValue
                 }
                 .onAppear {
                     searchService.searchQuery = text
                 }
             
-            // Dropdown List (Akan muncul SECARA AJAIB pas lagi ngetik)
             if isFocused && !searchService.searchQuery.isEmpty && !searchService.searchResults.isEmpty {
                 VStack(spacing: 0) {
                     ForEach(searchService.searchResults, id: \.self) { result in
                         Button {
-                            // Kalau user nge-klik kota tebakan Apple
-                            searchService.searchQuery = result.title // e.g. "Los Angeles"
+                            searchService.searchQuery = result.title
                             text = result.title
-                            isFocused = false // Tutup keyboard
+                            isFocused = false
                         } label: {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(result.title) // Nama kota
+                                Text(result.title)
                                     .font(.body)
                                     .foregroundStyle(Color(uiColor: .label))
                                 if !result.subtitle.isEmpty {
-                                    Text(result.subtitle) // Keterangan negara/provinsi (ex: "CA, United States")
+                                    Text(result.subtitle)
                                         .font(.caption)
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
@@ -429,13 +398,12 @@ private struct SearchableTripField: View {
                         }
                     }
                 }
-                .background(Color(uiColor: .secondarySystemBackground))
+                .background(.regularMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
                 .padding(.top, 4)
-                .shadow(color: Color.black.opacity(0.05), radius: 10, y: 5)
-                .transition(.opacity.combined(with: .move(edge: .top)))
-                // ZIndex 1 memastikan dropdown melayang di atas elemen bawahnya
+                .shadow(color: Color.black.opacity(0.12), radius: 15, y: 8)
+                .transition(.scale(scale: 0.98, anchor: .top).combined(with: .opacity))
                 .zIndex(1)
             }
         }

@@ -32,7 +32,7 @@ struct ConnectAppleWatch: View {
                 
                 Text("We'll read your biometric data in real-time.")
                     .font(.body)
-                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .foregroundStyle(Color(uiColor: .label))
                     .padding(.bottom, 36)
                 
                 VStack(spacing: 8) {
@@ -55,16 +55,7 @@ struct ConnectAppleWatch: View {
                         if isSynced { Image(systemName: "checkmark").fontWeight(.bold) }
                         Text(isSynced ? "Data Synced" : "Sync Now")
                     }
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(
-                        LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing),
-                        in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    )
-                    .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+                    .appPrimaryCTAStyle(isEnabled: !isSynced)
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
@@ -77,9 +68,7 @@ struct ConnectAppleWatch: View {
                         Text("Continue to trip setup")
                         Image(systemName: "arrow.right").font(.footnote)
                     }
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(Color(uiColor: .label).opacity(isSynced ? 1.0 : 0.30))
+                    .appInteractiveTextStyle(isEnabled: isSynced)
                 }
                 .disabled(!isSynced)
                 .animation(.easeInOut, value: isSynced)
@@ -115,14 +104,14 @@ struct AnimatedWatchIcon: View {
             }
             ZStack {
                 Circle()
-                    .fill(isSynced ? Color.teal.opacity(0.15) : Color(uiColor: .nazeitTeal).opacity(0.12))
+                    .fill(isSynced ? Color.mint.opacity(0.18) : Color.cyan.opacity(0.14))
                     .frame(width: 96)
                     .animation(.spring(response: 0.4), value: isSynced)
                 
                 Image(systemName: isSynced ? "checkmark.circle.fill" : "applewatch")
                     .font(.system(size: watchIconSize, weight: .light))
                     .symbolRenderingMode(isSynced ? .multicolor : .monochrome)
-                    .foregroundStyle(isSynced ? Color.teal : Color(uiColor: .nazeitTeal))
+                    .foregroundStyle(isSynced ? Color.mint : Color.cyan)
                     .contentTransition(.symbolEffect(.replace))
             }
         }

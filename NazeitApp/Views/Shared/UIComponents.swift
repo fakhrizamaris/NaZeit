@@ -4,27 +4,70 @@ extension Color {
     static let circadianTeal = Color(uiColor: .circadianTeal)
     static let bgOnboarding = Color(uiColor: .bgOnboarding)
     static let bgMorning = Color(red: 0.99, green: 0.78, blue: 0.26)
+    static let nazeitTeal = Color(uiColor: .nazeitTeal)
 }
 
-struct PrimaryBtn: View {
-    let title: String
-    
-    var body: some View {
-        Text(title)
-            .font(.body)
-            .fontWeight(.semibold)
+enum AppVisual {
+    static let primaryCornerRadius: CGFloat = 16
+    static let cardCornerRadius: CGFloat = 24
+    static let primaryGradient = LinearGradient(
+        colors: [Color.teal, Color.nazeitTeal],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+}
+
+private struct PrimaryCTAStyle: ViewModifier {
+    var isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .font(.headline)
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
-                LinearGradient(
-                    colors: [Color.teal, Color(uiColor: .nazeitTeal)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: 16)
+                isEnabled
+                ? AnyShapeStyle(AppVisual.primaryGradient)
+                : AnyShapeStyle(Color(uiColor: .quaternaryLabel)),
+                in: RoundedRectangle(cornerRadius: AppVisual.primaryCornerRadius, style: .continuous)
             )
-            .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+            .shadow(color: isEnabled ? Color.teal.opacity(0.20) : .clear, radius: 10, y: 5)
+            .accessibilityAddTraits(.isButton)
+    }
+}
+
+extension View {
+    func appPrimaryCTAStyle(isEnabled: Bool = true) -> some View {
+        modifier(PrimaryCTAStyle(isEnabled: isEnabled))
+    }
+}
+
+private struct InteractiveTextLinkStyle: ViewModifier {
+    var isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(isEnabled ? Color.blue : Color(uiColor: .tertiaryLabel))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+    }
+}
+
+extension View {
+    func appInteractiveTextStyle(isEnabled: Bool = true) -> some View {
+        modifier(InteractiveTextLinkStyle(isEnabled: isEnabled))
+    }
+}
+
+struct PrimaryBtn: View {
+    let title: String
+    var isEnabled: Bool = true
+    
+    var body: some View {
+        Text(title)
+            .appPrimaryCTAStyle(isEnabled: isEnabled)
     }
 }
 

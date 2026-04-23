@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import MapKit
 
-class LocationSearchService: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
+final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
     
     private var completer: MKLocalSearchCompleter
     
@@ -43,7 +43,9 @@ class LocationSearchService: NSObject, ObservableObject, MKLocalSearchCompleterD
     }
     
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: any Error) {
-        print("Pencarian maps error: \(error.localizedDescription)")
+        DispatchQueue.main.async {
+            self.searchResults = []
+        }
     }
     
 }

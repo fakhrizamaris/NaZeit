@@ -42,24 +42,15 @@ struct HealthScreeningModal: View {
                     isAccepted = true
                 } label: {
                     Text("Continue Setup")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .foregroundStyle(.white)
-                        .background(
-                            LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
-                                           startPoint: .topLeading, endPoint: .bottomTrailing),
-                            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        )
-                        .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+                        .appPrimaryCTAStyle(isEnabled: selectedCondition != nil)
                 }
-                .opacity(selectedCondition == nil ? 0.20 : 1)
                 .disabled(selectedCondition == nil)
                 .padding(.bottom, 16)
             }
             .padding(.horizontal, 20)
             .background(Color(uiColor: .secondarySystemBackground))
             .interactiveDismissDisabled()
+            .sensoryFeedback(.selection, trigger: selectedCondition)
         }
     }
 }
@@ -110,7 +101,7 @@ struct ScreeningOptionRow: View {
                 Image(systemName: icon)
                     .font(.title2)
                     .frame(width: 32)
-                    .foregroundStyle(isSelected ? Color(uiColor: .nazeitTeal) : Color(uiColor: .secondaryLabel))
+                    .foregroundStyle(isSelected ? Color.nazeitTeal : Color(uiColor: .secondaryLabel))
                 
                 Text(title)
                     .font(.body)
@@ -124,12 +115,12 @@ struct ScreeningOptionRow: View {
                 }
             }
             .padding(16)
-            .background(isSelected ? Color(uiColor: .nazeitTeal).opacity(0.12) : Color(uiColor: .tertiarySystemBackground))
-            .foregroundStyle(isSelected ? Color(uiColor: .nazeitTeal) : Color(uiColor: .label))
+            .background(isSelected ? Color.nazeitTeal.opacity(0.12) : Color(uiColor: .tertiarySystemBackground))
+            .foregroundStyle(isSelected ? Color.nazeitTeal : Color(uiColor: .label))
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? Color(uiColor: .nazeitTeal) : Color(uiColor: .quaternaryLabel), lineWidth: isSelected ? 2 : 1)
+                    .stroke(isSelected ? Color.nazeitTeal : Color(uiColor: .quaternaryLabel), lineWidth: isSelected ? 2 : 1)
             )
         }
     }

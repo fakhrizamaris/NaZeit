@@ -19,6 +19,7 @@ struct SunRaysDecoration: View {
             }
         }
         .ignoresSafeArea().allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -31,6 +32,7 @@ struct MoonDecoration: View {
                 .position(x: geo.size.width * 0.82, y: geo.size.height * 0.12)
         }
         .ignoresSafeArea().allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -52,6 +54,7 @@ struct SuccessParticles: View {
             }
         }
         .ignoresSafeArea().allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -70,6 +73,50 @@ struct StarsBackground: View {
             }
         }
         .ignoresSafeArea().allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+struct CurrentTimeBadge: View {
+    let title: String
+    let timeZone: TimeZone
+    var accentColor: Color = Color(uiColor: .nazeitTeal)
+    var isProminent: Bool = false
+
+    private func timeString(for date: Date) -> String {
+        var style = Date.FormatStyle.dateTime.hour().minute()
+        style.timeZone = timeZone
+        return date.formatted(style)
+    }
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 60)) { context in
+            HStack(spacing: 6) {
+                Image(systemName: "clock.fill")
+                    .font(.caption2.weight(.bold))
+                Text(title.uppercased())
+                    .font(.caption2.weight(.bold))
+                Text(timeString(for: context.date))
+                    .font((isProminent ? Font.subheadline : .caption).weight(.bold).monospacedDigit())
+            }
+            .foregroundStyle(isProminent ? .white : Color(uiColor: .label))
+            .padding(.horizontal, isProminent ? 12 : 10)
+            .padding(.vertical, isProminent ? 8 : 6)
+            .background(
+                isProminent
+                ? AnyShapeStyle(LinearGradient(colors: [accentColor.opacity(0.85), accentColor], startPoint: .topLeading, endPoint: .bottomTrailing))
+                : AnyShapeStyle(Color(uiColor: .tertiarySystemFill)),
+                in: Capsule()
+            )
+            .overlay(
+                Capsule()
+                    .stroke(isProminent ? accentColor.opacity(0.35) : Color.clear, lineWidth: 1)
+            )
+            .shadow(color: isProminent ? accentColor.opacity(0.22) : .clear, radius: 6, y: 3)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(title) time")
+            .accessibilityValue(timeString(for: context.date))
+        }
     }
 }
 
@@ -77,29 +124,68 @@ struct StarsBackground: View {
 // MARK: - Dual Timeline Component
 struct DualTimeView: View {
     @EnvironmentObject var appState: AppState
-    let localTime: String
     let isDaytime: Bool
+
+    private func timeString(for date: Date, in timeZone: TimeZone) -> String {
+        var style = Date.FormatStyle.dateTime.hour().minute()
+        style.timeZone = timeZone
+        return date.formatted(style)
+    }
+
+    private func gmtLabel(for date: Date, in timeZone: TimeZone) -> String {
+        let hours = timeZone.secondsFromGMT(for: date) / 3600
+        if hours == 0 { return "GMT" }
+        return String(format: "GMT%+d", hours)
+    }
     
     var body: some View {
-        HStack(spacing: 8) {
-            VStack(alignment: .center, spacing: 2) {
-                Text(appState.fromTimeZone.abbreviation() ?? "ORIGIN").font(.system(size: 8, weight: .bold))
-                Text("19:40").font(.caption.weight(.heavy))
+        TimelineView(.periodic(from: .now, by: 60)) { context in
+            VStack(spacing: 4) {
+                HStack(spacing: 8) {
+                    HStack(spacing: 4) {
+                        Text("ORIGIN")
+                            .font(.caption2.weight(.bold))
+                        Text(gmtLabel(for: context.date, in: appState.fromTimeZone))
+                            .font(.caption2)
+                            .foregroundStyle(Color(uiColor: .tertiaryLabel))
+                    }
+                    .foregroundStyle(isDaytime ? .indigo : .teal)
+
+                    Image(systemName: "arrow.right")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(Color(uiColor: .quaternaryLabel))
+
+                    HStack(spacing: 4) {
+                        Text("DEST")
+                            .font(.caption2.weight(.bold))
+                        Text(gmtLabel(for: context.date, in: appState.toTimeZone))
+                            .font(.caption2)
+                            .foregroundStyle(Color(uiColor: .tertiaryLabel))
+                    }
+                    .foregroundStyle(isDaytime ? Color(uiColor: .nazeitTeal) : Color(uiColor: .label))
+                }
+
+                HStack(spacing: 8) {
+                    Text(timeString(for: context.date, in: appState.fromTimeZone))
+                        .font(.caption.weight(.heavy).monospacedDigit())
+                        .foregroundStyle(isDaytime ? .indigo : .teal)
+
+                    Image(systemName: "arrow.right")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(Color(uiColor: .quaternaryLabel))
+
+                    Text(timeString(for: context.date, in: appState.toTimeZone))
+                        .font(.caption.weight(.heavy).monospacedDigit())
+                        .foregroundStyle(isDaytime ? Color(uiColor: .nazeitTeal) : Color(uiColor: .label))
+                }
             }
-            .foregroundStyle(isDaytime ? .indigo : .teal)
-            
-            Image(systemName: "arrow.right").font(.system(size: 10, weight: .bold))
-                .foregroundStyle(Color(uiColor: .quaternaryLabel))
-            
-            VStack(alignment: .center, spacing: 2) {
-                Text(appState.toTimeZone.abbreviation() ?? "LOCAL").font(.system(size: 8, weight: .bold))
-                Text(localTime).font(.caption.weight(.heavy))
-            }
-            .foregroundStyle(isDaytime ? Color(uiColor: .nazeitTeal) : Color(uiColor: .label))
+            .padding(.horizontal, 14).padding(.vertical, 8)
+            .background(Color(uiColor: .secondarySystemBackground))
+            .clipShape(Capsule())
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Time zone comparison")
+            .accessibilityValue("Origin \(timeString(for: context.date, in: appState.fromTimeZone)), Local \(timeString(for: context.date, in: appState.toTimeZone))")
         }
-        .padding(.horizontal, 14).padding(.vertical, 8)
-        .background(Color(uiColor: .secondarySystemBackground))
-        .clipShape(Capsule())
     }
 }
 
@@ -203,6 +289,9 @@ struct DayProgressTracker: View {
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Progress days")
+        .accessibilityValue("Day \(selectedIndex + 1) of \(offsets.count)")
     }
 }
 
@@ -254,6 +343,7 @@ struct ProtocolCard: View {
     let title: String
     let detail: String
     let reasoning: String
+    var accentColor: Color = Color(uiColor: .nazeitTeal)
     
     @State private var isCompleted = false
     
@@ -269,14 +359,14 @@ struct ProtocolCard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
                         Image(systemName: icon)
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .foregroundStyle(accentColor)
                             .font(.subheadline)
                         
                         Text(time)
                             .font(.caption).fontWeight(.bold)
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                            .padding(.horizontal, 8).padding(.vertical, 4)
-                            .background(Color(uiColor: .tertiarySystemFill), in: Capsule())
+                            .foregroundStyle(accentColor)
+                            .padding(.horizontal, 10).padding(.vertical, 4)
+                            .background(accentColor.opacity(0.14), in: Capsule())
                     }
                     
                     Text(title)
@@ -295,7 +385,7 @@ struct ProtocolCard: View {
                         Text(reasoning)
                             .font(.caption)
                     }
-                    .foregroundStyle(Color(uiColor: .nazeitTeal))
+                    .foregroundStyle(accentColor)
                     .padding(.top, 4)
                 }
                 
@@ -309,7 +399,7 @@ struct ProtocolCard: View {
                     if isCompleted {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 28))
-                            .foregroundStyle(Color(uiColor: .nazeitTeal))
+                            .foregroundStyle(accentColor)
                             .transition(.scale(scale: 0.5).combined(with: .opacity))
                     }
                 }
@@ -323,6 +413,10 @@ struct ProtocolCard: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title), \(time)")
+        .accessibilityValue(isCompleted ? "Completed" : "Not completed")
+        .accessibilityHint(detail)
     }
 }
 

@@ -20,10 +20,14 @@ struct ManualSetup: View {
     }
     
     private func timeString(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.timeStyle = .short
-        return f.string(from: date)
+        Self.timeFormatter.string(from: date)
     }
+
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter
+    }()
     
     var body: some View {
         ZStack {
@@ -137,14 +141,7 @@ struct ManualSetup: View {
                             Text("Continue to trip setup")
                             Image(systemName: "arrow.right")
                         }
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
-                                                   startPoint: .leading, endPoint: .trailing))
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+                        .appPrimaryCTAStyle()
                     }
                     .padding(.horizontal, 24).padding(.bottom, 48)
                     .opacity(appeared ? 1 : 0)

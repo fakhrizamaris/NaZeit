@@ -9,7 +9,6 @@ struct ScreenNewA_WatchDetects: View {
     @EnvironmentObject var appState: AppState
     @State private var dotCount      = 0
     @State private var isRecalculating = true
-    @State private var appeared      = false
     
     @ScaledMetric(relativeTo: .largeTitle) private var watchIconSize: CGFloat = 44
     
@@ -55,15 +54,14 @@ struct ScreenNewA_WatchDetects: View {
                         
                     }
                     .frame(maxWidth: .infinity)
-                    .onAppear {
-                        Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { t in
-                            dotCount = (dotCount + 1) % 4
-                            if dotCount == 0 {
-                                t.invalidate()
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                    withAnimation(.spring(response: 0.5)) { isRecalculating = false }
-                                }
-                            }
+                    .task {
+                        for i in 1...4 {
+                            try? await Task.sleep(for: .milliseconds(400))
+                            dotCount = i % 4
+                        }
+                        try? await Task.sleep(for: .milliseconds(500))
+                        withAnimation(.spring(response: 0.5)) {
+                            isRecalculating = false
                         }
                     }
                 }

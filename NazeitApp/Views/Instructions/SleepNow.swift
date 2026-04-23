@@ -37,6 +37,9 @@ struct CircadianStateBar: View {
                 .fontWeight(.medium)
                 .foregroundStyle(stateColor)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Circadian state")
+        .accessibilityValue("\(stateLabel), \(Int(level * 100)) percent")
         .onAppear {
             withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) { animated = level }
         }
@@ -64,16 +67,16 @@ struct Screen3SleepNow: View {
                 HStack(alignment: .center) {
                     Label("In-Flight", systemImage: "airplane.circle.fill")
                         .font(.subheadline).fontWeight(.semibold)
-                        .foregroundStyle(Color(uiColor: .nazeitTeal))
+                        .foregroundStyle(Color.indigo)
                         .padding(.horizontal, 12).padding(.vertical, 8)
-                        .background(Color(uiColor: .nazeitTeal).opacity(0.12))
+                        .background(Color.indigo.opacity(0.12))
                         .clipShape(Capsule())
 
                     Spacer()
 
                     VStack(alignment: .trailing, spacing: 4) {
                         Text("CIRCADIAN STATE")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.caption2.weight(.bold))
                             .foregroundStyle(Color(uiColor: .secondaryLabel))
                             .tracking(1.0)
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
@@ -96,19 +99,19 @@ struct Screen3SleepNow: View {
                         .foregroundStyle(Color(uiColor: .label))
 
                     Text("4 hrs to destination")
-                        .font(.headline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .font(.headline).foregroundStyle(Color(uiColor: .label))
 
                     HStack(spacing: 6) {
                         Image(systemName: appState.inputMethod == .watch ? "applewatch" : "bed.double.fill")
-                            .font(.caption2).foregroundStyle(Color(uiColor: .nazeitTeal))
+                            .font(.caption2).foregroundStyle(Color.indigo)
                         Text(appState.inputMethod == .watch
                              ? "Based on HRV · \(appState.currentHRV)ms"
                              : "Based on sleep schedule")
                             .font(.caption)
                     }
-                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .foregroundStyle(Color(uiColor: .label))
                     .padding(.horizontal, 14).padding(.vertical, 8)
-                    .background(Color(uiColor: .nazeitTeal).opacity(0.1)).clipShape(Capsule())
+                    .background(Color.indigo.opacity(0.10)).clipShape(Capsule())
                 }
                 .padding(.vertical, 40)
                 .frame(maxWidth: .infinity)
@@ -135,20 +138,14 @@ struct Screen3SleepNow: View {
                             Text("Done — I woke up")
                             Image(systemName: "checkmark").fontWeight(.semibold)
                         }
-                        .font(.body).fontWeight(.semibold).foregroundStyle(.white)
-                        .frame(maxWidth: .infinity).padding(.vertical, 16)
-                        .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
-                                                   startPoint: .topLeading, endPoint: .bottomTrailing),
-                                    in: RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+                        .appPrimaryCTAStyle()
                     }
 
                     NavigationLink {
                         ScreenNewC_InFlightDeviated().environmentObject(appState)
                     } label: {
                         Text("Can't sleep right now")
-                            .font(.subheadline).foregroundStyle(Color(uiColor: .nazeitTeal).opacity(0.8))
-                            .frame(maxWidth: .infinity).padding(.vertical, 12)
+                            .appInteractiveTextStyle()
                     }
                 }
                 .padding(.horizontal, 24).padding(.bottom, 32)

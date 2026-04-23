@@ -28,7 +28,7 @@ struct ScreenNewB_RecalculatedInstruction: View {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 3) {
                         Text("CIRCADIAN STATE")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.caption2.weight(.bold))
                             .foregroundStyle(Color(uiColor: .secondaryLabel))
                             .tracking(0.5)
                         CircadianStateBar(level: appState.circadianLevel, compact: true)
@@ -67,7 +67,7 @@ struct ScreenNewB_RecalculatedInstruction: View {
                                 .foregroundStyle(Color(uiColor: .label))
                             
                             Text("Go outside for 20 min")
-                                .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                                .font(.subheadline).foregroundStyle(Color(uiColor: .label))
                             
                             VStack(spacing: 6) {
                                 HStack(spacing: 5) {
@@ -81,7 +81,7 @@ struct ScreenNewB_RecalculatedInstruction: View {
                                 Text(appState.inputMethod == .watch
                                      ? "Based on your actual sleep · HRV"
                                      : "Based on your sleep schedule")
-                                .font(.caption).foregroundStyle(Color(uiColor: .tertiaryLabel))
+                                  .font(.caption).foregroundStyle(Color(uiColor: .label).opacity(0.9))
                             }
                         }
                         .padding(28).frame(maxWidth: .infinity)
@@ -105,7 +105,7 @@ struct ScreenNewB_RecalculatedInstruction: View {
                             }
                             if showWhy {
                                 Text("Because you slept later, your circadian phase shifted. Sunlight at 9 AM (instead of 7 AM) still resets your clock — just 2 hours later than the optimal window.")
-                                    .font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    .font(.caption).foregroundStyle(Color(uiColor: .label))
                                     .multilineTextAlignment(.center).padding(.horizontal, 32)
                                     .transition(.opacity.combined(with: .move(edge: .top)))
                             }
@@ -117,7 +117,7 @@ struct ScreenNewB_RecalculatedInstruction: View {
                             Text("Up next: Eat at 13:00 (was 12:00)").font(.caption).fontWeight(.medium)
                             Spacer()
                         }
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .foregroundStyle(Color(uiColor: .label))
                         .padding(.horizontal, 14).padding(.vertical, 10)
                         .background(Color(uiColor: .secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
                         .padding(.horizontal, 24).padding(.bottom, 12)
@@ -131,12 +131,7 @@ struct ScreenNewB_RecalculatedInstruction: View {
                         Text("Got it — I'll do this now")
                         Image(systemName: "arrow.right").fontWeight(.semibold)
                     }
-                    .font(.body).fontWeight(.semibold).foregroundStyle(.white)
-                    .frame(maxWidth: .infinity).padding(.vertical, 16)
-                    .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing),
-                                in: RoundedRectangle(cornerRadius: 16))
-                    .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
+                    .appPrimaryCTAStyle()
                 }
                 .padding(.horizontal, 24).padding(.bottom, 32)
             }

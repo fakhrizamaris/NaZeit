@@ -11,19 +11,22 @@ struct RecoveryPhaseView: View {
     
     let offsets = [1, 2, 3] // Days AFTER arrival
     let sleepTargets = [
-        "22:30 PM - 06:30 AM", 
-        "22:00 PM - 06:00 AM", 
-        "22:00 PM - 06:00 AM"
+        "10:30 PM - 06:30 AM",
+        "10:00 PM - 06:00 AM",
+        "10:00 PM - 06:00 AM"
     ]
     let shifts = ["Arrival Day", "Recovery Day 2", "Fully Adapted"]
     
     private var baseColor: Color { Color(uiColor: .nazeitTeal) }
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter
+    }()
 
     private func dateString(for offset: Int) -> String {
         let date = Calendar.current.date(byAdding: .day, value: offset, to: appState.arrivalDate) ?? Date()
-        let f = DateFormatter()
-        f.dateFormat = "MMM d"
-        return f.string(from: date)
+        return Self.dayFormatter.string(from: date)
     }
     
     var body: some View {
@@ -71,9 +74,15 @@ struct RecoveryPhaseView: View {
                             
                             VStack(alignment: .leading, spacing: 12) {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text("Daily Protocol")
-                                        .font(.system(.title3, design: .rounded).weight(.bold))
-                                        .foregroundStyle(Color(uiColor: .label))
+                                    HStack(alignment: .center) {
+                                        Text("Daily Protocol")
+                                            .font(.system(.title3, design: .rounded).weight(.bold))
+                                            .foregroundStyle(Color(uiColor: .label))
+
+                                        Spacer()
+
+                                        CurrentTimeBadge(title: "Now", timeZone: appState.toTimeZone, accentColor: baseColor, isProminent: true)
+                                    }
                                     
                                     Text("Strict adherence to these daily tasks will rapidly clear your sleep debt and adjust your body clock.")
                                         .font(.subheadline)
@@ -87,7 +96,8 @@ struct RecoveryPhaseView: View {
                                         icon: "figure.walk",
                                         title: "Light Exercise",
                                         detail: "Do a 20-min walk under the sun.",
-                                        reasoning: "Late afternoon light exposure pushes your body clock later to match the local timezone."
+                                        reasoning: "Late afternoon light exposure pushes your body clock later to match the local timezone.",
+                                        accentColor: .orange
                                     )
                                     
                                     ProtocolCard(
@@ -95,7 +105,8 @@ struct RecoveryPhaseView: View {
                                         icon: "fork.knife",
                                         title: "Strategic Meals",
                                         detail: "Eat heavy meals during daylight hours only.",
-                                        reasoning: "Food tells your digestive organs what time of day it is, aiding total-body alignment."
+                                        reasoning: "Food tells your digestive organs what time of day it is, aiding total-body alignment.",
+                                        accentColor: .indigo
                                     )
                                     
                                     ProtocolCard(
@@ -103,7 +114,8 @@ struct RecoveryPhaseView: View {
                                         icon: "moon.fill",
                                         title: "Sleep Strictness",
                                         detail: "Go to bed exactly at local target time.",
-                                        reasoning: "Strictly anchoring your sleep builds biological consistency to clear jet lag faster."
+                                        reasoning: "Strictly anchoring your sleep builds biological consistency to clear jet lag faster.",
+                                        accentColor: .cyan
                                     )
                                 }
                                 .padding(.horizontal, 24)
@@ -148,7 +160,7 @@ struct RecoveryPhaseView: View {
                         }
                     } label: {
                         HStack(spacing: 8) {
-                            Text(appState.recoveryPhaseDayIndex == offsets.count - 1 ? "Start Recovery" : "Next Day")
+                            Text(appState.recoveryPhaseDayIndex == offsets.count - 1 ? "View Adaptation Status" : "Next Day")
                             if appState.recoveryPhaseDayIndex < offsets.count - 1 {
                                 Image(systemName: "arrow.right")
                             } else {
@@ -156,13 +168,22 @@ struct RecoveryPhaseView: View {
                             }
                         }
                         .font(.headline)
-                        .foregroundStyle(appState.recoveryPhaseDayIndex == offsets.count - 1 ? .white : Color(uiColor: .label))
+                        .foregroundStyle(appState.recoveryPhaseDayIndex == offsets.count - 1 ? .white : baseColor)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(appState.recoveryPhaseDayIndex == offsets.count - 1 ? baseColor : Color(uiColor: .secondarySystemBackground))
+                        .background(appState.recoveryPhaseDayIndex == offsets.count - 1 ? baseColor : baseColor.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 100, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 100, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 100, style: .continuous)
+                                .stroke(
+                                    appState.recoveryPhaseDayIndex == offsets.count - 1
+                                    ? Color.clear
+                                    : baseColor.opacity(0.35),
+                                    lineWidth: 1
+                                )
+                        )
                         .shadow(color: Color.black.opacity(0.05), radius: 8, y: 4)
+                        .animation(.spring(response: 0.32, dampingFraction: 0.82), value: appState.recoveryPhaseDayIndex)
                     }
                 }
                 .padding(.horizontal, 24)
