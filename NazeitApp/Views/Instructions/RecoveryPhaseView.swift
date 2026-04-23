@@ -49,10 +49,13 @@ struct RecoveryPhaseView: View {
         return "\(PlanBuilder.time(day.sleepWindow.bedtime)) - \(PlanBuilder.time(day.sleepWindow.wakeTime))"
     }
 
-    /// Adaptation progress for this phase
+    /// Adaptation progress for this phase — builds on top of loading + in-flight credit
     private var currentAdaptation: Double {
-        guard dayCount > 0 else { return 0 }
-        return min(1.0, Double(appState.recoveryPhaseDayIndex + 1) / Double(dayCount))
+        guard dayCount > 0 else { return appState.adaptationPercent }
+        let basePercent = appState.adaptationPercent
+        let remainingPercent = 1.0 - basePercent
+        let recoveryProgress = Double(appState.recoveryPhaseDayIndex + 1) / Double(dayCount)
+        return min(1.0, basePercent + remainingPercent * recoveryProgress)
     }
 
     var body: some View {
@@ -177,8 +180,13 @@ struct RecoveryPhaseView: View {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                             if appState.recoveryPhaseDayIndex < dayCount - 1 {
                                 appState.recoveryPhaseDayIndex += 1
-                            } else {
+                                // Update adaptation progressively per day
                                 appState.adaptationPercent = currentAdaptation
+                                appState.circadianLevel = appState.adaptationPercent
+                            } else {
+                                // Last day — fully adapted
+                                appState.adaptationPercent = 1.0
+                                appState.circadianLevel = 1.0
                                 navigatetoDashboard = true
                             }
                         }

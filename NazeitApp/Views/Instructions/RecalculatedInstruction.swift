@@ -152,6 +152,9 @@ struct ScreenNewB_RecalculatedInstruction: View {
                                 appState.recalculatePlanIfAllowed()
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                                     isCompleted = true
+                                    // Credit ~2% for completing recalculated step (reduced vs normal)
+                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.02)
+                                    appState.circadianLevel = appState.adaptationPercent
                                 }
                             } label: {
                                 HStack(spacing: 8) {
