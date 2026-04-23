@@ -205,7 +205,7 @@ final class AppState: ObservableObject {
 
     /// Update phase and calculate adaptation progress based on completed work.
     /// - preflight → inflight: credit the loading phase shift
-    /// - inflight → postflight: credit the in-flight protocol contribution
+    /// - inflight → postflight: no bulk credit (each in-flight step already credited individually)
     func transitionPhase(to phase: TravelPhase) {
         if let plan = tripPlan {
             let totalGap = plan.totalGapHours
@@ -227,13 +227,15 @@ final class AppState: ObservableObject {
                 adaptationPercent = min(1.0, loadingShift / totalGap)
 
             case (.inflight, .postflight):
-                // Credit in-flight: add ~10% for completing in-flight protocol
-                let inflightCredit = 0.10
-                adaptationPercent = min(1.0, adaptationPercent + inflightCredit)
+                // In-flight steps already credited individually via Done buttons
+                break
 
             default:
                 break
             }
+
+            // Keep circadianLevel in sync with adaptationPercent
+            circadianLevel = adaptationPercent
         }
 
         travelPhase = phase
