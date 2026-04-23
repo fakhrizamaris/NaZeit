@@ -144,6 +144,9 @@ struct AvoidBrightLightView: View {
                             Button {
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                                     isCompleted = true
+                                    // Credit ~3% for completing light avoidance (3 of 3 in-flight steps)
+                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.033)
+                                    appState.circadianLevel = appState.adaptationPercent
                                 }
                             } label: {
                                 HStack(spacing: 8) {
