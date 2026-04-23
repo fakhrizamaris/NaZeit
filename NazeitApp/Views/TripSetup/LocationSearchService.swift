@@ -39,33 +39,6 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
         "cafe", "café", "school", "university", "station", "terminal", "port",
         "beach", "park", "museum", "view", "apartment", "tower", "plaza"
     ]
-
-    private let cityAirportSeed: [String: (code: String, subtitleHints: [String])] = [
-        "batam": ("BTH", ["riau islands"]),
-        "jakarta": ("CGK", ["jakarta"]),
-        "denpasar": ("DPS", ["bali"]),
-        "surabaya": ("SUB", ["east java"]),
-        "medan": ("KNO", ["north sumatra"]),
-        "yogyakarta": ("YIA", ["yogyakarta"]),
-        "singapore": ("SIN", []),
-        "kuala lumpur": ("KUL", []),
-        "bangkok": ("BKK", []),
-        "tokyo": ("HND", []),
-        "osaka": ("KIX", []),
-        "seoul": ("ICN", []),
-        "hong kong": ("HKG", []),
-        "dubai": ("DXB", []),
-        "doha": ("DOH", []),
-        "london": ("LHR", []),
-        "paris": ("CDG", []),
-        "amsterdam": ("AMS", []),
-        "frankfurt": ("FRA", []),
-        "new york": ("JFK", []),
-        "los angeles": ("LAX", []),
-        "san francisco": ("SFO", []),
-        "sydney": ("SYD", []),
-        "melbourne": ("MEL", [])
-    ]
     
     @Published var searchQuery = "" {
         didSet {
@@ -97,7 +70,6 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
                     airportCode: airportCode(for: completion)
                 )
             }
-            .filter { $0.airportCode != nil }
             .sorted { lhs, rhs in
                 let lhsTitle = normalized(lhs.cityName)
                 let rhsTitle = normalized(rhs.cityName)
@@ -169,15 +141,6 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
         if let extracted = extractAirportCode(from: completion.title) ?? extractAirportCode(from: completion.subtitle) {
             return extracted
         }
-
-        let key = normalized(completion.title)
-        guard let seed = cityAirportSeed[key] else { return nil }
-        if seed.subtitleHints.isEmpty { return seed.code }
-
-        let subtitle = normalized(completion.subtitle)
-        if seed.subtitleHints.contains(where: { subtitle.contains($0) }) {
-            return seed.code
-        }
         return nil
     }
 
@@ -189,7 +152,7 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
         guard let match = regex.firstMatch(in: value, options: [], range: range) else { return nil }
         return nsValue.substring(with: match.range)
     }
-    
+
 }
 
     
