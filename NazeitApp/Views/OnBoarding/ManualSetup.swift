@@ -143,6 +143,9 @@ struct ManualSetup: View {
                         }
                         .appPrimaryCTAStyle()
                     }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        appState.resetTripFields()
+                    })
                     .padding(.horizontal, 24).padding(.bottom, 48)
                     .opacity(appeared ? 1 : 0)
                 }

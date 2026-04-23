@@ -9,9 +9,11 @@ import Foundation
 
 struct PlanBuilder {
 
+    /// Locale-aware time formatter — respects the user's device 12h/24h setting,
+    /// consistent with CurrentTimeBadge and other system-formatted times.
     private static let timeFmt: DateFormatter = {
         let f = DateFormatter()
-        f.dateFormat = "hh:mm a"
+        f.timeStyle = .short
         return f
     }()
 
@@ -80,19 +82,21 @@ struct PlanBuilder {
             let total = shift * Double(i + 1)
             let label = String(format: "-%.\(total.truncatingRemainder(dividingBy: 1) == 0 ? "0" : "1")f Hour Shift", total)
 
-            let cbt = Circadian.cbtMin(wakeTime: wake, method: method)
-            let light = Circadian.lightWindows(cbtMin: cbt, direction: direction, profile: profile)
             let cutoff = Circadian.caffeineCutoff(bedtime: bed, profile: profile)
 
             var items: [Instruction] = []
 
-            items.append(Instruction(
-                type: .seekLight, scheduledTime: light.seekStart, duration: 15 * 60,
-                title: "Seek Morning Light",
-                detail: "Get 15 mins of sunlight immediately after waking up.",
-                reasoning: "Early bright light halts melatonin production and anchors your circadian rhythm.",
-                iconName: "sun.max.fill", accentColorName: "orange"
-            ))
+            // Use the shifted wake time as the light instruction time,
+            // since the user seeks light "immediately after waking up."
+            let lightTime = wake
+            let lightInst = smartLightInstruction(
+                scheduledTime: lightTime,
+                duration: 15 * 60,
+                direction: direction,
+                phase: .preflight
+            )
+            items.append(lightInst)
+
             items.append(Instruction(
                 type: .caffeineCutoff, scheduledTime: cutoff,
                 title: "Caffeine Cutoff",
@@ -201,21 +205,19 @@ struct PlanBuilder {
             else if i == count - 1 { label = "Fully Adapted" }
             else { label = "Recovery Day \(i + 1)" }
 
-            let cbt = Circadian.cbtMin(wakeTime: wake, method: method)
-            let light = Circadian.lightWindows(cbtMin: cbt, direction: direction, profile: profile)
             let cutoff = Circadian.caffeineCutoff(bedtime: bed, profile: profile)
 
             var items: [Instruction] = []
 
-            items.append(Instruction(
-                type: .seekLight, scheduledTime: light.seekStart, duration: 20 * 60,
-                title: "Seek Sunlight",
-                detail: "Get 20 minutes of outdoor light exposure.",
-                reasoning: direction == .eastward
-                    ? "Morning light advances your clock to match local time."
-                    : "Afternoon light delays your clock to match local time.",
-                iconName: "sun.max.fill", accentColorName: "orange"
-            ))
+            // Use wake time for light instruction timing
+            let lightInst = smartLightInstruction(
+                scheduledTime: wake,
+                duration: 20 * 60,
+                direction: direction,
+                phase: .postflight
+            )
+            items.append(lightInst)
+
             items.append(Instruction(
                 type: .exercise,
                 scheduledTime: cal.date(bySettingHour: 15, minute: 0, second: 0, of: date) ?? date,
@@ -244,6 +246,54 @@ struct PlanBuilder {
                 dayIndex: i, phase: .postflight, date: date, sleepWindow: window,
                 shiftLabel: label, dailyShiftHours: direction.adaptationRatePerDay,
                 instructions: items
+            )
+        }
+    }
+
+    // MARK: - Smart Light Instruction
+
+    /// Generates a contextual light-seeking instruction based on the scheduled hour.
+    /// Before 06:00 → recommends bright artificial light (10,000 lux light therapy box).
+    /// 06:00 and after → recommends outdoor sunlight exposure.
+    /// This matches real circadian medicine practice where artificial light is used
+    /// when natural sunlight isn't available.
+    private static func smartLightInstruction(
+        scheduledTime: Date,
+        duration: TimeInterval,
+        direction: FlightDirection,
+        phase: TravelPhase
+    ) -> Instruction {
+        let hour = Calendar.current.component(.hour, from: scheduledTime)
+        let isPreSunrise = hour < 6
+
+        let durationMinutes = Int(duration / 60)
+
+        if isPreSunrise {
+            // Pre-sunrise: recommend bright indoor light alternatives
+            return Instruction(
+                type: .seekLight,
+                scheduledTime: scheduledTime,
+                duration: duration,
+                title: "Bright Indoor Light",
+                detail: "Turn on all room lights for \(durationMinutes) mins after waking. The sun isn't up yet — bright indoor light helps too.",
+                reasoning: "Any bright light signals your brain to stop melatonin. Turn on overhead lights, sit near a bright lamp, or face a window as dawn approaches.",
+                iconName: "lightbulb.max.fill", accentColorName: "orange"
+            )
+        } else {
+            // Post-sunrise: recommend outdoor sunlight
+            let phaseDetail = phase == .preflight
+                ? "Get \(durationMinutes) mins of sunlight immediately after waking up."
+                : "Get \(durationMinutes) minutes of outdoor sunlight exposure."
+            return Instruction(
+                type: .seekLight,
+                scheduledTime: scheduledTime,
+                duration: duration,
+                title: "Seek Morning Sunlight",
+                detail: phaseDetail,
+                reasoning: direction == .eastward
+                    ? "Morning sunlight halts melatonin and advances your circadian rhythm to match the destination."
+                    : "Timed sunlight exposure delays your body clock to align with the new time zone.",
+                iconName: "sun.max.fill", accentColorName: "orange"
             )
         }
     }

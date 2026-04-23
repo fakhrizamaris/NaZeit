@@ -45,10 +45,10 @@ final class AppState: ObservableObject {
     @Published var toTimeZone: TimeZone = .current {
         didSet { scheduleSave() }
     }
-    @Published var departureDate: Date = Date() {
+    @Published var departureDate: Date = Date().addingTimeInterval(86400 * 3) {
         didSet { scheduleSave() }
     }
-    @Published var arrivalDate: Date = Date().addingTimeInterval(3600 * 15) {
+    @Published var arrivalDate: Date = Date().addingTimeInterval(86400 * 3 + 3600 * 15) {
         didSet { scheduleSave() }
     }
     @Published var hasTransit: Bool = false {
@@ -136,6 +136,13 @@ final class AppState: ObservableObject {
     // MARK: - Plan Generation
 
     func generatePlan() {
+        // Safety: if departure is in the past (stale data), push it to 3 days from now
+        // so the user always gets a meaningful loading phase.
+        if departureDate < Date() {
+            departureDate = Date().addingTimeInterval(86400 * 3)
+            arrivalDate = departureDate.addingTimeInterval(3600 * 15)
+        }
+
         let plan = PlanBuilder.build(
             bedtime: preferredBedtime,
             wakeTime: preferredWakeTime,
@@ -168,14 +175,15 @@ final class AppState: ObservableObject {
         return true
     }
 
-    /// Reset for a new trip
-    func resetForNewTrip() {
+    /// Reset only the trip-specific fields (keeps user profile like bedtime/wakeTime).
+    /// Call this when navigating to YourTrip from onboarding to ensure a clean slate.
+    func resetTripFields() {
         fromCity = ""
         toCity = ""
         fromTimeZone = .current
         toTimeZone = .current
-        departureDate = Date()
-        arrivalDate = Date().addingTimeInterval(3600 * 15)
+        departureDate = Date().addingTimeInterval(86400 * 3)
+        arrivalDate = Date().addingTimeInterval(86400 * 3 + 3600 * 15)
         hasTransit = false
         transitCity = ""
         layoverDuration = 2
@@ -190,8 +198,44 @@ final class AppState: ObservableObject {
         NotificationService.shared.cancelAll()
     }
 
-    /// Reset recalcCount on phase transition (Section 4.1 Reset Policy)
+    /// Reset for a new trip (full reset)
+    func resetForNewTrip() {
+        resetTripFields()
+    }
+
+    /// Update phase and calculate adaptation progress based on completed work.
+    /// - preflight → inflight: credit the loading phase shift
+    /// - inflight → postflight: credit the in-flight protocol contribution
     func transitionPhase(to phase: TravelPhase) {
+        if let plan = tripPlan {
+            let totalGap = plan.totalGapHours
+            guard totalGap > 0 else {
+                travelPhase = phase
+                recalcCount = 0
+                return
+            }
+
+            switch (travelPhase, phase) {
+            case (.preflight, .inflight):
+                // Credit loading phase: each completed day shifts by dailyShift hours
+                let loadingDays = plan.loadingPhase.count
+                let loadingShift = Circadian.totalLoadingShift(
+                    gap: totalGap,
+                    days: loadingDays,
+                    profile: plan.profile
+                )
+                adaptationPercent = min(1.0, loadingShift / totalGap)
+
+            case (.inflight, .postflight):
+                // Credit in-flight: add ~10% for completing in-flight protocol
+                let inflightCredit = 0.10
+                adaptationPercent = min(1.0, adaptationPercent + inflightCredit)
+
+            default:
+                break
+            }
+        }
+
         travelPhase = phase
         recalcCount = 0
     }
@@ -274,6 +318,17 @@ final class AppState: ObservableObject {
             if let plan = tripPlan {
                 daysRemaining = plan.estimatedRecoveryDays
             }
+            
+            // If the trip is still in preflight and there's no active in-flight/recovery phase,
+            // check if the saved trip data is stale and should be cleared.
+            if travelPhase == .preflight && tripPlan == nil && !fromCity.isEmpty {
+                // Old trip setup that was never completed — clear it
+                resetTripFields()
+            } else if travelPhase == .preflight && departureDate < Date() {
+                // Departure has passed but user never progressed past preflight
+                resetTripFields()
+            }
+            
         } catch {
             print("[AppState] Load failed: \(error)")
         }

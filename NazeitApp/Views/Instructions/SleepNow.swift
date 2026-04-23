@@ -100,40 +100,6 @@ struct CircadianHeroCard: View {
     }
 }
 
-// MARK: - Stars Background (In-Flight)
-struct StarsBackground: View {
-    @State private var twinkle = false
-    var body: some View {
-        Color(uiColor: .systemBackground).ignoresSafeArea()
-    }
-}
-
-// MARK: - Moon Decoration
-struct MoonDecoration: View {
-    var body: some View {
-        Color(uiColor: .systemBackground).ignoresSafeArea()
-    }
-}
-
-// MARK: - Adaptation Progress View (placeholder)
-struct AdaptationProgressView: View {
-    @EnvironmentObject var appState: AppState
-    var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(Color(uiColor: .nazeitTeal))
-            Text("Adaptation Progress")
-                .font(.system(.title2, design: .rounded).weight(.bold))
-            Text("Phase: \(appState.travelPhase.rawValue)")
-                .font(.subheadline)
-                .foregroundStyle(Color(uiColor: .secondaryLabel))
-            Spacer()
-        }
-        .navigationTitle("Progress")
-    }
-}
 
 
 // MARK: - Sleep Now (In-Flight Instruction 1)
@@ -169,7 +135,7 @@ struct SleepNowView: View {
                     VStack(spacing: 14) {
                         CircadianHeroCard(
                             level: appState.circadianLevel,
-                            hrv: appState.inputMethod == .watch ? appState.currentHRV : nil,
+                            hrv: appState.inputMethod == .watch ? Double(appState.currentHRV) : nil,
                             dayLabel: inflightLabel,
                             phaseTitle: "In-Flight",
                             bedtime: appState.inputMethod == .manual ? appState.bedtimeString : nil,

@@ -70,6 +70,9 @@ struct ConnectAppleWatch: View {
                     }
                     .appInteractiveTextStyle(isEnabled: isSynced)
                 }
+                .simultaneousGesture(TapGesture().onEnded {
+                    appState.resetTripFields()
+                })
                 .disabled(!isSynced)
                 .animation(.easeInOut, value: isSynced)
                 

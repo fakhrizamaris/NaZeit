@@ -35,7 +35,7 @@ struct AvoidBrightLightView: View {
                     VStack(spacing: 14) {
                         CircadianHeroCard(
                             level: appState.circadianLevel,
-                            hrv: appState.inputMethod == .watch ? appState.currentHRV : nil,
+                            hrv: appState.inputMethod == .watch ? Double(appState.currentHRV) : nil,
                             dayLabel: inflightLabel,
                             phaseTitle: "In-Flight",
                             bedtime: appState.inputMethod == .manual ? appState.bedtimeString : nil,

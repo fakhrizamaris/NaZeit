@@ -54,7 +54,7 @@ struct ScreenNewC_InFlightDeviated: View {
                     VStack(spacing: 14) {
                         CircadianHeroCard(
                             level: appState.circadianLevel,
-                            hrv: appState.inputMethod == .watch ? appState.currentHRV : nil,
+                            hrv: appState.inputMethod == .watch ? Double(appState.currentHRV) : nil,
                             dayLabel: inflightLabel,
                             phaseTitle: "In-Flight",
                             deltaText: canRecalculate ? "Plan adjusted" : "Conservative mode",
