@@ -364,7 +364,7 @@ private struct SearchableTripField: View {
                 .accessibilityLabel(label)
                 .accessibilityHint("Enter city name")
                 .onChange(of: searchService.searchQuery) { _, newValue in
-                    text = newValue
+                    text = geocodingQuery(from: newValue)
                 }
                 .onAppear {
                     searchService.searchQuery = text
@@ -372,14 +372,14 @@ private struct SearchableTripField: View {
             
             if isFocused && !searchService.searchQuery.isEmpty && !searchService.searchResults.isEmpty {
                 VStack(spacing: 0) {
-                    ForEach(searchService.searchResults, id: \.self) { result in
+                    ForEach(searchService.searchResults) { result in
                         Button {
-                            searchService.searchQuery = result.title
-                            text = result.title
+                            searchService.searchQuery = result.displayTitle
+                            text = result.queryValue
                             isFocused = false
                         } label: {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(result.title)
+                                Text(result.displayTitle)
                                     .font(.body)
                                     .foregroundStyle(Color(uiColor: .label))
                                 if !result.subtitle.isEmpty {
@@ -393,7 +393,7 @@ private struct SearchableTripField: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         
-                        if result != searchService.searchResults.last {
+                        if result.id != searchService.searchResults.last?.id {
                             Divider().padding(.horizontal, 16)
                         }
                     }
@@ -409,6 +409,12 @@ private struct SearchableTripField: View {
         }
         .animation(.spring(response: 0.3), value: searchService.searchQuery.isEmpty)
         .animation(.snappy, value: isFocused)
+    }
+
+    private func geocodingQuery(from value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\s*\\([A-Z]{3}\\)$", with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 
