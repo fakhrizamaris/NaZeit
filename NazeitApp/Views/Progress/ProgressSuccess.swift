@@ -147,7 +147,7 @@ struct Screen6YourAdaptation: View {
                         .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
                     }
                     .padding(.horizontal, 24).padding(.bottom, 32)
-                } else {
+                } else if appState.travelPhase == .postflight {
                     NavigationLink {
                         RecoveryPhaseView().environmentObject(appState)
                     } label: {
@@ -257,7 +257,7 @@ struct Screen7FullyAdapted: View {
                             appState.recoveryPhaseDayIndex = 0
                         }
                 } label: {
-                    PrimaryBtn(title: "Plan next trip")
+                    PrimaryBtn(title: "Plan Next Trip")
                 }
                 .padding(.horizontal, 24)
                 .opacity(showText ? 1 : 0)

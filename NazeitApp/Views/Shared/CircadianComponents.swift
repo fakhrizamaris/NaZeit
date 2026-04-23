@@ -132,10 +132,10 @@ struct DualTimeView: View {
         return date.formatted(style)
     }
 
-    private func gmtLabel(for date: Date, in timeZone: TimeZone) -> String {
+    private func utcLabel(for date: Date, in timeZone: TimeZone) -> String {
         let hours = timeZone.secondsFromGMT(for: date) / 3600
-        if hours == 0 { return "GMT" }
-        return String(format: "GMT%+d", hours)
+        if hours == 0 { return "UTC" }
+        return String(format: "UTC%+d", hours)
     }
     
     var body: some View {
@@ -145,7 +145,7 @@ struct DualTimeView: View {
                     HStack(spacing: 4) {
                         Text("ORIGIN")
                             .font(.caption2.weight(.bold))
-                        Text(gmtLabel(for: context.date, in: appState.fromTimeZone))
+                        Text(utcLabel(for: context.date, in: appState.fromTimeZone))
                             .font(.caption2)
                             .foregroundStyle(Color(uiColor: .tertiaryLabel))
                     }
@@ -158,7 +158,7 @@ struct DualTimeView: View {
                     HStack(spacing: 4) {
                         Text("DEST")
                             .font(.caption2.weight(.bold))
-                        Text(gmtLabel(for: context.date, in: appState.toTimeZone))
+                        Text(utcLabel(for: context.date, in: appState.toTimeZone))
                             .font(.caption2)
                             .foregroundStyle(Color(uiColor: .tertiaryLabel))
                     }

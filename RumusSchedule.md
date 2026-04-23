@@ -8,6 +8,11 @@ Dokumen ini memuat rumus dan logika sirkadian *end-to-end* untuk aplikasi Nazeit
 
 Sebelum algoritma berjalan, sistem harus mengunci 3 data fundamental dari pengguna.
 
+### A0. Standar Waktu Global (UTC)
+- Semua perhitungan mesin dilakukan dalam basis UTC.
+- Simpan zona waktu sebagai `IANA Time Zone` (contoh: `Asia/Jakarta`) dan `UTC Offset` saat event terjadi.
+- Untuk rumus adaptasi lintas zona, gunakan selisih `UTC Offset` sebagai sumber kebenaran (bukan label GMT).
+
 ### A. Perhitungan Titik Nadir (CBTmin)
 CBTmin (*Core Body Temperature minimum*) adalah titik referensi utama untuk semua instruksi cahaya dan tidur.
 - **Mode Apple Watch:** Diambil dari titik waktu di mana metrik `Wrist Temperature` menunjukkan suhu paling rendah selama fase *Deep Sleep*.
@@ -25,9 +30,9 @@ Digunakan untuk menentukan kecepatan adaptasi dan status kesembuhan.
 Tujuan: Mencicil pergeseran jam biologis sebelum pengguna terbang.
 
 ### A0. Anchor Time Zone (Konteks Waktu Pre-Flight)
-- **Anchor utama pre-flight:** `TZ_origin_home` (zona waktu lokasi aktual user saat menjalani loading phase).
+- **Anchor utama pre-flight:** `TZ_origin_home` + `UTC_offset_origin_home` (lokasi aktual user saat menjalani loading phase).
 - **Catatan:** `Departure airport time zone` hanya referensi tambahan, bukan anchor utama, kecuali user sudah berada di zona waktu bandara tersebut.
-- **Override dinamis:** IF user berpindah zona waktu sebelum keberangkatan, update anchor menjadi `TZ_origin_current` (zona waktu aktual terbaru) untuk sisa jadwal pre-flight.
+- **Override dinamis:** IF user berpindah zona waktu sebelum keberangkatan, update anchor menjadi `TZ_origin_current` + `UTC_offset_origin_current` untuk sisa jadwal pre-flight.
 
 ### A. Penetapan Batas Aman (The Safety Threshold)
 Algoritma membatasi maksimum pergeseran per hari agar *user* tidak pusing sebelum berangkat.
@@ -135,7 +140,7 @@ Jika user menjawab "Ya" pada `HealthScreeningModal` (memiliki gangguan tidur ata
 Berdasarkan nilai `Remaining Gap` dan arah penerbangan akhir (*setelah dicek oleh Aturan 12 Jam*).
 
 - **Aturan 12 Jam (Normalisasi Arah):**
-  Jika `|Time Zone Gap| > 12 jam`, gunakan `Adjusted Gap = 24 - |Time Zone Gap|` lalu balik arah pergeseran (eastward <-> westward) agar sistem memilih jalur adaptasi paling pendek.
+  Jika `|UTC Offset Gap| > 12 jam`, gunakan `Adjusted Gap = 24 - |UTC Offset Gap|` lalu balik arah pergeseran (eastward <-> westward) agar sistem memilih jalur adaptasi paling pendek.
 
 ### A. Penerbangan ke Timur (Eastward)
 - **Tujuan:** Phase Advance (Memajukan jam biologis).
