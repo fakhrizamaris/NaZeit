@@ -177,6 +177,11 @@ struct AdaptationProgressView: View {
             withAnimation(.spring(response: 0.7).delay(0.1)) { appeared = true }
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2)) { ringProgress = appState.adaptationPercent }
         }
+        .onChange(of: appState.adaptationPercent) { newValue in
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                ringProgress = newValue
+            }
+        }
     }
 }
 

@@ -183,7 +183,7 @@ final class AppState: ObservableObject {
         tripPlan?.recalcCount = recalcCount
 
         // Penalty: each deviation adds +1 day to recovery estimate
-        if var plan = tripPlan {
+        if let plan = tripPlan {
             let penaltyDays = recalcCount
             let extended = plan.estimatedRecoveryDays + penaltyDays
             // Rebuild recovery phase with extended days
@@ -414,7 +414,7 @@ final class AppState: ObservableObject {
 
     /// Check if there's a saved trip in progress
     var hasSavedTrip: Bool {
-        UserDefaults.standard.data(forKey: Self.storageKey) != nil && !fromCity.isEmpty && !toCity.isEmpty
+        UserDefaults.standard.data(forKey: Self.storageKey) != nil && tripPlan != nil
     }
 }
 

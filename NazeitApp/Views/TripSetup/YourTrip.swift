@@ -275,8 +275,10 @@ struct YourTrip: View {
                     }
                     
                     // MARK: CTA
-                    NavigationLink {
-                        LoadingPhaseView().environmentObject(appState)
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            appState.generatePlan()
+                        }
                     } label: {
                         HStack(spacing: 8) {
                             Text("Generate Plan")
@@ -285,9 +287,6 @@ struct YourTrip: View {
                         .appPrimaryCTAStyle(isEnabled: isValid)
                     }
                     .disabled(!isValid)
-                    .simultaneousGesture(TapGesture().onEnded {
-                        appState.generatePlan()
-                    })
                     .padding(.horizontal, 24).padding(.bottom, 48)
                     .opacity(appeared ? 1 : 0)
                     .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isValid)
