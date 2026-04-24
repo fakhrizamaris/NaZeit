@@ -129,7 +129,7 @@ struct GetSunlightView: View {
                             .transition(.opacity.combined(with: .scale(scale: 0.98)))
                         } else {
                             NavDots(total: 2, current: 1)
-
+ 
                             Button {
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                                     isCompleted = true
