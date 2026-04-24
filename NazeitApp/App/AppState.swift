@@ -393,6 +393,7 @@ final class AppState: ObservableObject {
             recoveryPhaseDayIndex: recoveryPhaseDayIndex,
             recalcCount: recalcCount,
             completedInflightSteps: Array(completedInflightSteps),
+            adaptationPercent: adaptationPercent,
             tripPlan: tripPlan
         )
 
@@ -427,6 +428,8 @@ final class AppState: ObservableObject {
             recoveryPhaseDayIndex = snapshot.recoveryPhaseDayIndex
             recalcCount = snapshot.recalcCount
             completedInflightSteps = Set(snapshot.completedInflightSteps)
+            adaptationPercent = snapshot.adaptationPercent
+            circadianLevel = snapshot.adaptationPercent
             tripPlan = snapshot.tripPlan
 
             if let plan = tripPlan {
@@ -475,6 +478,7 @@ private struct PersistableState: Codable {
     let recoveryPhaseDayIndex: Int
     let recalcCount: Int
     let completedInflightSteps: [String]
+    let adaptationPercent: Double
     let tripPlan: TripPlan?
 }
 
