@@ -303,8 +303,23 @@ final class AppState: ObservableObject {
                 adaptationPercent = min(1.0, loadingShift / totalGap)
 
             case (.inflight, .postflight):
-                // In-flight steps already credited individually via Done buttons
-                break
+                // Credit in-flight sleep alignment (§3): sleeping synced to
+                // destination time covers ~1 adaptation-rate unit toward recovery.
+                let inflightCredit = plan.direction.adaptationRatePerDay
+                let creditPercent = inflightCredit / totalGap
+                adaptationPercent = min(1.0, adaptationPercent + creditPercent)
+
+                // Reduce remaining recovery days based on in-flight credit
+                let remaining = Circadian.remainingGap(
+                    totalGap: totalGap,
+                    days: plan.loadingPhase.count,
+                    profile: plan.profile
+                )
+                let adjustedRemaining = max(0, remaining - inflightCredit)
+                daysRemaining = Circadian.recoveryDays(
+                    remaining: adjustedRemaining,
+                    direction: plan.direction
+                )
 
             default:
                 break

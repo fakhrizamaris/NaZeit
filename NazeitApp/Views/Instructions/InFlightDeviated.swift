@@ -126,7 +126,7 @@ struct ScreenNewC_InFlightDeviated: View {
                                         Text(deviationType == .stayedAwake
                                              ? "Sleep window: \(adjustedBedtime)"
                                              : "Stay awake until landing")
-                                            .font(.title3.weight(.semibold))
+                                            .font(.body.weight(.semibold))
                                             .foregroundStyle(Color(uiColor: .secondaryLabel))
                                     }
                                 }
@@ -188,7 +188,7 @@ struct ScreenNewC_InFlightDeviated: View {
                                         .font(.system(.title, design: .rounded).weight(.bold))
                                         .foregroundStyle(Color.semanticPrimaryTeal)
                                     Text("Adjusted action logged")
-                                        .font(.title3.weight(.medium))
+                                        .font(.body.weight(.medium))
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
                                 .padding(22)

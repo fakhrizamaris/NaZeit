@@ -10,6 +10,7 @@ import SwiftUI
 struct RecoveryPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var navigatetoDashboard: Bool = false
+    @State private var navigateToFullyAdapted: Bool = false
 
 
 
@@ -268,7 +269,7 @@ struct RecoveryPhaseView: View {
                                 // Last day — fully adapted
                                 appState.adaptationPercent = 1.0
                                 appState.circadianLevel = 1.0
-                                navigatetoDashboard = true
+                                navigateToFullyAdapted = true
                             }
                         }
                     } label: {
@@ -321,12 +322,16 @@ struct RecoveryPhaseView: View {
                 .environmentObject(appState)
                 .onAppear { appState.transitionPhase(to: .postflight) }
         }
+        .navigationDestination(isPresented: $navigateToFullyAdapted) {
+            FullyAdaptedView()
+                .environmentObject(appState)
+        }
         .onAppear {
             // P2: Auto-detect if user is already fully adapted (§4)
             if appState.isFullyAdapted {
                 appState.adaptationPercent = 1.0
                 appState.circadianLevel = 1.0
-                navigatetoDashboard = true
+                navigateToFullyAdapted = true
             }
         }
     }

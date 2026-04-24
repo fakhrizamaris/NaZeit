@@ -126,6 +126,11 @@ struct SleepNowView: View {
         return PlanBuilder.time(inst.scheduledTime)
     }
 
+    /// Determines if the arrival is during daytime (§3)
+    private var isDaytimeArrival: Bool {
+        appState.tripPlan?.inflightProtocol?.shiftLabel == "Daytime Arrival"
+    }
+
     var body: some View {
         ZStack {
             Color(uiColor: .systemBackground).ignoresSafeArea()
@@ -153,7 +158,7 @@ struct SleepNowView: View {
                                         .font(.system(.title2, design: .rounded).weight(.bold))
                                         .foregroundStyle(Color(uiColor: .label))
                                     Text(sleepInstruction?.detail ?? "4 hrs before destination arrival")
-                                        .font(.subheadline.weight(.semibold))
+                                        .font(.body.weight(.semibold))
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
                             }
@@ -211,42 +216,73 @@ struct SleepNowView: View {
                                 .frame(maxWidth: .infinity)
                                 .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                                HStack(spacing: 10) {
-                                    Image(systemName: "sun.max.fill")
-                                        .font(.title3)
-                                        .foregroundStyle(Color.semanticPrimaryTeal)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Up next")
-                                            .font(.subheadline.weight(.semibold))
-                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                                        Text("Get sunlight")
-                                            .font(.title3.weight(.bold))
-                                            .foregroundStyle(Color(uiColor: .label))
+                                if isDaytimeArrival {
+                                    // Daytime: body is sleepy but arriving in daylight → seek light
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "sun.max.fill")
+                                            .font(.title3)
+                                            .foregroundStyle(Color.semanticPrimaryTeal)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Up next")
+                                                .font(.subheadline.weight(.semibold))
+                                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                            Text("Get sunlight")
+                                                .font(.title3.weight(.bold))
+                                                .foregroundStyle(Color(uiColor: .label))
+                                        }
+                                        Spacer()
                                     }
-                                    Spacer()
-                                }
-                                .padding(14)
-                                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                    .padding(14)
+                                    .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-                                NavigationLink {
-                                    GetSunlightView().environmentObject(appState)
-                                } label: {
-                                    HStack(spacing: 7) {
-                                        Text("Continue")
-                                        Image(systemName: "arrow.right")
+                                    NavigationLink {
+                                        GetSunlightView().environmentObject(appState)
+                                    } label: {
+                                        HStack(spacing: 7) {
+                                            Text("Continue")
+                                            Image(systemName: "arrow.right")
+                                        }
+                                        .appPrimaryCTAStyle()
                                     }
-                                    .appPrimaryCTAStyle()
+                                } else {
+                                    // Nighttime: body is awake but arriving at night → avoid light
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "moon.stars.fill")
+                                            .font(.title3)
+                                            .foregroundStyle(Color.semanticWarningAmber)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Up next")
+                                                .font(.subheadline.weight(.semibold))
+                                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                            Text("Avoid bright light")
+                                                .font(.title3.weight(.bold))
+                                                .foregroundStyle(Color(uiColor: .label))
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(14)
+                                    .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+                                    NavigationLink {
+                                        AvoidBrightLightView().environmentObject(appState)
+                                    } label: {
+                                        HStack(spacing: 7) {
+                                            Text("Continue")
+                                            Image(systemName: "arrow.right")
+                                        }
+                                        .appPrimaryCTAStyle()
+                                    }
                                 }
                             }
                             .transition(.opacity.combined(with: .scale(scale: 0.98)))
                         } else {
-                            NavDots(total: 3, current: 0)
+                            NavDots(total: 2, current: 0)
 
                             Button {
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                                     isCompleted = true
-                                    // Credit ~3% for completing sleep step (1 of 3 in-flight steps)
-                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.034)
+                                    // Credit ~5% for completing sleep step (1 of 2 in-flight steps)
+                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.05)
                                     appState.circadianLevel = appState.adaptationPercent
                                 }
                             } label: {

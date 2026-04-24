@@ -58,7 +58,7 @@ struct GetSunlightView: View {
                                         .font(.system(.title2, design: .rounded).weight(.bold))
                                         .foregroundStyle(Color(uiColor: .label))
                                     Text(timeDetail)
-                                        .font(.title3.weight(.semibold))
+                                        .font(.body.weight(.semibold))
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
                             }
@@ -109,7 +109,7 @@ struct GetSunlightView: View {
                                         .font(.system(.title, design: .rounded).weight(.bold))
                                         .foregroundStyle(Color.semanticPrimaryTeal)
                                     Text("Sunlight exposure logged")
-                                        .font(.title3.weight(.medium))
+                                        .font(.body.weight(.medium))
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
                                 .padding(22)
@@ -117,7 +117,7 @@ struct GetSunlightView: View {
                                 .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
                                 NavigationLink {
-                                    AvoidBrightLightView().environmentObject(appState)
+                                    RecoveryPhaseView().environmentObject(appState)
                                 } label: {
                                     HStack(spacing: 7) {
                                         Text("Continue")
@@ -128,13 +128,13 @@ struct GetSunlightView: View {
                             }
                             .transition(.opacity.combined(with: .scale(scale: 0.98)))
                         } else {
-                            NavDots(total: 3, current: 1)
+                            NavDots(total: 2, current: 1)
 
                             Button {
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                                     isCompleted = true
-                                    // Credit ~3% for completing sunlight step (2 of 3 in-flight steps)
-                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.033)
+                                    // Credit ~5% for completing sunlight step (2 of 2 in-flight steps)
+                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.05)
                                     appState.circadianLevel = appState.adaptationPercent
                                 }
                             } label: {

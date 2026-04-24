@@ -135,8 +135,12 @@ struct PlanBuilder {
         switch window {
         case .daytime:
             let wakeUp = Circadian.inflightWakeTime(arrival: arrival)
+            let flightDuration = arrival.timeIntervalSince(departure)
+            let sleepDurationSec = max(0, flightDuration - 4 * 3600)
+            let sleepHours = Int(sleepDurationSec / 3600)
+            let sleepMins = Int((sleepDurationSec.truncatingRemainder(dividingBy: 3600)) / 60)
+
             let sleepTime = departure.addingTimeInterval(3600)
-            // Dim lights 1 hour before sleep to prepare melatonin
             let dimTime = sleepTime.addingTimeInterval(-3600)
             if dimTime > departure {
                 items.append(Instruction(
@@ -147,11 +151,22 @@ struct PlanBuilder {
                     iconName: "moon.stars.fill", accentColorName: "indigo"
                 ))
             }
+
+            let sleepDetail: String
+            if sleepHours >= 2 {
+                sleepDetail = "Sleep for ~\(sleepHours)h\(sleepMins > 0 ? " \(sleepMins)m" : ""). Wake at \(time(wakeUp))."
+            } else if sleepDurationSec > 0 {
+                let napMins = Int(sleepDurationSec / 60)
+                sleepDetail = "Nap for ~\(napMins) min. Wake at \(time(wakeUp))."
+            } else {
+                sleepDetail = "Short flight — stay awake and keep active."
+            }
+
             items.append(Instruction(
                 type: .sleep, scheduledTime: sleepTime,
-                title: "Sleep Now",
-                detail: "4 hrs before destination arrival",
-                reasoning: "Sleeping now aligns your body with daytime at destination.",
+                title: sleepDurationSec >= 7200 ? "Sleep Now" : "Power Nap",
+                detail: sleepDetail,
+                reasoning: "Sleeping aligned to destination daytime anchors your circadian clock for faster recovery.",
                 iconName: "moon.zzz.fill", accentColorName: "indigo"
             ))
             items.append(Instruction(

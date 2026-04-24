@@ -168,6 +168,7 @@ struct AdaptationProgressView: View {
             .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 16)
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .onAppear {
             // P2: Auto-detect fully adapted status (§1.B/§4)
             if appState.isFullyAdapted && appState.adaptationPercent < 1.0 {
@@ -177,7 +178,7 @@ struct AdaptationProgressView: View {
             withAnimation(.spring(response: 0.7).delay(0.1)) { appeared = true }
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2)) { ringProgress = appState.adaptationPercent }
         }
-        .onChange(of: appState.adaptationPercent) { newValue in
+        .onChange(of: appState.adaptationPercent) { oldValue, newValue in
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                 ringProgress = newValue
             }
@@ -279,3 +280,4 @@ struct FullyAdaptedView: View {
 
 #Preview("Screen 6") { NavigationStack { AdaptationProgressView().environmentObject(AppState()) } }
 #Preview("Screen 7") { NavigationStack { FullyAdaptedView().environmentObject(AppState()) } }
+

@@ -57,7 +57,7 @@ struct AvoidBrightLightView: View {
                                         .font(.system(.title2, design: .rounded).weight(.bold))
                                         .foregroundStyle(Color(uiColor: .label))
                                     Text("Until \(avoidEndTime)")
-                                        .font(.title3.weight(.semibold))
+                                        .font(.body.weight(.semibold))
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
                             }
@@ -107,7 +107,7 @@ struct AvoidBrightLightView: View {
                                         .font(.system(.title, design: .rounded).weight(.bold))
                                         .foregroundStyle(Color.semanticPrimaryTeal)
                                     Text("Light avoidance logged")
-                                        .font(.title3.weight(.medium))
+                                        .font(.body.weight(.medium))
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
                                 .padding(22)
@@ -123,7 +123,7 @@ struct AvoidBrightLightView: View {
                                             .font(.subheadline.weight(.semibold))
                                             .foregroundStyle(Color(uiColor: .secondaryLabel))
                                         Text("Sleep at \(avoidEndTime)")
-                                            .font(.title3.weight(.bold))
+                                            .font(.body.weight(.bold))
                                             .foregroundStyle(Color(uiColor: .label))
                                     }
                                     Spacer()
@@ -143,13 +143,13 @@ struct AvoidBrightLightView: View {
                             }
                             .transition(.opacity.combined(with: .scale(scale: 0.98)))
                         } else {
-                            NavDots(total: 3, current: 2)
+                            NavDots(total: 2, current: 1)
 
                             Button {
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                                     isCompleted = true
-                                    // Credit ~3% for completing light avoidance (3 of 3 in-flight steps)
-                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.033)
+                                    // Credit ~5% for completing light avoidance (2 of 2 in-flight steps)
+                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.05)
                                     appState.circadianLevel = appState.adaptationPercent
                                 }
                             } label: {
