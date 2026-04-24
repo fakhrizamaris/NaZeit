@@ -14,10 +14,10 @@ struct GetSunlightView: View {
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
-    /// Second instruction from in-flight protocol (type: .wake or .seekLight)
+    /// Second instruction from in-flight protocol (type: .wake)
     private var lightInstruction: Instruction? {
         let inflight = appState.tripPlan?.inflightProtocol?.instructions ?? []
-        return inflight.first(where: { $0.type == .wake || $0.type == .seekLight })
+        return inflight.first(where: { $0.type == .wake })
     }
 
     private var inflightLabel: String {
