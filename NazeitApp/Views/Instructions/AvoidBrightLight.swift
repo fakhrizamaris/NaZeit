@@ -14,15 +14,11 @@ struct AvoidBrightLightView: View {
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
-    /// Avoid light window from Circadian engine — reads from dimLights instruction if available
+    /// Avoid light window ends when the first night's sleep begins at the destination.
     private var avoidEndTime: String {
         guard let plan = appState.tripPlan,
-              let inflight = plan.inflightProtocol else { return "local bedtime" }
-        // Prefer the engine-calculated dim time, fall back to bedtime
-        if let dimInst = inflight.instructions.first(where: { $0.type == .dimLights }) {
-            return PlanBuilder.time(dimInst.scheduledTime)
-        }
-        return PlanBuilder.time(inflight.sleepWindow.bedtime)
+              let firstRecoveryDay = plan.recoveryPhase.first else { return "local bedtime" }
+        return PlanBuilder.time(firstRecoveryDay.sleepWindow.bedtime)
     }
 
     private var inflightLabel: String {
