@@ -12,26 +12,20 @@ import MapKit
 struct TripLocationSuggestion: Hashable, Identifiable {
     let cityName: String
     let subtitle: String
-    let airportCode: String?
 
     var id: String {
-        "\(cityName)|\(subtitle)|\(airportCode ?? "")"
+        "\(cityName)|\(subtitle)"
     }
 
-    var displayTitle: String {
-        guard let code = airportCode, !code.isEmpty else { return cityName }
-        return "\(cityName) (\(code))"
-    }
+    var displayTitle: String { cityName }
 
-    var queryValue: String {
-        cityName
-    }
+    var queryValue: String { cityName }
 }
 
 final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
-    
+
     private var completer: MKLocalSearchCompleter
-    
+
     @Published var searchResults: [TripLocationSuggestion] = []
 
     private let blockedVenueTerms: [String] = [
@@ -39,25 +33,24 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
         "cafe", "café", "school", "university", "station", "terminal", "port",
         "beach", "park", "museum", "view", "apartment", "tower", "plaza"
     ]
-    
+
     @Published var searchQuery = "" {
         didSet {
             self.completer.queryFragment = self.searchQuery
-            
+
             if searchQuery.isEmpty {
                 searchResults.removeAll()
             }
         }
     }
-    
+
     override init() {
         completer = MKLocalSearchCompleter()
         super.init()
         completer.delegate = self
-        // Address + query memberi hasil geografi, lalu kita filter agar fokus kota/area administratif.
         completer.resultTypes = [.address, .query]
     }
-    
+
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         let normalizedQuery = normalized(searchQuery)
 
@@ -66,8 +59,7 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
             .map { completion in
                 TripLocationSuggestion(
                     cityName: completion.title,
-                    subtitle: completion.subtitle,
-                    airportCode: airportCode(for: completion)
+                    subtitle: completion.subtitle
                 )
             }
             .sorted { lhs, rhs in
@@ -98,7 +90,7 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
             self.searchResults = uniqueResults
         }
     }
-    
+
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: any Error) {
         DispatchQueue.main.async {
             self.searchResults = []
@@ -112,16 +104,13 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
         if title.isEmpty { return false }
         if containsVenueTerm(in: title) || containsVenueTerm(in: subtitle) { return false }
 
-        // Hindari alamat jalan bernomor yang bukan level kota/region.
         if title.rangeOfCharacter(from: .decimalDigits) != nil { return false }
 
         let streetHints = [" street", " st", " road", " rd", " avenue", " ave", " no.", "blok"]
         if streetHints.contains(where: { title.contains($0) }) { return false }
 
-        // Biasanya area administratif punya subtitle region/country.
         let hasRegionalSubtitle = !subtitle.isEmpty && (subtitle.contains(",") || subtitle.contains("province") || subtitle.contains("regency"))
 
-        // Tetap izinkan nama kota sederhana yang tidak punya subtitle panjang.
         let wordCount = title.split(separator: " ").count
         return hasRegionalSubtitle || wordCount <= 3
     }
@@ -136,24 +125,4 @@ final class LocationSearchService: NSObject, ObservableObject, MKLocalSearchComp
             .lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
-
-    private func airportCode(for completion: MKLocalSearchCompletion) -> String? {
-        if let extracted = extractAirportCode(from: completion.title) ?? extractAirportCode(from: completion.subtitle) {
-            return extracted
-        }
-        return nil
-    }
-
-    private func extractAirportCode(from value: String) -> String? {
-        let pattern = "\\b[A-Z]{3}\\b"
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
-        let nsValue = value as NSString
-        let range = NSRange(location: 0, length: nsValue.length)
-        guard let match = regex.firstMatch(in: value, options: [], range: range) else { return nil }
-        return nsValue.substring(with: match.range)
-    }
-
 }
-
-    
-    

@@ -158,7 +158,7 @@ struct ScreenNewB_RecalculatedInstruction: View {
                             // Normal recalculated instructions
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack(spacing: 12) {
-                                    Image(systemName: lightInstruction?.iconName ?? "sun.max.fill")
+                                    Image(systemName: "sun.max.fill")
                                         .font(.system(size: heroIconSize * 0.56))
                                         .foregroundStyle(Color.semanticWarningAmber)
                                     VStack(alignment: .leading, spacing: 1) {

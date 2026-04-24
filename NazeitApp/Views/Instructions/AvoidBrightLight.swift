@@ -148,9 +148,7 @@ struct AvoidBrightLightView: View {
                             Button {
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                                     isCompleted = true
-                                    // Credit ~5% for completing light avoidance (2 of 2 in-flight steps)
-                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.05)
-                                    appState.circadianLevel = appState.adaptationPercent
+                                    _ = appState.completeInflightStep("avoidLight", credit: 0.05)
                                 }
                             } label: {
                                 HStack(spacing: 8) {
@@ -178,6 +176,11 @@ struct AvoidBrightLightView: View {
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .onAppear {
+            if appState.completedInflightSteps.contains("avoidLight") {
+                isCompleted = true
+            }
+        }
     }
 }
 

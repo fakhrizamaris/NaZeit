@@ -12,8 +12,6 @@ struct RecoveryPhaseView: View {
     @State private var navigatetoDashboard: Bool = false
     @State private var navigateToFullyAdapted: Bool = false
 
-
-
     /// Dynamically read from tripPlan
     private var days: [DailyProtocol] {
         appState.tripPlan?.recoveryPhase ?? []
@@ -327,7 +325,7 @@ struct RecoveryPhaseView: View {
                 .environmentObject(appState)
         }
         .onAppear {
-            // P2: Auto-detect if user is already fully adapted (§4)
+            // Auto-detect if user is already fully adapted (§4)
             if appState.isFullyAdapted {
                 appState.adaptationPercent = 1.0
                 appState.circadianLevel = 1.0

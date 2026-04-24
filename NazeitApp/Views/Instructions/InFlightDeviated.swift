@@ -36,7 +36,7 @@ struct ScreenNewC_InFlightDeviated: View {
         return "Recalculation \(count + 1) of 2"
     }
 
-    /// Whether recalc is still allowed (§4.1: max 2)
+    /// Whether recalc is still allowed 
     private var canRecalculate: Bool {
         (appState.tripPlan?.recalcCount ?? 0) < 2
     }
@@ -70,7 +70,7 @@ struct ScreenNewC_InFlightDeviated: View {
 
                         VStack(alignment: .leading, spacing: 2) {
                             if !canRecalculate {
-                                // MARK: Conservative Mode (§4.1)
+                                // MARK: Conservative Mode
                                 HStack(spacing: 8) {
                                     Image(systemName: "shield.checkered")
                                         .foregroundStyle(.orange)
@@ -208,7 +208,6 @@ struct ScreenNewC_InFlightDeviated: View {
                             .transition(.opacity.combined(with: .scale(scale: 0.98)))
                         } else {
                             Button {
-                                // Trigger recalculation per §4.1
                                 appState.recalculatePlanIfAllowed()
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                                     isCompleted = true

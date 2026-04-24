@@ -107,6 +107,9 @@ struct SleepNowView: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy = false
     @State private var isCompleted = false
+
+    /// Tracks whether this view has loaded initial state from AppState
+    @State private var didLoadState = false
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
@@ -281,9 +284,7 @@ struct SleepNowView: View {
                             Button {
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
                                     isCompleted = true
-                                    // Credit ~5% for completing sleep step (1 of 2 in-flight steps)
-                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.05)
-                                    appState.circadianLevel = appState.adaptationPercent
+                                    _ = appState.completeInflightStep("sleep", credit: 0.05)
                                 }
                             } label: {
                                 HStack(spacing: 8) {
@@ -311,6 +312,11 @@ struct SleepNowView: View {
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .onAppear {
+            if appState.completedInflightSteps.contains("sleep") {
+                isCompleted = true
+            }
+        }
     }
 }
 

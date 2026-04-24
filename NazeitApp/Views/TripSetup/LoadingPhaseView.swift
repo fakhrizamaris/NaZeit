@@ -10,7 +10,7 @@ import SwiftUI
 struct LoadingPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var navigatetoDashboard: Bool = false
-    /// P3.1 (§2.A0): Detect timezone anchor changes
+    /// Detect timezone anchor changes (§2.A0)
     @State private var showTimezoneAlert: Bool = false
 
     /// Dynamically read from tripPlan. Falls back to empty if no plan exists.
@@ -316,7 +316,7 @@ struct LoadingPhaseView: View {
                 .environmentObject(appState)
                 .onAppear { appState.transitionPhase(to: .inflight) }
         }
-        // P3.1 (§2.A0): Timezone anchor override detection
+        // Timezone anchor override detection (§2.A0)
         .onAppear {
             let deviceTZ = TimeZone.current
             if deviceTZ.identifier != appState.fromTimeZone.identifier {

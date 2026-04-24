@@ -85,7 +85,6 @@ struct ConnectAppleWatch: View {
 }
 
 // MARK: - Components
-
 struct AnimatedWatchIcon: View {
     var isAnimating: Bool
     var isSynced: Bool

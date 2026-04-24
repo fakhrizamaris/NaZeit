@@ -10,7 +10,7 @@ import Foundation
 
 struct Circadian {
 
-    // MARK: - CBTmin (§1.A)
+    // MARK: - CBTmin
 
     static func cbtMin(
         wakeTime: Date,
@@ -46,7 +46,7 @@ struct Circadian {
         }
     }
 
-    // MARK: - Daily Shift (§2.B)
+    // MARK: - Daily Shift
 
     static func dailyShift(gap: Double, days: Int, profile: AdaptationProfile) -> Double {
         guard days > 0 else { return 0 }
@@ -61,14 +61,14 @@ struct Circadian {
         max(0, totalGap - totalLoadingShift(gap: totalGap, days: days, profile: profile))
     }
 
-    // MARK: - Recovery (§4)
+    // MARK: - Recovery
 
     static func recoveryDays(remaining: Double, direction: FlightDirection) -> Int {
         guard remaining > 0 else { return 0 }
         return Int(ceil(remaining / direction.adaptationRatePerDay))
     }
 
-    // MARK: - Light Windows (§5.A/B)
+    // MARK: - Light Windows
 
     static func lightWindows(
         cbtMin: Date,
@@ -95,13 +95,13 @@ struct Circadian {
         }
     }
 
-    // MARK: - Caffeine Cutoff (§5.2/6.1)
+    // MARK: - Caffeine Cutoff
 
     static func caffeineCutoff(bedtime: Date, profile: AdaptationProfile) -> Date {
         bedtime.addingTimeInterval(-profile.caffeineCutoffHours * 3600)
     }
 
-    // MARK: - In-Flight (§3)
+    // MARK: - In-Flight
 
     static func arrivalWindow(arrival: Date, zone: TimeZone) -> ArrivalWindow {
         let hour = Calendar.current.dateComponents(in: zone, from: arrival).hour ?? 12

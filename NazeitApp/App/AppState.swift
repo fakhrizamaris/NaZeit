@@ -91,6 +91,24 @@ final class AppState: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    // MARK: - In-Flight Step Completion Guard
+    /// Tracks which in-flight steps the user has completed.
+    /// Prevents score exploitation by navigating back and pressing "Done" again.
+    @Published var completedInflightSteps: Set<String> = [] {
+        didSet { scheduleSave() }
+    }
+
+    /// Returns true and records the step if it hasn't been completed yet.
+    /// Returns false if the step was already done (no double credit).
+    @discardableResult
+    func completeInflightStep(_ stepId: String, credit: Double) -> Bool {
+        guard !completedInflightSteps.contains(stepId) else { return false }
+        completedInflightSteps.insert(stepId)
+        adaptationPercent = min(1.0, adaptationPercent + credit)
+        circadianLevel = adaptationPercent
+        return true
+    }
+
     /// Whether the system is in Conservative Recovery Mode (§4.1)
     var isConservativeMode: Bool {
         recalcCount >= 2
@@ -223,6 +241,7 @@ final class AppState: ObservableObject {
         travelPhase = .preflight
         circadianLevel = 0.0
         isRestDayActive = false
+        completedInflightSteps = []
         NotificationService.shared.cancelAll()
     }
 
@@ -373,6 +392,7 @@ final class AppState: ObservableObject {
             loadingPhaseDayIndex: loadingPhaseDayIndex,
             recoveryPhaseDayIndex: recoveryPhaseDayIndex,
             recalcCount: recalcCount,
+            completedInflightSteps: Array(completedInflightSteps),
             tripPlan: tripPlan
         )
 
@@ -406,6 +426,7 @@ final class AppState: ObservableObject {
             loadingPhaseDayIndex = snapshot.loadingPhaseDayIndex
             recoveryPhaseDayIndex = snapshot.recoveryPhaseDayIndex
             recalcCount = snapshot.recalcCount
+            completedInflightSteps = Set(snapshot.completedInflightSteps)
             tripPlan = snapshot.tripPlan
 
             if let plan = tripPlan {
@@ -453,6 +474,7 @@ private struct PersistableState: Codable {
     let loadingPhaseDayIndex: Int
     let recoveryPhaseDayIndex: Int
     let recalcCount: Int
+    let completedInflightSteps: [String]
     let tripPlan: TripPlan?
 }
 

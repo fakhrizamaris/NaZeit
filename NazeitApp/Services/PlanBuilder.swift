@@ -10,7 +10,6 @@ import Foundation
 struct PlanBuilder {
 
     /// Locale-aware time formatter — respects the user's device 12h/24h setting,
-    /// consistent with CurrentTimeBadge and other system-formatted times.
     private static let timeFmt: DateFormatter = {
         let f = DateFormatter()
         f.timeStyle = .short
@@ -20,7 +19,6 @@ struct PlanBuilder {
     static func time(_ date: Date) -> String { timeFmt.string(from: date) }
 
     // MARK: - Build Full Plan
-
     static func build(
         bedtime: Date,
         wakeTime: Date,
@@ -63,7 +61,6 @@ struct PlanBuilder {
     }
 
     // MARK: - Loading Phase
-
     private static func buildLoading(
         bedtime: Date, wakeTime: Date, departure: Date,
         shift: Double, days: Int, direction: FlightDirection,
@@ -86,8 +83,6 @@ struct PlanBuilder {
 
             var items: [Instruction] = []
 
-            // Use the shifted wake time as the light instruction time,
-            // since the user seeks light "immediately after waking up."
             let lightTime = wake
             let lightInst = smartLightInstruction(
                 scheduledTime: lightTime,
@@ -124,7 +119,6 @@ struct PlanBuilder {
     }
 
     // MARK: - In-Flight Protocol
-
     private static func buildInflight(
         departure: Date, arrival: Date, toZone: TimeZone,
         direction: FlightDirection, profile: AdaptationProfile
@@ -136,11 +130,39 @@ struct PlanBuilder {
         case .daytime:
             let wakeUp = Circadian.inflightWakeTime(arrival: arrival)
             let flightDuration = arrival.timeIntervalSince(departure)
-            let sleepDurationSec = max(0, flightDuration - 4 * 3600)
-            let sleepHours = Int(sleepDurationSec / 3600)
-            let sleepMins = Int((sleepDurationSec.truncatingRemainder(dividingBy: 3600)) / 60)
+            let maxSleepSec: TimeInterval = 8 * 3600    // Max 8h (one full cycle)
+            let maxNapSec: TimeInterval = 90 * 60        // Max 90 min power nap
+            let wakeWindowSec: TimeInterval = 4 * 3600   // 4h awake before landing
 
-            let sleepTime = departure.addingTimeInterval(3600)
+            let availableSleepSec = max(0, flightDuration - wakeWindowSec)
+            let cappedSleepSec: TimeInterval
+
+            if availableSleepSec >= 2 * 3600 {
+                // Full sleep: cap at 8 hours
+                cappedSleepSec = min(availableSleepSec, maxSleepSec)
+            } else if availableSleepSec > 0 {
+                // Power nap: cap at 90 minutes
+                cappedSleepSec = min(availableSleepSec, maxNapSec)
+            } else {
+                cappedSleepSec = 0
+            }
+
+            // Calculate when to start sleeping (work backwards from wake time)
+            let sleepTime = wakeUp.addingTimeInterval(-cappedSleepSec)
+            let stayAwakeDuration = sleepTime.timeIntervalSince(departure)
+
+            // If long flight: add "Stay Awake" instruction for the initial hours
+            if stayAwakeDuration >= 3600 {
+                items.append(Instruction(
+                    type: .seekLight, scheduledTime: departure,
+                    title: "Stay Awake & Active",
+                    detail: "Keep active for the first \(Int(stayAwakeDuration / 3600))h of your flight.",
+                    reasoning: "Staying awake early in the flight aligns your wake period with destination daytime.",
+                    iconName: "figure.walk", accentColorName: "orange"
+                ))
+            }
+
+            // Dim lights before sleep
             let dimTime = sleepTime.addingTimeInterval(-3600)
             if dimTime > departure {
                 items.append(Instruction(
@@ -152,19 +174,28 @@ struct PlanBuilder {
                 ))
             }
 
+            // Sleep instruction
+            let sleepHours = Int(cappedSleepSec / 3600)
+            let sleepMins = Int((cappedSleepSec.truncatingRemainder(dividingBy: 3600)) / 60)
+
+            let sleepTitle: String
             let sleepDetail: String
-            if sleepHours >= 2 {
+
+            if cappedSleepSec >= 2 * 3600 {
+                sleepTitle = "Sleep Now"
                 sleepDetail = "Sleep for ~\(sleepHours)h\(sleepMins > 0 ? " \(sleepMins)m" : ""). Wake at \(time(wakeUp))."
-            } else if sleepDurationSec > 0 {
-                let napMins = Int(sleepDurationSec / 60)
+            } else if cappedSleepSec > 0 {
+                sleepTitle = "Power Nap"
+                let napMins = Int(cappedSleepSec / 60)
                 sleepDetail = "Nap for ~\(napMins) min. Wake at \(time(wakeUp))."
             } else {
+                sleepTitle = "Stay Alert"
                 sleepDetail = "Short flight — stay awake and keep active."
             }
 
             items.append(Instruction(
                 type: .sleep, scheduledTime: sleepTime,
-                title: sleepDurationSec >= 7200 ? "Sleep Now" : "Power Nap",
+                title: sleepTitle,
                 detail: sleepDetail,
                 reasoning: "Sleeping aligned to destination daytime anchors your circadian clock for faster recovery.",
                 iconName: "moon.zzz.fill", accentColorName: "indigo"
@@ -216,7 +247,6 @@ struct PlanBuilder {
     }
 
     // MARK: - Recovery Phase
-
     private static func buildRecovery(
         arrival: Date, bedtime: Date, wakeTime: Date, toZone: TimeZone,
         remaining: Double, recoveryDays: Int, direction: FlightDirection,
@@ -287,12 +317,6 @@ struct PlanBuilder {
     }
 
     // MARK: - Smart Light Instruction
-
-    /// Generates a contextual light-seeking instruction based on the scheduled hour.
-    /// Before 06:00 → recommends bright artificial light (10,000 lux light therapy box).
-    /// 06:00 and after → recommends outdoor sunlight exposure.
-    /// This matches real circadian medicine practice where artificial light is used
-    /// when natural sunlight isn't available.
     private static func smartLightInstruction(
         scheduledTime: Date,
         duration: TimeInterval,
@@ -335,12 +359,6 @@ struct PlanBuilder {
     }
 
     // MARK: - Conservative Recovery Mode (§4.1)
-
-    /// After 2 recalculations, the system enters Conservative Recovery Mode.
-    /// Only 3 priority instructions are shown:
-    /// 1. Sleep Anchor (consistent bed/wake time)
-    /// 2. One Seek Light window
-    /// 3. Conservative Caffeine Cutoff
     static func conservativeInstructions(
         bedtime: Date,
         wakeTime: Date,

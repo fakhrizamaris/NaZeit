@@ -170,7 +170,7 @@ struct AdaptationProgressView: View {
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            // P2: Auto-detect fully adapted status (§1.B/§4)
+            // Auto-detect fully adapted status
             if appState.isFullyAdapted && appState.adaptationPercent < 1.0 {
                 appState.adaptationPercent = 1.0
                 appState.circadianLevel = 1.0

@@ -9,12 +9,10 @@ import Foundation
 
 // MARK: - Adaptation Profile
 
-/// User's health profile that modifies algorithm parameters.
-/// Merges Gentle Mode and Insomnia Mode (RumusSchedule §5 & §6).
 enum AdaptationProfile: String, Codable, CaseIterable, Sendable {
     case normal
-    case gentle     // Elderly (>65 years)
-    case insomnia   // Clinical Insomnia
+    case gentle
+    case insomnia
 
     var maxDailyShiftHours: Double {
         switch self {
@@ -23,8 +21,6 @@ enum AdaptationProfile: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    /// Hours before target bedtime to stop caffeine.
-    /// Caffeine half-life ~5–6h. At 8h ~75% eliminated. At 12h ~94%.
     var caffeineCutoffHours: Double {
         switch self {
         case .normal: return 8.0
@@ -46,7 +42,6 @@ enum AdaptationProfile: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    /// Extra buffer added to light windows for fragmented sleepers.
     var lightBufferMinutes: Int {
         switch self {
         case .normal, .gentle: return 0
