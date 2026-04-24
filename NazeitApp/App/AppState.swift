@@ -31,7 +31,6 @@ final class AppState: ObservableObject {
     // MARK: - Watch Data (reserved for future Apple Watch integration)
     @Published var currentHRV: Int = 0
     @Published var baselineHRV: Int = 0
-    /// Tracks consecutive sleep cycles with HRV ratio >= 90% (§1.B/§4)
     @Published var consecutiveGoodSleeps: Int = 0
 
     // MARK: - Trip Configuration
@@ -92,14 +91,10 @@ final class AppState: ObservableObject {
     }
 
     // MARK: - In-Flight Step Completion Guard
-    /// Tracks which in-flight steps the user has completed.
-    /// Prevents score exploitation by navigating back and pressing "Done" again.
     @Published var completedInflightSteps: Set<String> = [] {
         didSet { scheduleSave() }
     }
 
-    /// Returns true and records the step if it hasn't been completed yet.
-    /// Returns false if the step was already done (no double credit).
     @discardableResult
     func completeInflightStep(_ stepId: String, credit: Double) -> Bool {
         guard !completedInflightSteps.contains(stepId) else { return false }
@@ -353,7 +348,6 @@ final class AppState: ObservableObject {
     }
 
     // MARK: - Persistence
-
     private static let storageKey = "nazeit_app_state"
     private var saveWorkItem: DispatchWorkItem?
 

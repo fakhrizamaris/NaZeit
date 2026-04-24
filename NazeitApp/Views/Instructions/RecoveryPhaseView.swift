@@ -11,6 +11,7 @@ struct RecoveryPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var navigatetoDashboard: Bool = false
     @State private var navigateToFullyAdapted: Bool = false
+    @State private var movingForward: Bool = true
 
     /// Dynamically read from tripPlan
     private var days: [DailyProtocol] {
@@ -204,8 +205,8 @@ struct RecoveryPhaseView: View {
                         }
                         .id(appState.recoveryPhaseDayIndex)
                         .transition(.asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .move(edge: .leading).combined(with: .opacity)
+                            insertion: .move(edge: movingForward ? .trailing : .leading).combined(with: .opacity),
+                            removal: .move(edge: movingForward ? .leading : .trailing).combined(with: .opacity)
                         ))
 
                         // MARK: Safety Override (§5.3/§6.2)
@@ -237,6 +238,7 @@ struct RecoveryPhaseView: View {
                     Button {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                             if appState.recoveryPhaseDayIndex > 0 { 
+                                movingForward = false
                                 appState.recoveryPhaseDayIndex -= 1 
                                 appState.isRestDayActive = false
                             }
@@ -256,6 +258,7 @@ struct RecoveryPhaseView: View {
                     Button {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                             if appState.recoveryPhaseDayIndex < dayCount - 1 {
+                                movingForward = true
                                 appState.recoveryPhaseDayIndex += 1
                                 appState.isRestDayActive = false
                                 // Update adaptation progressively per day

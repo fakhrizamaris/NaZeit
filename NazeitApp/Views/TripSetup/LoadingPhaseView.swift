@@ -10,8 +10,9 @@ import SwiftUI
 struct LoadingPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var navigatetoDashboard: Bool = false
-    /// Detect timezone anchor changes (§2.A0)
+    /// Detect timezone anchor changes 
     @State private var showTimezoneAlert: Bool = false
+    @State private var movingForward: Bool = true
 
     /// Dynamically read from tripPlan. Falls back to empty if no plan exists.
     private var days: [DailyProtocol] {
@@ -206,11 +207,11 @@ struct LoadingPhaseView: View {
                             }
                             .id(appState.loadingPhaseDayIndex)
                             .transition(.asymmetric(
-                                insertion: .move(edge: .trailing).combined(with: .opacity),
-                                removal: .move(edge: .leading).combined(with: .opacity)
+                                insertion: .move(edge: movingForward ? .trailing : .leading).combined(with: .opacity),
+                                removal: .move(edge: movingForward ? .leading : .trailing).combined(with: .opacity)
                             ))
 
-                            // MARK: Safety Override (§5.3/§6.2)
+                            // MARK: Safety Override
                             if appState.inputMethod == .manual && !appState.isRestDayActive {
                                 Button {
                                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -239,6 +240,7 @@ struct LoadingPhaseView: View {
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 if appState.loadingPhaseDayIndex > 0 { 
+                                    movingForward = false
                                     appState.loadingPhaseDayIndex -= 1 
                                     appState.isRestDayActive = false
                                 }
@@ -258,6 +260,7 @@ struct LoadingPhaseView: View {
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 if appState.loadingPhaseDayIndex < dayCount - 1 {
+                                    movingForward = true
                                     appState.loadingPhaseDayIndex += 1
                                     appState.isRestDayActive = false
                                     // §4.1: Completing a day without deviation resets recalcCount
@@ -316,7 +319,7 @@ struct LoadingPhaseView: View {
                 .environmentObject(appState)
                 .onAppear { appState.transitionPhase(to: .inflight) }
         }
-        // Timezone anchor override detection (§2.A0)
+        // Timezone anchor override detection
         .onAppear {
             let deviceTZ = TimeZone.current
             if deviceTZ.identifier != appState.fromTimeZone.identifier {
