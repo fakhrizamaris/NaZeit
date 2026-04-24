@@ -210,6 +210,12 @@ Max 2x per fase. Setelahnya → Conservative Recovery Mode (3 instruksi dasar sa
 ### "Kenapa `scheduleSave()` pakai debounce?"
 > Saat `loadFromDisk()` memulihkan 15 properti sekaligus, setiap `didSet` memicu `scheduleSave()`. Debounce 0.5 detik menggabungkan semua trigger → hanya 1 write ke disk.
 
+### "Kalau sudah tidur 8 jam di pesawat, kenapa masih butuh Recovery Phase?"
+> Karena durasi tidur tidak sama dengan besarnya *circadian shift*. Berdasarkan Waterhouse et al., jam biologis manusia maksimal hanya bisa bergeser 1–1.5 jam per hari. Tidur di pesawat (walau 8 jam) hanya memberikan kredit adaptasi ~1 jam. Jika gap awal 10 jam dan loading phase menyumbang 3 jam, maka tubuh masih tertinggal 6 jam saat mendarat. Recovery phase mutlak diperlukan.
+
+### "Apakah jadwal 'Sleep Now' di pesawat bersifat dinamis?"
+> Ya, sangat dinamis. Aplikasi menghitung mundur dari jam Arrival untuk menentukan waktu Wake Up (4 jam sebelum mendarat). Dari waktu Wake Up, ditarik mundur lagi untuk menghitung Sleep Time (maks 8 jam). Jika penerbangan sangat panjang, aplikasi otomatis menambahkan instruksi "Stay Awake & Active" di awal penerbangan agar user tidak tidur terlalu cepat.
+
 ---
 
 ## 6. HIG iOS 26+ Compliance
