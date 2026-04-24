@@ -194,6 +194,12 @@ struct FullyAdaptedView: View {
     @State private var showText   = false
     @State private var ringScale: CGFloat = 0.4
     @State private var particlesOn = false
+
+    private var totalAdaptationDays: Int {
+        let loading = appState.tripPlan?.loadingPhase.count ?? 0
+        let recovery = appState.tripPlan?.recoveryPhase.count ?? 0
+        return loading + recovery + 1 // +1 for the flight day
+    }
     
     var body: some View {
         ZStack {
@@ -238,7 +244,7 @@ struct FullyAdaptedView: View {
                         .animation(.spring(response: 0.5).delay(0.35), value: showText)
                     
                     HStack(spacing: 14) {
-                        Label("3 days", systemImage: "calendar").font(.caption2)
+                        Label("\(totalAdaptationDays) days", systemImage: "calendar").font(.caption2)
                         Divider().frame(height: 12)
                         Label("\(appState.inputMethod == .watch ? "Watch" : "Manual") tracking", systemImage: "checkmark.circle").font(.caption2)
                     }
