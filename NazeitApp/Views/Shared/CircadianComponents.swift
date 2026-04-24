@@ -47,7 +47,7 @@ struct SuccessParticles: View {
         GeometryReader { geo in
             ForEach(particles.indices, id: \.self) { i in
                 Circle()
-                    .fill(Color.circadianTeal.opacity(particles[i].3))
+                    .fill(Color.nazeitTeal.opacity(particles[i].3))
                     .frame(width: particles[i].2, height: particles[i].2)
                     .position(x: particles[i].0 * geo.size.width,
                               y: particles[i].1 * geo.size.height)

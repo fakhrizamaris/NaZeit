@@ -19,7 +19,7 @@ struct CircadianHeroCard: View {
     var wakeTime: String? = nil
 
     private let circleSize: CGFloat = 120
-    private var baseColor: Color { Color(uiColor: .nazeitTeal) }
+
 
     var body: some View {
         VStack(spacing: 12) {
@@ -30,7 +30,7 @@ struct CircadianHeroCard: View {
                         .frame(width: circleSize, height: circleSize)
                     Circle()
                         .trim(from: 0, to: level)
-                        .stroke(baseColor, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                        .stroke(Color.nazeitTeal, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                         .frame(width: circleSize, height: circleSize)
                         .rotationEffect(.degrees(-90))
                         .animation(.easeInOut(duration: 0.6), value: level)
@@ -49,7 +49,7 @@ struct CircadianHeroCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(phaseTitle)
                             .font(.system(.caption, design: .rounded).weight(.bold))
-                            .foregroundStyle(baseColor)
+                            .foregroundStyle(Color.nazeitTeal)
                         Text(dayLabel)
                             .font(.system(.headline, design: .rounded).weight(.bold))
                             .foregroundStyle(Color(uiColor: .label))

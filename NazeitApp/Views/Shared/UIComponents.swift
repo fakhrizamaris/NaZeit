@@ -9,13 +9,14 @@ extension Color {
     static let semanticSecondaryTeal = Color(red: 0.40, green: 0.79, blue: 0.70)
     static let semanticWarningAmber = Color(red: 0.95, green: 0.67, blue: 0.16)
     static let semanticDecorativeGray = Color(uiColor: .secondaryLabel)
+    static let staticTeal = Color(red: 0.12, green: 0.62, blue: 0.52) // Non-dynamic for gradients
 }
 
 enum AppVisual {
     static let primaryCornerRadius: CGFloat = 16
     static let cardCornerRadius: CGFloat = 24
     static let primaryGradient = LinearGradient(
-        colors: [Color.teal, Color.nazeitTeal],
+        colors: [Color.teal, Color.staticTeal],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )

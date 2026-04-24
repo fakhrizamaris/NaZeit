@@ -31,6 +31,8 @@ final class AppState: ObservableObject {
     // MARK: - Watch Data (reserved for future Apple Watch integration)
     @Published var currentHRV: Int = 0
     @Published var baselineHRV: Int = 0
+    /// Tracks consecutive sleep cycles with HRV ratio >= 90% (§1.B/§4)
+    @Published var consecutiveGoodSleeps: Int = 0
 
     // MARK: - Trip Configuration
     @Published var fromCity: String = "" {
@@ -87,6 +89,11 @@ final class AppState: ObservableObject {
     }
     @Published var recoveryPhaseDayIndex: Int = 0 {
         didSet { scheduleSave() }
+    }
+
+    /// Whether the system is in Conservative Recovery Mode (§4.1)
+    var isConservativeMode: Bool {
+        recalcCount >= 2
     }
 
     // MARK: - Computed Engine Values
@@ -167,12 +174,31 @@ final class AppState: ObservableObject {
     }
 
     /// Recalculate plan after deviation (max 2x per phase, Section 4.1)
+    /// Each deviation extends estimated recovery by +1 day (adaptation penalty).
+    @discardableResult
     func recalculatePlanIfAllowed() -> Bool {
         guard recalcCount < 2 else { return false }
         generatePlan()
         recalcCount += 1
         tripPlan?.recalcCount = recalcCount
+
+        // Penalty: each deviation adds +1 day to recovery estimate
+        if var plan = tripPlan {
+            let penaltyDays = recalcCount
+            let extended = plan.estimatedRecoveryDays + penaltyDays
+            // Rebuild recovery phase with extended days
+            daysRemaining = extended
+        }
         return true
+    }
+
+    /// Call when the user completes a full day without deviation.
+    /// Per §4.1: "reset ke 0 jika user menyelesaikan 1 siklus harian tanpa deviasi mayor"
+    func completeSuccessfulDay() {
+        if recalcCount > 0 {
+            recalcCount = 0
+            tripPlan?.recalcCount = 0
+        }
     }
 
     /// Reset only the trip-specific fields (keeps user profile like bedtime/wakeTime).
@@ -192,15 +218,65 @@ final class AppState: ObservableObject {
         loadingPhaseDayIndex = 0
         recoveryPhaseDayIndex = 0
         recalcCount = 0
+        consecutiveGoodSleeps = 0
         tripPlan = nil
         travelPhase = .preflight
         circadianLevel = 0.0
+        isRestDayActive = false
         NotificationService.shared.cancelAll()
     }
 
     /// Reset for a new trip (full reset)
     func resetForNewTrip() {
         resetTripFields()
+    }
+
+    /// Safety Override state for current day
+    @Published var isRestDayActive: Bool = false
+
+    /// Skip today's adaptation load. Activates rest mode for today
+    /// instead of advancing the day, giving user a break.
+    func skipTodayAdaptation() {
+        isRestDayActive = true
+    }
+
+    // MARK: - HRV-based "Fully Adapted" (§1.B/§4)
+
+    /// Call after each sleep cycle (Apple Watch mode).
+    /// If HRV ratio >= 90% for 2 consecutive cycles → Fully Adapted.
+    func recordSleepCycleHRV(currentHRV: Int) {
+        guard inputMethod == .watch, baselineHRV > 0 else { return }
+        self.currentHRV = currentHRV
+
+        let ratio = Double(currentHRV) / Double(baselineHRV)
+        if ratio >= 0.90 {
+            consecutiveGoodSleeps += 1
+        } else {
+            consecutiveGoodSleeps = 0
+        }
+    }
+
+    /// Whether the user is fully adapted based on HRV (Watch mode)
+    var isHRVFullyAdapted: Bool {
+        inputMethod == .watch && consecutiveGoodSleeps >= 2
+    }
+
+    /// Whether the user is fully adapted based on time (Manual mode)
+    /// Checks if days since arrival >= estimated recovery days
+    var isTimeBasedFullyAdapted: Bool {
+        guard inputMethod == .manual,
+              travelPhase == .postflight,
+              let plan = tripPlan else { return false }
+        let daysSinceArrival = Calendar.current.dateComponents(
+            [.day], from: Calendar.current.startOfDay(for: arrivalDate),
+            to: Calendar.current.startOfDay(for: Date())
+        ).day ?? 0
+        return daysSinceArrival >= plan.estimatedRecoveryDays
+    }
+
+    /// Combined check for fully adapted status (both modes)
+    var isFullyAdapted: Bool {
+        adaptationPercent >= 1.0 || isHRVFullyAdapted || isTimeBasedFullyAdapted
     }
 
     /// Update phase and calculate adaptation progress based on completed work.

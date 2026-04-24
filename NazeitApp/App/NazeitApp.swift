@@ -21,13 +21,28 @@ struct NazeitApp: App {
                     SplashScreenView()
                         .transition(.opacity)
                 } else {
-                    OnboardingChoice()
-                        .environmentObject(appState)
-                        .sheet(isPresented: disclaimerSheetBinding) {
-                            HealthScreeningModal(isAccepted: $hasAcceptedDisclaimer)
-                                .environmentObject(appState)
-                                .interactiveDismissDisabled()
+                    if appState.hasSavedTrip {
+                        NavigationStack {
+                            if appState.travelPhase == .preflight {
+                                LoadingPhaseView()
+                                    .environmentObject(appState)
+                            } else if appState.travelPhase == .inflight {
+                                SleepNowView()
+                                    .environmentObject(appState)
+                            } else if appState.travelPhase == .postflight {
+                                RecoveryPhaseView()
+                                    .environmentObject(appState)
+                            }
                         }
+                    } else {
+                        OnboardingChoice()
+                            .environmentObject(appState)
+                            .sheet(isPresented: disclaimerSheetBinding) {
+                                HealthScreeningModal(isAccepted: $hasAcceptedDisclaimer)
+                                    .environmentObject(appState)
+                                    .interactiveDismissDisabled()
+                            }
+                    }
                 }
             }
             .onAppear {

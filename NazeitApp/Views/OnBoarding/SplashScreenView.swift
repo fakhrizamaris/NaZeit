@@ -60,7 +60,7 @@ struct BackgroundLayerView: View {
             .ignoresSafeArea()
             
             Circle()
-                .fill(Color(uiColor: .circadianTeal).opacity(animateBackground ? 0.2 : 0.05))
+                .fill(Color(uiColor: .nazeitTeal).opacity(animateBackground ? 0.2 : 0.05))
                 .frame(width: 400)
                 .blur(radius: 100)
                 .offset(x: animateBackground ? 40 : -40, y: animateBackground ? -180 : -140)

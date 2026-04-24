@@ -10,8 +10,8 @@ import SwiftUI
 struct LoadingPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var navigatetoDashboard: Bool = false
-
-    private var baseColor: Color { Color(uiColor: .nazeitTeal) }
+    /// P3.1 (§2.A0): Detect timezone anchor changes
+    @State private var showTimezoneAlert: Bool = false
 
     /// Dynamically read from tripPlan. Falls back to empty if no plan exists.
     private var days: [DailyProtocol] {
@@ -58,7 +58,7 @@ struct LoadingPhaseView: View {
             .ignoresSafeArea()
 
             Circle()
-                .fill(baseColor.opacity(0.12))
+                .fill(Color.nazeitTeal.opacity(0.12))
                 .frame(maxWidth: 400)
                 .blur(radius: 120)
                 .offset(x: -80, y: -200)
@@ -70,7 +70,7 @@ struct LoadingPhaseView: View {
 
                     Image(systemName: "airplane.departure")
                         .font(.system(size: 56))
-                        .foregroundStyle(baseColor)
+                        .foregroundStyle(Color.nazeitTeal)
 
                     VStack(spacing: 8) {
                         Text("No Pre-flight Prep Needed")
@@ -136,7 +136,7 @@ struct LoadingPhaseView: View {
                             }
                             .padding(.top, 8)
 
-                            DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: appState.loadingPhaseDayIndex, activeColor: baseColor)
+                            DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: appState.loadingPhaseDayIndex, activeColor: Color.nazeitTeal)
                                 .padding(.horizontal, 24)
 
                             VStack(spacing: 24) {
@@ -144,7 +144,7 @@ struct LoadingPhaseView: View {
                                     title: "Tonight's Sleep Target",
                                     timeRange: sleepTargetString,
                                     shiftLabel: currentDay?.shiftLabel ?? "—",
-                                    color: baseColor
+                                    color: Color.nazeitTeal
                                 )
                                 .padding(.horizontal, 24)
 
@@ -157,7 +157,7 @@ struct LoadingPhaseView: View {
 
                                             Spacer()
 
-                                            CurrentTimeBadge(title: "Now", timeZone: appState.fromTimeZone, accentColor: baseColor, isProminent: true)
+                                            CurrentTimeBadge(title: "Now", timeZone: appState.fromTimeZone, accentColor: Color.nazeitTeal, isProminent: true)
                                         }
 
                                         Text("Complete these tasks to begin syncing your circadian rhythm even before your flight.")
@@ -168,7 +168,27 @@ struct LoadingPhaseView: View {
 
                                     // Dynamic protocol cards from the plan
                                     VStack(spacing: 12) {
-                                        if let day = currentDay {
+                                        if appState.isRestDayActive {
+                                            // Rest Day UI
+                                            VStack(spacing: 16) {
+                                                Image(systemName: "powersleep")
+                                                    .font(.system(size: 48))
+                                                    .foregroundStyle(Color.nazeitTeal)
+                                                
+                                                Text("Rest Mode Active")
+                                                    .font(.title2.weight(.bold))
+                                                    .foregroundStyle(Color(uiColor: .label))
+                                                
+                                                Text("You've chosen to rest today. Take it easy and let your body recover without circadian pressure. You can resume tomorrow.")
+                                                    .font(.body)
+                                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                                    .multilineTextAlignment(.center)
+                                                    .padding(.horizontal, 24)
+                                            }
+                                            .padding(.vertical, 32)
+                                            .frame(maxWidth: .infinity)
+                                            .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
+                                        } else if let day = currentDay {
                                             ForEach(day.instructions) { instruction in
                                                 ProtocolCard(
                                                     time: PlanBuilder.time(instruction.scheduledTime),
@@ -190,6 +210,23 @@ struct LoadingPhaseView: View {
                                 removal: .move(edge: .leading).combined(with: .opacity)
                             ))
 
+                            // MARK: Safety Override (§5.3/§6.2)
+                            if appState.inputMethod == .manual && !appState.isRestDayActive {
+                                Button {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                        appState.skipTodayAdaptation()
+                                    }
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "battery.25percent")
+                                        Text("I'm too tired today")
+                                    }
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                }
+                                .padding(.top, 4)
+                            }
+
                             Spacer(minLength: 24)
                         }
                     }
@@ -201,12 +238,15 @@ struct LoadingPhaseView: View {
                     HStack(spacing: 16) {
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                if appState.loadingPhaseDayIndex > 0 { appState.loadingPhaseDayIndex -= 1 }
+                                if appState.loadingPhaseDayIndex > 0 { 
+                                    appState.loadingPhaseDayIndex -= 1 
+                                    appState.isRestDayActive = false
+                                }
                             }
                         } label: {
                             Image(systemName: "arrow.left")
                                 .font(.headline)
-                                .foregroundStyle(appState.loadingPhaseDayIndex > 0 ? baseColor : Color(uiColor: .tertiaryLabel))
+                                .foregroundStyle(appState.loadingPhaseDayIndex > 0 ? Color.nazeitTeal : Color(uiColor: .tertiaryLabel))
                                 .frame(width: 56, height: 56)
                                 .background(Color(uiColor: .secondarySystemBackground))
                                 .clipShape(Circle())
@@ -219,6 +259,9 @@ struct LoadingPhaseView: View {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 if appState.loadingPhaseDayIndex < dayCount - 1 {
                                     appState.loadingPhaseDayIndex += 1
+                                    appState.isRestDayActive = false
+                                    // §4.1: Completing a day without deviation resets recalcCount
+                                    appState.completeSuccessfulDay()
                                 } else {
                                     navigatetoDashboard = true
                                 }
@@ -233,17 +276,17 @@ struct LoadingPhaseView: View {
                                 }
                             }
                             .font(.headline)
-                            .foregroundStyle(appState.loadingPhaseDayIndex == dayCount - 1 ? .white : baseColor)
+                            .foregroundStyle(appState.loadingPhaseDayIndex == dayCount - 1 ? .white : Color.nazeitTeal)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(appState.loadingPhaseDayIndex == dayCount - 1 ? baseColor : baseColor.opacity(0.12))
+                            .background(appState.loadingPhaseDayIndex == dayCount - 1 ? Color.nazeitTeal : Color.nazeitTeal.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: 100, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 100, style: .continuous)
                                     .stroke(
                                         appState.loadingPhaseDayIndex == dayCount - 1
                                         ? Color.clear
-                                        : baseColor.opacity(0.35),
+                                        : Color.nazeitTeal.opacity(0.35),
                                         lineWidth: 1
                                     )
                             )
@@ -272,6 +315,22 @@ struct LoadingPhaseView: View {
             AdaptationProgressView()
                 .environmentObject(appState)
                 .onAppear { appState.transitionPhase(to: .inflight) }
+        }
+        // P3.1 (§2.A0): Timezone anchor override detection
+        .onAppear {
+            let deviceTZ = TimeZone.current
+            if deviceTZ.identifier != appState.fromTimeZone.identifier {
+                showTimezoneAlert = true
+            }
+        }
+        .alert("Timezone Changed", isPresented: $showTimezoneAlert) {
+            Button("Update Schedule") {
+                appState.fromTimeZone = .current
+                appState.generatePlan()
+            }
+            Button("Keep Current", role: .cancel) { }
+        } message: {
+            Text("You're now in \(TimeZone.current.localizedName(for: .shortGeneric, locale: .current) ?? TimeZone.current.identifier). Update your loading phase schedule to match?")
         }
     }
 }

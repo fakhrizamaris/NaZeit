@@ -40,7 +40,7 @@ struct AdaptationProgressView: View {
                             gradient: Gradient(colors: [
                                 Color.indigo.opacity(0.7),
                                 Color.cyan,
-                                Color.circadianTeal
+                                Color.staticTeal
                             ]),
                             center: .center,
                             startAngle: .degrees(0),
@@ -53,7 +53,7 @@ struct AdaptationProgressView: View {
                         Text("\(Int(appState.adaptationPercent * 100))%")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
                             .foregroundStyle(Color(uiColor: .label))
-                        Text(appState.adaptationPercent < 0.4 ? "Misaligned" : (appState.adaptationPercent < 1.0 ? "Adjusting" : "Aligned"))
+                        Text(appState.isFullyAdapted ? "Aligned" : (appState.adaptationPercent < 0.4 ? "Misaligned" : "Adjusting"))
                             .font(.caption).foregroundStyle(Color(uiColor: .secondaryLabel))
                     }
                 }
@@ -70,20 +70,20 @@ struct AdaptationProgressView: View {
                         MetricCard(value: "\(appState.currentHRV)ms",
                                    label: "HRV",
                                    icon: "waveform.path",
-                                   iconColor: .circadianTeal,
+                                   iconColor: .nazeitTeal,
                                    trend: "↑")
                     } else {
-                        if appState.adaptationPercent >= 1.0 {
+                        if appState.isFullyAdapted {
                             MetricCard(value: "In Sync",
                                        label: "Status",
                                        icon: "checkmark.circle.fill",
-                                       iconColor: .circadianTeal,
+                                       iconColor: .nazeitTeal,
                                        trend: nil)
                         } else {
                             MetricCard(value: "\(appState.daysRemaining) days",
                                        label: "Remaining",
                                        icon: "calendar.badge.clock",
-                                       iconColor: .circadianTeal,
+                                       iconColor: .nazeitTeal,
                                        trend: nil)
                         }
                     }
@@ -91,7 +91,7 @@ struct AdaptationProgressView: View {
                 .padding(.horizontal, 24).padding(.bottom, 20)
                 
                 VStack(spacing: 8) {
-                    if appState.adaptationPercent >= 1.0 {
+                    if appState.isFullyAdapted {
                         Text("Adaptation successful")
                             .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
                     } else {
@@ -103,7 +103,7 @@ struct AdaptationProgressView: View {
                         ZStack(alignment: .leading) {
                             Capsule().fill(Color(.systemGray5)).frame(height: 4)
                             Capsule()
-                                .fill(LinearGradient(colors: [Color.cyan, .circadianTeal],
+                                .fill(LinearGradient(colors: [Color.cyan, .staticTeal],
                                                      startPoint: .leading, endPoint: .trailing))
                                 .frame(width: geo.size.width * ringProgress, height: 4)
                         }
@@ -115,7 +115,7 @@ struct AdaptationProgressView: View {
                 
                 Spacer()
                 
-                if appState.adaptationPercent >= 1.0 {
+                if appState.isFullyAdapted {
                     NavigationLink {
                         FullyAdaptedView().environmentObject(appState)
                     } label: {
@@ -125,7 +125,7 @@ struct AdaptationProgressView: View {
                         }
                         .font(.body).fontWeight(.semibold).foregroundStyle(.white)
                         .frame(maxWidth: .infinity).padding(.vertical, 16)
-                        .background(LinearGradient(colors: [Color.mint, Color(uiColor: .nazeitTeal)],
+                        .background(LinearGradient(colors: [Color.mint, Color.staticTeal],
                                                    startPoint: .topLeading, endPoint: .bottomTrailing),
                                     in: RoundedRectangle(cornerRadius: 16))
                         .shadow(color: Color.mint.opacity(0.3), radius: 10, y: 5)
@@ -141,7 +141,7 @@ struct AdaptationProgressView: View {
                         }
                         .font(.body).fontWeight(.semibold).foregroundStyle(.white)
                         .frame(maxWidth: .infinity).padding(.vertical, 16)
-                        .background(LinearGradient(colors: [Color.teal, Color(uiColor: .nazeitTeal)],
+                        .background(LinearGradient(colors: [Color.teal, Color.staticTeal],
                                                    startPoint: .topLeading, endPoint: .bottomTrailing),
                                     in: RoundedRectangle(cornerRadius: 16))
                         .shadow(color: Color.teal.opacity(0.20), radius: 10, y: 5)
@@ -157,7 +157,7 @@ struct AdaptationProgressView: View {
                         }
                         .font(.body).fontWeight(.semibold).foregroundStyle(.white)
                         .frame(maxWidth: .infinity).padding(.vertical, 16)
-                        .background(LinearGradient(colors: [Color.cyan, Color(uiColor: .nazeitTeal)],
+                        .background(LinearGradient(colors: [Color.cyan, Color.staticTeal],
                                                    startPoint: .topLeading, endPoint: .bottomTrailing),
                                     in: RoundedRectangle(cornerRadius: 16))
                         .shadow(color: Color.cyan.opacity(0.20), radius: 10, y: 5)
@@ -169,6 +169,11 @@ struct AdaptationProgressView: View {
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            // P2: Auto-detect fully adapted status (§1.B/§4)
+            if appState.isFullyAdapted && appState.adaptationPercent < 1.0 {
+                appState.adaptationPercent = 1.0
+                appState.circadianLevel = 1.0
+            }
             withAnimation(.spring(response: 0.7).delay(0.1)) { appeared = true }
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2)) { ringProgress = appState.adaptationPercent }
         }
@@ -193,20 +198,20 @@ struct FullyAdaptedView: View {
                 
                 ZStack {
                     Circle()
-                        .fill(Color.circadianTeal.opacity(0.15))
+                        .fill(Color.nazeitTeal.opacity(0.15))
                         .frame(width: 140)
                         .scaleEffect(ringScale)
                         .animation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.1), value: ringScale)
                     
                     Circle()
-                        .fill(Color.circadianTeal.opacity(0.25))
+                        .fill(Color.nazeitTeal.opacity(0.25))
                         .frame(width: 104)
                         .scaleEffect(showCheck ? 1.0 : 0.2)
                         .animation(.spring(response: 0.5, dampingFraction: 0.65), value: showCheck)
                     
                     Image(systemName: "checkmark")
                         .font(.system(.largeTitle).weight(.semibold))
-                        .foregroundStyle(Color.circadianTeal)
+                        .foregroundStyle(Color.nazeitTeal)
                         .scaleEffect(showCheck ? 1.0 : 0.0)
                         .opacity(showCheck ? 1 : 0)
                         .animation(.spring(response: 0.5, dampingFraction: 0.5, blendDuration: 0).delay(0.15), value: showCheck)

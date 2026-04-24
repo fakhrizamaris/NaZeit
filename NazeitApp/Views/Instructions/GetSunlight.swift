@@ -104,7 +104,7 @@ struct GetSunlightView: View {
                                 VStack(spacing: 4) {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 40, weight: .bold))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
                                     Text("Done!")
                                         .font(.system(.title, design: .rounded).weight(.bold))
                                         .foregroundStyle(Color.semanticPrimaryTeal)

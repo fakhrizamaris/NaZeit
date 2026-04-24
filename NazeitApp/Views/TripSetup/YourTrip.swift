@@ -29,7 +29,7 @@ struct YourTrip: View {
         return (toSeconds - fromSeconds) / 3600
     }
     
-    private var baseColor: Color { Color(uiColor: .nazeitTeal) }
+
     
     var body: some View {
         ZStack {
@@ -65,12 +65,12 @@ struct YourTrip: View {
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
                     // MARK: From
-                    SearchableTripField(label: "From (City Name)", placeholder: "e.g. Batam", text: $appState.fromCity, tintColor: baseColor)
+                    SearchableTripField(label: "From (City Name)", placeholder: "e.g. Batam", text: $appState.fromCity, tintColor: Color.nazeitTeal)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
                     // MARK: To
-                    SearchableTripField(label: "To (City Name)", placeholder: "e.g. Los Angeles", text: $appState.toCity, tintColor: baseColor)
+                    SearchableTripField(label: "To (City Name)", placeholder: "e.g. Los Angeles", text: $appState.toCity, tintColor: Color.nazeitTeal)
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
@@ -177,7 +177,7 @@ struct YourTrip: View {
                                 .font(.footnote).fontWeight(.semibold)
                                 .foregroundStyle(Color(uiColor: .label))
                         }
-                        .tint(baseColor)
+                        .tint(Color.nazeitTeal)
                         .padding(.horizontal, 28)
                         
                         if appState.hasTransit {
@@ -225,11 +225,11 @@ struct YourTrip: View {
                     if timezoneShift != 0 && !appState.toCity.isEmpty {
                         HStack(spacing: 16) {
                             if isGeocodingTo || isGeocodingFrom {
-                                ProgressView().tint(baseColor).scaleEffect(0.9)
+                                ProgressView().tint(Color.nazeitTeal).scaleEffect(0.9)
                             } else {
                                 Image(systemName: "globe.americas.fill")
                                     .font(.title2)
-                                    .foregroundStyle(baseColor)
+                                    .foregroundStyle(Color.nazeitTeal)
                                     .symbolEffect(.bounce, value: timezoneShift)
                             }
                             
@@ -247,9 +247,9 @@ struct YourTrip: View {
                             Spacer()
                         }
                         .padding(16)
-                        .background(baseColor.opacity(0.12))
+                        .background(Color.nazeitTeal.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(baseColor.opacity(0.3), lineWidth: 1))
+                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.nazeitTeal.opacity(0.3), lineWidth: 1))
                         .padding(.horizontal, 24).padding(.bottom, 24)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isGeocodingTo)
@@ -259,7 +259,7 @@ struct YourTrip: View {
                         HStack(spacing: 12) {
                             Image(systemName: "sparkles")
                                 .font(.title3)
-                                .foregroundStyle(baseColor)
+                                .foregroundStyle(Color.nazeitTeal)
                             Text("We'll guide you with \(appState.inputMethod == .watch ? "live watch data" : "your sleep schedule") across the \(abs(timezoneShift))-hour shift.")
                                 .font(.footnote)
                                 .foregroundStyle(Color(uiColor: .secondaryLabel))
@@ -269,7 +269,7 @@ struct YourTrip: View {
                         .padding(16)
                         .background(Color(uiColor: .secondarySystemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(baseColor.opacity(0.3), lineWidth: 1))
+                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.nazeitTeal.opacity(0.3), lineWidth: 1))
                         .padding(.horizontal, 24).padding(.bottom, 32)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }

@@ -14,10 +14,14 @@ struct AvoidBrightLightView: View {
     
     @ScaledMetric(relativeTo: .largeTitle) private var heroIconSize: CGFloat = 64
 
-    /// Avoid light window from Circadian engine
+    /// Avoid light window from Circadian engine — reads from dimLights instruction if available
     private var avoidEndTime: String {
         guard let plan = appState.tripPlan,
               let inflight = plan.inflightProtocol else { return "local bedtime" }
+        // Prefer the engine-calculated dim time, fall back to bedtime
+        if let dimInst = inflight.instructions.first(where: { $0.type == .dimLights }) {
+            return PlanBuilder.time(dimInst.scheduledTime)
+        }
         return PlanBuilder.time(inflight.sleepWindow.bedtime)
     }
 
@@ -98,7 +102,7 @@ struct AvoidBrightLightView: View {
                                 VStack(spacing: 4) {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 40, weight: .bold))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.semanticPrimaryTeal)
                                     Text("Done!")
                                         .font(.system(.title, design: .rounded).weight(.bold))
                                         .foregroundStyle(Color.semanticPrimaryTeal)

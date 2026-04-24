@@ -135,8 +135,20 @@ struct PlanBuilder {
         switch window {
         case .daytime:
             let wakeUp = Circadian.inflightWakeTime(arrival: arrival)
+            let sleepTime = departure.addingTimeInterval(3600)
+            // Dim lights 1 hour before sleep to prepare melatonin
+            let dimTime = sleepTime.addingTimeInterval(-3600)
+            if dimTime > departure {
+                items.append(Instruction(
+                    type: .dimLights, scheduledTime: dimTime,
+                    title: "Dim Cabin Light",
+                    detail: "Lower your screen brightness and close the window shade.",
+                    reasoning: "Reducing light 1 hour before sleep primes your brain to produce melatonin for better sleep quality.",
+                    iconName: "moon.stars.fill", accentColorName: "indigo"
+                ))
+            }
             items.append(Instruction(
-                type: .sleep, scheduledTime: departure.addingTimeInterval(3600),
+                type: .sleep, scheduledTime: sleepTime,
                 title: "Sleep Now",
                 detail: "4 hrs before destination arrival",
                 reasoning: "Sleeping now aligns your body with daytime at destination.",
@@ -157,6 +169,15 @@ struct PlanBuilder {
                 detail: "Keep cabin light on, stay active in the first half of your flight.",
                 reasoning: "Staying awake early delays your body clock to match destination night.",
                 iconName: "figure.walk", accentColorName: "orange"
+            ))
+            // Dim lights before transitioning to sleep
+            let dimTime = mid.addingTimeInterval(-1800)
+            items.append(Instruction(
+                type: .dimLights, scheduledTime: dimTime,
+                title: "Dim Cabin Light",
+                detail: "Start winding down — lower screens and close shades.",
+                reasoning: "A 30-minute wind-down before sleep helps your circadian system shift to the destination's night.",
+                iconName: "moon.stars.fill", accentColorName: "indigo"
             ))
             items.append(Instruction(
                 type: .sleep, scheduledTime: mid,
@@ -296,5 +317,46 @@ struct PlanBuilder {
                 iconName: "sun.max.fill", accentColorName: "orange"
             )
         }
+    }
+
+    // MARK: - Conservative Recovery Mode (§4.1)
+
+    /// After 2 recalculations, the system enters Conservative Recovery Mode.
+    /// Only 3 priority instructions are shown:
+    /// 1. Sleep Anchor (consistent bed/wake time)
+    /// 2. One Seek Light window
+    /// 3. Conservative Caffeine Cutoff
+    static func conservativeInstructions(
+        bedtime: Date,
+        wakeTime: Date,
+        direction: FlightDirection,
+        profile: AdaptationProfile
+    ) -> [Instruction] {
+        let cutoff = Circadian.caffeineCutoff(bedtime: bedtime, profile: profile)
+
+        let lightInst = smartLightInstruction(
+            scheduledTime: wakeTime,
+            duration: 20 * 60,
+            direction: direction,
+            phase: .postflight
+        )
+
+        return [
+            Instruction(
+                type: .sleep, scheduledTime: bedtime,
+                title: "Sleep Anchor",
+                detail: "Go to bed at \(time(bedtime)) and wake at \(time(wakeTime)). Consistency is the priority.",
+                reasoning: "When your plan has been adjusted multiple times, the most effective strategy is to lock in a consistent sleep schedule.",
+                iconName: "moon.fill", accentColorName: "cyan"
+            ),
+            lightInst,
+            Instruction(
+                type: .caffeineCutoff, scheduledTime: cutoff,
+                title: "Caffeine Cutoff",
+                detail: "No coffee, tea, or energy drinks after \(time(cutoff)).",
+                reasoning: "A conservative caffeine cutoff protects your sleep anchor — the single most important factor for recovery.",
+                iconName: "cup.and.saucer.fill", accentColorName: "indigo"
+            )
+        ]
     }
 }

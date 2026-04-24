@@ -68,110 +68,199 @@ struct ScreenNewB_RecalculatedInstruction: View {
                         )
                         .padding(.top, 16)
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 12) {
-                                Image(systemName: lightInstruction?.iconName ?? "sun.max.fill")
-                                    .font(.system(size: heroIconSize * 0.56))
-                                    .foregroundStyle(Color.semanticWarningAmber)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text("Get sunlight at \(adjustedTime)")
-                                        .font(.system(.title2, design: .rounded).weight(.bold))
+                        if !canRecalculate {
+                            // MARK: Conservative Mode (§4.1) — after 2x misalignment
+                            HStack(spacing: 8) {
+                                Image(systemName: "shield.checkered")
+                                    .foregroundStyle(.orange)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Conservative Mode Active")
+                                        .font(.caption.weight(.bold))
                                         .foregroundStyle(Color(uiColor: .label))
-                                    Text("20 min · adjusted from \(originalTime)")
-                                        .font(.title3.weight(.semibold))
+                                    Text("Max adjustments reached. Focus on these 3 priorities.")
+                                        .font(.caption2)
                                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                                 }
+                                Spacer()
                             }
+                            .padding(12)
+                            .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
-                            if showWhy {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Why adjusted?")
-                                        .font(.title3.weight(.bold))
-                                        .foregroundStyle(Color.semanticPrimaryTeal)
-                                    Text("Because your sleep time shifted, the sunlight window also needs to shift. This update keeps your circadian direction on track without forcing your body.")
-                                        .font(.body.weight(.medium))
-                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
-                                        .fixedSize(horizontal: false, vertical: true)
+                            let conservative = PlanBuilder.conservativeInstructions(
+                                bedtime: appState.tripPlan?.inflightProtocol?.sleepWindow.bedtime ?? appState.preferredBedtime,
+                                wakeTime: appState.tripPlan?.inflightProtocol?.sleepWindow.wakeTime ?? appState.preferredWakeTime,
+                                direction: appState.tripPlan?.direction ?? .eastward,
+                                profile: appState.tripPlan?.profile ?? .normal
+                            )
+                            ForEach(conservative) { instruction in
+                                HStack(spacing: 12) {
+                                    Image(systemName: instruction.iconName)
+                                        .font(.title3)
+                                        .foregroundStyle(Color(instruction.accentColorName))
+                                        .frame(width: 36, height: 36)
+                                        .background(Color(instruction.accentColorName).opacity(0.12), in: Circle())
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(instruction.title)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(Color(uiColor: .label))
+                                        Text(instruction.detail)
+                                            .font(.caption)
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    }
+                                    Spacer()
                                 }
                                 .padding(14)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color(uiColor: .tertiarySystemFill), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                                .padding(.top, 10)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
+                                .background(Color(uiColor: .tertiarySystemFill), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                             }
-                        }
-                        .padding(20)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                        Button {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
-                                showWhy.toggle()
-                            }
-                        } label: {
-                            HStack(spacing: 5) {
-                                Image(systemName: "info.circle")
-                                Text(showWhy ? "Hide why" : "Why now?")
-                                Image(systemName: showWhy ? "chevron.up" : "chevron.down")
-                            }
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Color.semanticPrimaryTeal)
-                        }
+                            if isCompleted {
+                                VStack(spacing: 12) {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 40, weight: .bold))
+                                            .foregroundStyle(Color.nazeitTeal)
+                                        Text("Understood")
+                                            .font(.system(.title, design: .rounded).weight(.bold))
+                                            .foregroundStyle(Color.semanticPrimaryTeal)
+                                        Text("Following safe defaults")
+                                            .font(.title3.weight(.medium))
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    }
+                                    .padding(22)
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                        if isCompleted {
-                            VStack(spacing: 12) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 40, weight: .bold))
-                                        .foregroundStyle(.white)
-                                    Text("Plan Updated")
-                                        .font(.system(.title, design: .rounded).weight(.bold))
-                                        .foregroundStyle(Color.semanticPrimaryTeal)
-                                    Text("New sunlight window confirmed")
-                                        .font(.title3.weight(.medium))
-                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    NavigationLink {
+                                        RecoveryPhaseView().environmentObject(appState)
+                                    } label: {
+                                        HStack(spacing: 7) {
+                                            Text("Continue")
+                                            Image(systemName: "arrow.right")
+                                        }
+                                        .appPrimaryCTAStyle()
+                                    }
                                 }
-                                .padding(22)
-                                .frame(maxWidth: .infinity)
-                                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-
-                                NavigationLink {
-                                    RecoveryPhaseView().environmentObject(appState)
+                                .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                            } else {
+                                Button {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                        isCompleted = true
+                                    }
                                 } label: {
-                                    HStack(spacing: 7) {
-                                        Text("Continue")
-                                        Image(systemName: "arrow.right")
+                                    HStack(spacing: 8) {
+                                        Text("Understood")
+                                        Image(systemName: "checkmark")
                                     }
                                     .appPrimaryCTAStyle()
                                 }
                             }
-                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
                         } else {
+                            // Normal recalculated instructions
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: lightInstruction?.iconName ?? "sun.max.fill")
+                                        .font(.system(size: heroIconSize * 0.56))
+                                        .foregroundStyle(Color.semanticWarningAmber)
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text("Get sunlight at \(adjustedTime)")
+                                            .font(.system(.title2, design: .rounded).weight(.bold))
+                                            .foregroundStyle(Color(uiColor: .label))
+                                        Text("20 min · adjusted from \(originalTime)")
+                                            .font(.title3.weight(.semibold))
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    }
+                                }
+
+                                if showWhy {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text("Why adjusted?")
+                                            .font(.title3.weight(.bold))
+                                            .foregroundStyle(Color.semanticPrimaryTeal)
+                                        Text("Because your sleep time shifted, the sunlight window also needs to shift. This update keeps your circadian direction on track without forcing your body.")
+                                            .font(.body.weight(.medium))
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                    .padding(14)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color(uiColor: .tertiarySystemFill), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                    .padding(.top, 10)
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                                }
+                            }
+                            .padding(20)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+
                             Button {
-                                // Trigger recalculation per §4.1
-                                appState.recalculatePlanIfAllowed()
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
-                                    isCompleted = true
-                                    // Credit ~2% for completing recalculated step (reduced vs normal)
-                                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.02)
-                                    appState.circadianLevel = appState.adaptationPercent
+                                    showWhy.toggle()
                                 }
                             } label: {
-                                HStack(spacing: 8) {
-                                    Text("Got it")
-                                    Image(systemName: "checkmark")
+                                HStack(spacing: 5) {
+                                    Image(systemName: "info.circle")
+                                    Text(showWhy ? "Hide why" : "Why now?")
+                                    Image(systemName: showWhy ? "chevron.up" : "chevron.down")
                                 }
-                                .appPrimaryCTAStyle()
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Color.semanticPrimaryTeal)
                             }
-                        }
 
-                        NavigationLink {
-                            RecoveryPhaseView().environmentObject(appState)
-                        } label: {
-                            Text("Can't do this now")
-                                .appInteractiveTextStyle()
+                            if isCompleted {
+                                VStack(spacing: 12) {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 40, weight: .bold))
+                                            .foregroundStyle(Color.nazeitTeal)
+                                        Text("Plan Updated")
+                                            .font(.system(.title, design: .rounded).weight(.bold))
+                                            .foregroundStyle(Color.semanticPrimaryTeal)
+                                        Text("New sunlight window confirmed")
+                                            .font(.title3.weight(.medium))
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    }
+                                    .padding(22)
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                                    NavigationLink {
+                                        RecoveryPhaseView().environmentObject(appState)
+                                    } label: {
+                                        HStack(spacing: 7) {
+                                            Text("Continue")
+                                            Image(systemName: "arrow.right")
+                                        }
+                                        .appPrimaryCTAStyle()
+                                    }
+                                }
+                                .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                            } else {
+                                Button {
+                                    // Trigger recalculation per §4.1
+                                    appState.recalculatePlanIfAllowed()
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                        isCompleted = true
+                                        // Credit ~2% for completing recalculated step (reduced vs normal)
+                                        appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.02)
+                                        appState.circadianLevel = appState.adaptationPercent
+                                    }
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Text("Got it")
+                                        Image(systemName: "checkmark")
+                                    }
+                                    .appPrimaryCTAStyle()
+                                }
+                            }
+
+                            NavigationLink {
+                                RecoveryPhaseView().environmentObject(appState)
+                            } label: {
+                                Text("Can't do this now")
+                                    .appInteractiveTextStyle()
+                            }
+                            .padding(.bottom, 28)
                         }
-                        .padding(.bottom, 28)
                     }
                     .padding(.horizontal, 24)
                 }

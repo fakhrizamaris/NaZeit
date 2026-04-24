@@ -11,7 +11,7 @@ struct RecoveryPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var navigatetoDashboard: Bool = false
 
-    private var baseColor: Color { Color(uiColor: .nazeitTeal) }
+
 
     /// Dynamically read from tripPlan
     private var days: [DailyProtocol] {
@@ -67,7 +67,7 @@ struct RecoveryPhaseView: View {
             .ignoresSafeArea()
 
             Circle()
-                .fill(baseColor.opacity(0.12))
+                .fill(Color.nazeitTeal.opacity(0.12))
                 .frame(maxWidth: 400)
                 .blur(radius: 120)
                 .offset(x: -80, y: -200)
@@ -97,7 +97,7 @@ struct RecoveryPhaseView: View {
                         }
                         .padding(.top, 8)
 
-                        DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: appState.recoveryPhaseDayIndex, activeColor: baseColor, dayLabelPrefix: "Day +")
+                        DayProgressTracker(offsets: offsets, dateProvider: dateString, selectedIndex: appState.recoveryPhaseDayIndex, activeColor: Color.nazeitTeal, dayLabelPrefix: "Day +")
                             .padding(.horizontal, 24)
 
                         VStack(spacing: 24) {
@@ -105,7 +105,7 @@ struct RecoveryPhaseView: View {
                                 title: "Tonight's Sleep Window",
                                 timeRange: sleepTargetString,
                                 shiftLabel: currentDay?.shiftLabel ?? "—",
-                                color: baseColor
+                                color: Color.nazeitTeal
                             )
                             .padding(.horizontal, 24)
 
@@ -118,7 +118,7 @@ struct RecoveryPhaseView: View {
 
                                         Spacer()
 
-                                        CurrentTimeBadge(title: "Now", timeZone: appState.toTimeZone, accentColor: baseColor, isProminent: true)
+                                        CurrentTimeBadge(title: "Now", timeZone: appState.toTimeZone, accentColor: Color.nazeitTeal, isProminent: true)
                                     }
 
                                     Text("Strict adherence to these daily tasks will rapidly clear your sleep debt and adjust your body clock.")
@@ -129,7 +129,65 @@ struct RecoveryPhaseView: View {
 
                                 // Dynamic protocol cards from the plan
                                 VStack(spacing: 12) {
-                                    if let day = currentDay {
+                                    // Conservative Mode Banner (§4.1)
+                                    if appState.isConservativeMode {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "shield.checkered")
+                                                .foregroundStyle(.orange)
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text("Conservative Mode")
+                                                    .font(.caption.weight(.bold))
+                                                    .foregroundStyle(Color(uiColor: .label))
+                                                Text("Simplified protocol — focus on consistency.")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                            }
+                                            Spacer()
+                                        }
+                                        .padding(12)
+                                        .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    }
+
+                                    if appState.isRestDayActive {
+                                        // Rest Day UI
+                                        VStack(spacing: 16) {
+                                            Image(systemName: "powersleep")
+                                                .font(.system(size: 48))
+                                                .foregroundStyle(Color.nazeitTeal)
+                                            
+                                            Text("Rest Mode Active")
+                                                .font(.title2.weight(.bold))
+                                                .foregroundStyle(Color(uiColor: .label))
+                                            
+                                            Text("You've chosen to rest today. Take it easy and let your body recover without circadian pressure. You can resume tomorrow.")
+                                                .font(.body)
+                                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                                .multilineTextAlignment(.center)
+                                                .padding(.horizontal, 24)
+                                        }
+                                        .padding(.vertical, 32)
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
+                                    } else if appState.isConservativeMode, let day = currentDay {
+                                        // Conservative: only 3 essential instructions
+                                        let conservative = PlanBuilder.conservativeInstructions(
+                                            bedtime: day.sleepWindow.bedtime,
+                                            wakeTime: day.sleepWindow.wakeTime,
+                                            direction: appState.tripPlan?.direction ?? .eastward,
+                                            profile: appState.tripPlan?.profile ?? .normal
+                                        )
+                                        ForEach(conservative) { instruction in
+                                            ProtocolCard(
+                                                time: PlanBuilder.time(instruction.scheduledTime),
+                                                icon: instruction.iconName,
+                                                title: instruction.title,
+                                                detail: instruction.detail,
+                                                reasoning: instruction.reasoning,
+                                                accentColor: Color(instruction.accentColorName)
+                                            )
+                                        }
+                                    } else if let day = currentDay {
+                                        // Normal: full protocol
                                         ForEach(day.instructions) { instruction in
                                             ProtocolCard(
                                                 time: PlanBuilder.time(instruction.scheduledTime),
@@ -151,6 +209,23 @@ struct RecoveryPhaseView: View {
                             removal: .move(edge: .leading).combined(with: .opacity)
                         ))
 
+                        // MARK: Safety Override (§5.3/§6.2)
+                        if appState.inputMethod == .manual && !appState.isRestDayActive {
+                            Button {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    appState.skipTodayAdaptation()
+                                }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "battery.25percent")
+                                    Text("I'm too tired today")
+                                }
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            }
+                            .padding(.top, 4)
+                        }
+
                         Spacer(minLength: 24)
                     }
                 }
@@ -162,12 +237,15 @@ struct RecoveryPhaseView: View {
                 HStack(spacing: 16) {
                     Button {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                            if appState.recoveryPhaseDayIndex > 0 { appState.recoveryPhaseDayIndex -= 1 }
+                            if appState.recoveryPhaseDayIndex > 0 { 
+                                appState.recoveryPhaseDayIndex -= 1 
+                                appState.isRestDayActive = false
+                            }
                         }
                     } label: {
                         Image(systemName: "arrow.left")
                             .font(.headline)
-                            .foregroundStyle(appState.recoveryPhaseDayIndex > 0 ? baseColor : Color(uiColor: .tertiaryLabel))
+                            .foregroundStyle(appState.recoveryPhaseDayIndex > 0 ? Color.nazeitTeal : Color(uiColor: .tertiaryLabel))
                             .frame(width: 56, height: 56)
                             .background(Color(uiColor: .secondarySystemBackground))
                             .clipShape(Circle())
@@ -180,9 +258,12 @@ struct RecoveryPhaseView: View {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                             if appState.recoveryPhaseDayIndex < dayCount - 1 {
                                 appState.recoveryPhaseDayIndex += 1
+                                appState.isRestDayActive = false
                                 // Update adaptation progressively per day
                                 appState.adaptationPercent = currentAdaptation
                                 appState.circadianLevel = appState.adaptationPercent
+                                // §4.1: Completing a day without deviation resets recalcCount
+                                appState.completeSuccessfulDay()
                             } else {
                                 // Last day — fully adapted
                                 appState.adaptationPercent = 1.0
@@ -200,17 +281,17 @@ struct RecoveryPhaseView: View {
                             }
                         }
                         .font(.headline)
-                        .foregroundStyle(appState.recoveryPhaseDayIndex == dayCount - 1 ? .white : baseColor)
+                        .foregroundStyle(appState.recoveryPhaseDayIndex == dayCount - 1 ? .white : Color.nazeitTeal)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(appState.recoveryPhaseDayIndex == dayCount - 1 ? baseColor : baseColor.opacity(0.12))
+                        .background(appState.recoveryPhaseDayIndex == dayCount - 1 ? Color.nazeitTeal : Color.nazeitTeal.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 100, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 100, style: .continuous)
                                 .stroke(
                                     appState.recoveryPhaseDayIndex == dayCount - 1
                                     ? Color.clear
-                                    : baseColor.opacity(0.35),
+                                    : Color.nazeitTeal.opacity(0.35),
                                     lineWidth: 1
                                 )
                         )
@@ -239,6 +320,14 @@ struct RecoveryPhaseView: View {
             AdaptationProgressView()
                 .environmentObject(appState)
                 .onAppear { appState.transitionPhase(to: .postflight) }
+        }
+        .onAppear {
+            // P2: Auto-detect if user is already fully adapted (§4)
+            if appState.isFullyAdapted {
+                appState.adaptationPercent = 1.0
+                appState.circadianLevel = 1.0
+                navigatetoDashboard = true
+            }
         }
     }
 }

@@ -69,24 +69,69 @@ struct ScreenNewC_InFlightDeviated: View {
                         .padding(.top, 16)
 
                         VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 12) {
-                                Image(systemName: deviationType == .stayedAwake ? "moon.stars.fill" : "sun.max.fill")
-                                    .font(.system(size: heroIconSize * 0.56))
-                                    .foregroundStyle(Color.semanticWarningAmber)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(deviationType == .stayedAwake ? "Dim lights now" : "Get active and seek light")
-                                        .font(.system(.title2, design: .rounded).weight(.bold))
-                                        .foregroundStyle(Color(uiColor: .label))
-                                    Text(deviationType == .stayedAwake
-                                         ? "Sleep window: \(adjustedBedtime)"
-                                         : "Stay awake until landing")
-                                        .font(.title3.weight(.semibold))
-                                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            if !canRecalculate {
+                                // MARK: Conservative Mode (§4.1)
+                                HStack(spacing: 8) {
+                                    Image(systemName: "shield.checkered")
+                                        .foregroundStyle(.orange)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Conservative Mode Active")
+                                            .font(.caption.weight(.bold))
+                                            .foregroundStyle(Color(uiColor: .label))
+                                        Text("Focus on these 3 priorities only.")
+                                            .font(.caption2)
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    }
+                                    Spacer()
                                 }
-                            }
+                                .padding(12)
+                                .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
-                            // Recalc counter badge
-                            if canRecalculate {
+                                let conservative = PlanBuilder.conservativeInstructions(
+                                    bedtime: appState.tripPlan?.inflightProtocol?.sleepWindow.bedtime ?? appState.preferredBedtime,
+                                    wakeTime: appState.tripPlan?.inflightProtocol?.sleepWindow.wakeTime ?? appState.preferredWakeTime,
+                                    direction: appState.tripPlan?.direction ?? .eastward,
+                                    profile: appState.tripPlan?.profile ?? .normal
+                                )
+                                ForEach(conservative) { instruction in
+                                    HStack(spacing: 12) {
+                                        Image(systemName: instruction.iconName)
+                                            .font(.title3)
+                                            .foregroundStyle(Color(instruction.accentColorName))
+                                            .frame(width: 36, height: 36)
+                                            .background(Color(instruction.accentColorName).opacity(0.12), in: Circle())
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(instruction.title)
+                                                .font(.subheadline.weight(.semibold))
+                                                .foregroundStyle(Color(uiColor: .label))
+                                            Text(instruction.detail)
+                                                .font(.caption)
+                                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(14)
+                                    .background(Color(uiColor: .tertiarySystemFill), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                }
+                            } else {
+                                // Normal deviation instructions
+                                HStack(spacing: 12) {
+                                    Image(systemName: deviationType == .stayedAwake ? "moon.stars.fill" : "sun.max.fill")
+                                        .font(.system(size: heroIconSize * 0.56))
+                                        .foregroundStyle(Color.semanticWarningAmber)
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(deviationType == .stayedAwake ? "Dim lights now" : "Get active and seek light")
+                                            .font(.system(.title2, design: .rounded).weight(.bold))
+                                            .foregroundStyle(Color(uiColor: .label))
+                                        Text(deviationType == .stayedAwake
+                                             ? "Sleep window: \(adjustedBedtime)"
+                                             : "Stay awake until landing")
+                                            .font(.title3.weight(.semibold))
+                                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                    }
+                                }
+
+                                // Recalc counter badge
                                 Text(recalcStatus)
                                     .font(.caption2.weight(.bold))
                                     .foregroundStyle(.white)
@@ -138,7 +183,7 @@ struct ScreenNewC_InFlightDeviated: View {
                                 VStack(spacing: 4) {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 40, weight: .bold))
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(Color.nazeitTeal)
                                     Text("Done!")
                                         .font(.system(.title, design: .rounded).weight(.bold))
                                         .foregroundStyle(Color.semanticPrimaryTeal)
