@@ -34,6 +34,18 @@ final class AppState: ObservableObject {
     @Published var consecutiveGoodSleeps: Int = 0
 
     // MARK: - Trip Configuration
+    @Published var hasTransit: Bool = false {
+        didSet { scheduleSave() }
+    }
+    @Published var transitCity: String = "" {
+        didSet { scheduleSave() }
+    }
+    @Published var layoverDuration: Int = 2 {
+        didSet { scheduleSave() }
+    }
+    @Published var transitTimeZone: TimeZone = .current {
+        didSet { scheduleSave() }
+    }
     @Published var fromCity: String = "" {
         didSet { scheduleSave() }
     }
@@ -52,15 +64,7 @@ final class AppState: ObservableObject {
     @Published var arrivalDate: Date = Date().addingTimeInterval(86400 * 3 + 3600 * 15) {
         didSet { scheduleSave() }
     }
-    @Published var hasTransit: Bool = false {
-        didSet { scheduleSave() }
-    }
-    @Published var transitCity: String = "" {
-        didSet { scheduleSave() }
-    }
-    @Published var layoverDuration: Int = 2 {
-        didSet { scheduleSave() }
-    }
+
 
     // MARK: - Health Screening
     @Published var isSleepDisorder = false
@@ -254,7 +258,7 @@ final class AppState: ObservableObject {
         isRestDayActive = true
     }
 
-    // MARK: - HRV-based "Fully Adapted" (§1.B/§4)
+    // MARK: - HRV-based "Fully Adapted"
 
     /// Call after each sleep cycle (Apple Watch mode).
     /// If HRV ratio >= 90% for 2 consecutive cycles → Fully Adapted.
@@ -478,7 +482,6 @@ private struct PersistableState: Codable {
 
 
 // MARK: - UIColor Extensions (unchanged)
-
 extension UIColor {
     static let nazeitTeal = UIColor { trait in
         return trait.userInterfaceStyle == .dark ?

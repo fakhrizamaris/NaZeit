@@ -102,7 +102,6 @@ struct Circadian {
     }
 
     // MARK: - In-Flight
-
     static func arrivalWindow(arrival: Date, zone: TimeZone) -> ArrivalWindow {
         let hour = Calendar.current.dateComponents(in: zone, from: arrival).hour ?? 12
         return ArrivalWindow(arrivalHour: hour)

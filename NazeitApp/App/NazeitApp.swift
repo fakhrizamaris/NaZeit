@@ -35,13 +35,16 @@ struct NazeitApp: App {
                             }
                         }
                     } else {
-                        OnboardingChoice()
-                            .environmentObject(appState)
-                            .sheet(isPresented: disclaimerSheetBinding) {
-                                HealthScreeningModal(isAccepted: $hasAcceptedDisclaimer)
-                                    .environmentObject(appState)
-                                    .interactiveDismissDisabled()
-                            }
+                        // 💡 [Junior Developer Note]: Bypass OnboardingChoice karena opsi Apple Watch disembunyikan.
+                        NavigationStack {
+                            ManualSetup()
+                                .environmentObject(appState)
+                                .sheet(isPresented: disclaimerSheetBinding) {
+                                    HealthScreeningModal(isAccepted: $hasAcceptedDisclaimer)
+                                        .environmentObject(appState)
+                                        .interactiveDismissDisabled()
+                                }
+                        }
                     }
                 }
             }

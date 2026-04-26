@@ -38,7 +38,7 @@ struct ManualSetup: View {
                     
                     HStack {
                         Spacer()
-                        StepIndicatorView(step: 2, totalSteps: 3)
+                        StepIndicatorView(step: 1, totalSteps: 2)
                         Spacer()
                     }
                     .padding(.top, 12)
@@ -47,12 +47,12 @@ struct ManualSetup: View {
                     
                     // MARK: Header
                     VStack(alignment: .leading, spacing: 8) {
-                        Image(systemName: "hand.tap.fill")
+                        Image(systemName: "moon.zzz.fill")
                             .font(.largeTitle.weight(.light))
                             .foregroundStyle(Color.indigo)
                             .padding(.bottom, 8)
                         
-                        Text("Manual Setup")
+                        Text("Sleep Profile")
                             .font(.system(.title2, design: .rounded).weight(.bold))
                             .foregroundStyle(Color(uiColor: .label))
                         

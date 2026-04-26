@@ -40,12 +40,14 @@ struct OnboardingChoice: View {
                             Group {
                                 if usesVerticalCards {
                                     VStack(spacing: 16) {
-                                        watchChoice
+                                        // 💡 [Junior Developer Note]: Disembunyikan sementara, bisa di-uncomment jika fitur Apple Watch ingin dipakai lagi.
+                                        // watchChoice
                                         manualChoice
                                     }
                                 } else {
                                     HStack(spacing: 16) {
-                                        watchChoice
+                                        // 💡 [Junior Developer Note]: Disembunyikan sementara.
+                                        // watchChoice
                                         manualChoice
                                     }
                                 }
@@ -113,8 +115,8 @@ struct OnboardingChoice: View {
                 subtitle: "Without Wearable",
                 detail: "Manually enter your typical sleep schedule.",
                 tint: Color.indigo,
-                badge: "Alternative",
-                badgeIcon: "arrow.triangle.branch"
+                badge: "Default Setup",
+                badgeIcon: "checkmark.circle.fill"
             )
         }
         .simultaneousGesture(TapGesture().onEnded { appState.inputMethod = .manual })

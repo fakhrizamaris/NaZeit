@@ -3,22 +3,27 @@ import MapKit
 
 struct YourTrip: View {
     @EnvironmentObject var appState: AppState
+
     @State private var showDatePicker = false
     @State private var showArrivalDatePicker = false
     @State private var appeared       = false
+    @State private var localFromCity: String = ""
     
     @State private var isGeocodingTo   = false
     @State private var isGeocodingFrom = false
+
+    private static let baseFormat = Date.FormatStyle.dateTime.year().month(.abbreviated).day().hour().minute()
     
     private var isValid: Bool { !appState.fromCity.isEmpty && !appState.toCity.isEmpty }
+
     private var dateLabel: String {
-        var format = Date.FormatStyle.dateTime.year().month(.abbreviated).day().hour().minute()
+        var format = Self.baseFormat
         format.timeZone = appState.fromTimeZone
         return appState.departureDate.formatted(format)
     }
     
     private var arrivalDateLabel: String {
-        var format = Date.FormatStyle.dateTime.year().month(.abbreviated).day().hour().minute()
+        var format = Self.baseFormat
         format.timeZone = appState.toTimeZone
         return appState.arrivalDate.formatted(format)
     }
@@ -41,7 +46,7 @@ struct YourTrip: View {
                     
                     HStack {
                         Spacer()
-                        StepIndicatorView(step: 3, totalSteps: 3)
+                        StepIndicatorView(step: 2, totalSteps: 2)
                         Spacer()
                     }
                     .padding(.top, 12)
@@ -65,7 +70,16 @@ struct YourTrip: View {
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
                     // MARK: From
-                    SearchableTripField(label: "From (City Name)", placeholder: "e.g. Batam", text: $appState.fromCity, tintColor: Color.nazeitTeal)
+                    SearchableTripField(label: "From (City Name)", placeholder: "e.g. Batam", text: $localFromCity, tintColor: Color.nazeitTeal)
+                    .onAppear{
+                        localFromCity = appState.fromCity
+                    }
+                        .onChange(of: localFromCity) { oldValue, newValue in
+                            Task {
+                                try? await Task.sleep(for: .seconds(0.5))
+                                appState.fromCity = newValue
+                            }
+                        }
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
@@ -182,18 +196,7 @@ struct YourTrip: View {
                         
                         if appState.hasTransit {
                             VStack(spacing: 12) {
-                                HStack {
-                                    Image(systemName: "building.2").font(.title3).foregroundStyle(Color.mint)
-                                        .frame(width: 32)
-                                    TextField("Transit City (e.g. Dubai)", text: $appState.transitCity)
-                                        .font(.body)
-                                        .foregroundStyle(Color(uiColor: .label))
-                                        .frame(minHeight: 52)
-                                }
-                                .padding(.horizontal, 16)
-                                .background(Color(uiColor: .secondarySystemBackground))
-                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
+                                SearchableTripField(label: "", placeholder: "Transit City (e.g. Dubai)", text: $appState.transitCity, tintColor: Color.mint, icon: "building.2")
                                 
                                 HStack {
                                     Image(systemName: "hourglass").font(.title3).foregroundStyle(Color.mint)
@@ -295,7 +298,6 @@ struct YourTrip: View {
         }
         .onTapGesture { hideKeyboard() }
         .navigationBarTitleDisplayMode(.inline)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isValid)
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.1)) { appeared = true }
         }
@@ -327,6 +329,18 @@ struct YourTrip: View {
             } catch {}
             isGeocodingTo = false
         }
+        .task(id: appState.transitCity) {
+            guard !appState.transitCity.isEmpty && appState.hasTransit else { return }
+            do {
+                try await Task.sleep(for: .milliseconds(400))
+                if let request = MKGeocodingRequest(addressString: appState.transitCity) {
+                    let mapItems = try await request.mapItems
+                    if let tz = mapItems.first?.timeZone {
+                        await MainActor.run { appState.transitTimeZone = tz }
+                    }
+                }
+            } catch {}
+        }
     }
 }
 
@@ -335,6 +349,7 @@ private struct SearchableTripField: View {
     let placeholder: String
     @Binding var text: String
     let tintColor: Color
+    var icon: String? = nil
     
  
     @StateObject private var searchService = LocationSearchService()
@@ -343,24 +358,37 @@ private struct SearchableTripField: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(label)
-                .font(.footnote).fontWeight(.semibold)
-                .foregroundStyle(Color(uiColor: .label))
-                .padding(.horizontal, 4)
+            if !label.isEmpty {
+                Text(label)
+                    .font(.footnote).fontWeight(.semibold)
+                    .foregroundStyle(Color(uiColor: .label))
+                    .padding(.horizontal, 4)
+            }
             
-            TextField(placeholder, text: $searchService.searchQuery)
-                .focused($isFocused)
-                .font(.body)
-                .foregroundStyle(Color(uiColor: .label))
-                .frame(minHeight: 52)
-                .padding(.horizontal, 16)
-                .background(Color(uiColor: .secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(searchService.searchQuery.isEmpty ? Color(uiColor: .quaternaryLabel) : tintColor.opacity(0.6), lineWidth: searchService.searchQuery.isEmpty ? 0.5 : 1.5)
-                )
-                .autocorrectionDisabled()
+            HStack(spacing: 0) {
+                if let icon = icon {
+                    Image(systemName: icon)
+                        .font(.title3)
+                        .foregroundStyle(tintColor)
+                        .frame(width: 32)
+                        .padding(.leading, 12)
+                }
+                
+                TextField(placeholder, text: $searchService.searchQuery)
+                    .focused($isFocused)
+                    .font(.body)
+                    .foregroundStyle(Color(uiColor: .label))
+                    .frame(minHeight: 52)
+                    .padding(.horizontal, icon == nil ? 16 : 8)
+            }
+            .background(Color(uiColor: .secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(searchService.searchQuery.isEmpty ? Color(uiColor: .quaternaryLabel) : tintColor.opacity(0.6), lineWidth: searchService.searchQuery.isEmpty ? 0.5 : 1.5)
+            )
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.words)
                 .accessibilityLabel(label)
                 .accessibilityHint("Enter city name")
                 .onChange(of: searchService.searchQuery) { _, newValue in
