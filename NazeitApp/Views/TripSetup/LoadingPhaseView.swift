@@ -192,6 +192,7 @@ struct LoadingPhaseView: View {
                                         } else if let day = currentDay {
                                             ForEach(day.instructions) { instruction in
                                                 ProtocolCard(
+                                                    instructionId: instruction.id.uuidString,
                                                     time: PlanBuilder.time(instruction.scheduledTime),
                                                     icon: instruction.iconName,
                                                     title: instruction.title,

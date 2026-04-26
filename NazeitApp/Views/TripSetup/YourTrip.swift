@@ -8,6 +8,8 @@ struct YourTrip: View {
     @State private var showArrivalDatePicker = false
     @State private var appeared       = false
     @State private var localFromCity: String = ""
+    @State private var localToCity: String = ""
+    @State private var localTransitCity: String = ""
     
     @State private var isGeocodingTo   = false
     @State private var isGeocodingFrom = false
@@ -84,7 +86,16 @@ struct YourTrip: View {
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
                     // MARK: To
-                    SearchableTripField(label: "To (City Name)", placeholder: "e.g. Los Angeles", text: $appState.toCity, tintColor: Color.nazeitTeal)
+                    SearchableTripField(label: "To (City Name)", placeholder: "e.g. Los Angeles", text: $localToCity, tintColor: Color.nazeitTeal)
+                        .onAppear {
+                            localToCity = appState.toCity
+                        }
+                        .onChange(of: localToCity) { oldValue, newValue in
+                            Task {
+                                try? await Task.sleep(for: .seconds(0.5))
+                                appState.toCity = newValue
+                            }
+                        }
                         .padding(.horizontal, 24).padding(.bottom, 16)
                         .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
@@ -193,10 +204,22 @@ struct YourTrip: View {
                         }
                         .tint(Color.nazeitTeal)
                         .padding(.horizontal, 28)
+                        .onChange(of: appState.hasTransit) { _, _ in
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        }
                         
                         if appState.hasTransit {
                             VStack(spacing: 12) {
-                                SearchableTripField(label: "", placeholder: "Transit City (e.g. Dubai)", text: $appState.transitCity, tintColor: Color.mint, icon: "building.2")
+                                SearchableTripField(label: "", placeholder: "Transit City (e.g. Dubai)", text: $localTransitCity, tintColor: Color.mint, icon: "building.2")
+                                    .onAppear {
+                                        localTransitCity = appState.transitCity
+                                    }
+                                    .onChange(of: localTransitCity) { oldValue, newValue in
+                                        Task {
+                                            try? await Task.sleep(for: .seconds(0.5))
+                                            appState.transitCity = newValue
+                                        }
+                                    }
                                 
                                 HStack {
                                     Image(systemName: "hourglass").font(.title3).foregroundStyle(Color.mint)

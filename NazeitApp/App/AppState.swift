@@ -99,6 +99,11 @@ final class AppState: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    // MARK: - Daily Protocol Step Completion
+    @Published var completedProtocolSteps: Set<String> = [] {
+        didSet { scheduleSave() }
+    }
+
     @discardableResult
     func completeInflightStep(_ stepId: String, credit: Double) -> Bool {
         guard !completedInflightSteps.contains(stepId) else { return false }
@@ -391,6 +396,7 @@ final class AppState: ObservableObject {
             recoveryPhaseDayIndex: recoveryPhaseDayIndex,
             recalcCount: recalcCount,
             completedInflightSteps: Array(completedInflightSteps),
+            completedProtocolSteps: Array(completedProtocolSteps),
             adaptationPercent: adaptationPercent,
             tripPlan: tripPlan
         )
@@ -426,6 +432,7 @@ final class AppState: ObservableObject {
             recoveryPhaseDayIndex = snapshot.recoveryPhaseDayIndex
             recalcCount = snapshot.recalcCount
             completedInflightSteps = Set(snapshot.completedInflightSteps)
+            completedProtocolSteps = Set(snapshot.completedProtocolSteps ?? [])
             adaptationPercent = snapshot.adaptationPercent
             circadianLevel = snapshot.adaptationPercent
             tripPlan = snapshot.tripPlan
@@ -476,6 +483,7 @@ private struct PersistableState: Codable {
     let recoveryPhaseDayIndex: Int
     let recalcCount: Int
     let completedInflightSteps: [String]
+    let completedProtocolSteps: [String]?
     let adaptationPercent: Double
     let tripPlan: TripPlan?
 }

@@ -15,6 +15,9 @@ final class NotificationService: ObservableObject {
 
     @Published var isAuthorized = false
 
+    // Waktu sebelum instruksi (dalam hitungan jam). Ubah angka 1.0 ini untuk mengganti waktu notifikasi.
+    var hoursBefore: Double = 1.0
+
     private let center = UNUserNotificationCenter.current()
 
     // MARK: - Authorization
@@ -55,16 +58,26 @@ final class NotificationService: ObservableObject {
     // MARK: - Individual Instruction
 
     private func schedule(_ instruction: Instruction, phase: TravelPhase, day: Int) async {
-        guard instruction.scheduledTime > Date() else { return }
+        let notifyTime = instruction.scheduledTime.addingTimeInterval(-hoursBefore * 3600)
+        guard notifyTime > Date() else { return }
+
+        let timeText = hoursBefore == 1.0 ? "1 hour" : "\(hoursBefore) hours"
+        let engagingPrefixes = [
+            "Almost time! ✨",
+            "Next up in \(timeText) ⏰",
+            "Beat jet lag! 🛫",
+            "Stay on track 🔋"
+        ]
+        let prefix = engagingPrefixes.randomElement() ?? "Up next:"
 
         let content = UNMutableNotificationContent()
-        content.title = instruction.title
+        content.title = "\(prefix) \(instruction.title)"
         content.body = instruction.detail
         content.sound = .default
         content.categoryIdentifier = "circadian_\(instruction.type.rawValue)"
         content.userInfo = ["type": instruction.type.rawValue, "phase": phase.rawValue, "day": day]
 
-        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: instruction.scheduledTime)
+        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: notifyTime)
         let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
         let id = "nazeit_\(phase.rawValue)_d\(day)_\(instruction.type.rawValue)_\(instruction.id.uuidString.prefix(8))"
 
@@ -75,18 +88,20 @@ final class NotificationService: ObservableObject {
         }
     }
 
-    // MARK: - Sleep Reminder (30 min before bedtime)
+    // MARK: - Sleep Reminder
 
     private func scheduleSleepReminder(_ window: SleepWindow, day: Int, phase: TravelPhase) async {
-        let time = window.bedtime.addingTimeInterval(-30 * 60)
-        guard time > Date() else { return }
+        let notifyTime = window.bedtime.addingTimeInterval(-hoursBefore * 3600)
+        guard notifyTime > Date() else { return }
+
+        let timeText = hoursBefore == 1.0 ? "1 hour" : "\(hoursBefore) hours"
 
         let content = UNMutableNotificationContent()
-        content.title = "Bedtime in 30 Minutes"
-        content.body = "Start winding down. Dim lights and avoid screens to prepare for sleep."
+        content.title = "Wind down time! 💤"
+        content.body = "Bedtime is in \(timeText). Dim the lights, put away screens, and let your body clock sync up. You've got this!"
         content.sound = .default
 
-        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: time)
+        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: notifyTime)
         let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
 
         do {

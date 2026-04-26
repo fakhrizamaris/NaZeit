@@ -338,6 +338,7 @@ struct HeroSleepTargetView: View {
 
 // MARK: - Lists & Actions
 struct ProtocolCard: View {
+    let instructionId: String
     let time: String
     let icon: String
     let title: String
@@ -345,14 +346,22 @@ struct ProtocolCard: View {
     let reasoning: String
     var accentColor: Color = Color(uiColor: .nazeitTeal)
     
-    @State private var isCompleted = false
+    @EnvironmentObject var appState: AppState
+    
+    var isCompleted: Bool {
+        appState.completedProtocolSteps.contains(instructionId)
+    }
     
     var body: some View {
         Button {
             let generator = UIImpactFeedbackGenerator(style: isCompleted ? .light : .medium)
             generator.impactOccurred()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                isCompleted.toggle()
+                if isCompleted {
+                    appState.completedProtocolSteps.remove(instructionId)
+                } else {
+                    appState.completedProtocolSteps.insert(instructionId)
+                }
             }
         } label: {
             HStack(spacing: 16) {
