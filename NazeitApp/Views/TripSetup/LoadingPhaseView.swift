@@ -12,6 +12,7 @@ struct LoadingPhaseView: View {
     @State private var navigatetoDashboard: Bool = false
     /// Detect timezone anchor changes 
     @State private var showTimezoneAlert: Bool = false
+    @State private var showCancelConfirmation: Bool = false
     @State private var movingForward: Bool = true
 
     /// Dynamically read from tripPlan. Falls back to empty if no plan exists.
@@ -315,6 +316,28 @@ struct LoadingPhaseView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(role: .destructive) {
+                        showCancelConfirmation = true
+                    } label: {
+                        Label("Cancel Trip", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .foregroundStyle(Color.nazeitTeal)
+                }
+            }
+        }
+        .alert("Cancel This Trip?", isPresented: $showCancelConfirmation) {
+            Button("Cancel Trip", role: .destructive) {
+                withAnimation { appState.resetForNewTrip() }
+            }
+            Button("Keep Going", role: .cancel) { }
+        } message: {
+            Text("This will erase your entire adaptation plan and all progress. This action cannot be undone.")
+        }
         .navigationDestination(isPresented: $navigatetoDashboard) {
             AdaptationProgressView()
                 .environmentObject(appState)

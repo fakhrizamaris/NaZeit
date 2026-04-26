@@ -11,6 +11,7 @@ struct RecoveryPhaseView: View {
     @EnvironmentObject var appState: AppState
     @State private var navigatetoDashboard: Bool = false
     @State private var navigateToFullyAdapted: Bool = false
+    @State private var showCancelConfirmation: Bool = false
     @State private var movingForward: Bool = true
 
     /// Dynamically read from tripPlan
@@ -265,13 +266,11 @@ struct RecoveryPhaseView: View {
                                 appState.isRestDayActive = false
                                 // Update adaptation progressively per day
                                 appState.adaptationPercent = currentAdaptation
-                                appState.circadianLevel = appState.adaptationPercent
                                 // §4.1: Completing a day without deviation resets recalcCount
                                 appState.completeSuccessfulDay()
                             } else {
                                 // Last day — fully adapted
                                 appState.adaptationPercent = 1.0
-                                appState.circadianLevel = 1.0
                                 navigateToFullyAdapted = true
                             }
                         }
@@ -320,6 +319,28 @@ struct RecoveryPhaseView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(role: .destructive) {
+                        showCancelConfirmation = true
+                    } label: {
+                        Label("Cancel Trip", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .foregroundStyle(Color.nazeitTeal)
+                }
+            }
+        }
+        .alert("Cancel This Trip?", isPresented: $showCancelConfirmation) {
+            Button("Cancel Trip", role: .destructive) {
+                withAnimation { appState.resetForNewTrip() }
+            }
+            Button("Keep Going", role: .cancel) { }
+        } message: {
+            Text("This will erase your entire adaptation plan and all progress. This action cannot be undone.")
+        }
         .navigationDestination(isPresented: $navigatetoDashboard) {
             AdaptationProgressView()
                 .environmentObject(appState)
@@ -333,7 +354,6 @@ struct RecoveryPhaseView: View {
             // Auto-detect if user is already fully adapted (§4)
             if appState.isFullyAdapted {
                 appState.adaptationPercent = 1.0
-                appState.circadianLevel = 1.0
                 navigateToFullyAdapted = true
             }
         }

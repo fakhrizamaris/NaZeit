@@ -107,6 +107,7 @@ struct SleepNowView: View {
     @EnvironmentObject var appState: AppState
     @State private var showWhy = false
     @State private var isCompleted = false
+    @State private var showCancelConfirmation = false
 
     /// Tracks whether this view has loaded initial state from AppState
     @State private var didLoadState = false
@@ -312,6 +313,28 @@ struct SleepNowView: View {
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(role: .destructive) {
+                        showCancelConfirmation = true
+                    } label: {
+                        Label("Cancel Trip", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .foregroundStyle(Color.nazeitTeal)
+                }
+            }
+        }
+        .alert("Cancel This Trip?", isPresented: $showCancelConfirmation) {
+            Button("Cancel Trip", role: .destructive) {
+                withAnimation { appState.resetForNewTrip() }
+            }
+            Button("Keep Going", role: .cancel) { }
+        } message: {
+            Text("This will erase your entire adaptation plan and all progress. This action cannot be undone.")
+        }
         .onAppear {
             if appState.completedInflightSteps.contains("sleep") {
                 isCompleted = true

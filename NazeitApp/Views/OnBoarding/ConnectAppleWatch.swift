@@ -46,7 +46,7 @@ struct ConnectAppleWatch: View {
                 Button {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                         isSynced = true
-                        appState.circadianLevel = 0.45
+                        appState.adaptationPercent = 0.45
                         appState.currentHRV     = 52
                         appState.sleepHours     = 7.2
                     }

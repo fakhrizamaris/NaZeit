@@ -52,20 +52,72 @@ struct ScreenNewC_InFlightDeviated: View {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 14) {
-                        CircadianHeroCard(
-                            level: appState.circadianLevel,
-                            hrv: appState.inputMethod == .watch ? Double(appState.currentHRV) : nil,
-                            dayLabel: inflightLabel,
-                            phaseTitle: "In-Flight",
-                            deltaText: canRecalculate ? "Plan adjusted" : "Conservative mode",
-                            etaText: canRecalculate
-                                ? (deviationType == .stayedAwake
-                                   ? "Delay mode: sleep window shifted"
-                                   : "Recovery mode: hold wake window")
-                                : "Max adjustments reached — following safe defaults",
-                            bedtime: appState.inputMethod == .manual ? appState.bedtimeString : nil,
-                            wakeTime: appState.inputMethod == .manual ? appState.wakeTimeString : nil
+                        // MARK: Contextual Adjustment Banner
+                        VStack(spacing: 12) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "airplane")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 28, height: 28)
+                                    .background(Color.nazeitTeal, in: Circle())
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("In-Flight")
+                                        .font(.caption2.weight(.bold))
+                                        .foregroundStyle(Color.nazeitTeal)
+                                    Text(inflightLabel)
+                                        .font(.subheadline.weight(.bold))
+                                        .foregroundStyle(Color(uiColor: .label))
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundStyle(Color.semanticWarningAmber)
+                            }
+                            
+                            Divider()
+                            
+                            HStack(spacing: 16) {
+                                if appState.inputMethod == .manual {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "moon.fill").foregroundStyle(.indigo)
+                                        Text(appState.bedtimeString)
+                                            .font(.caption.weight(.semibold))
+                                    }
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "sunrise.fill").foregroundStyle(.orange)
+                                        Text(appState.wakeTimeString)
+                                            .font(.caption.weight(.semibold))
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                Text(canRecalculate ? "Plan adjusted" : "Conservative mode")
+                                    .font(.caption2.weight(.bold))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(canRecalculate ? Color.semanticWarningAmber : .orange, in: Capsule())
+                            }
+                            
+                            Text(canRecalculate
+                                 ? (deviationType == .stayedAwake
+                                    ? "Delay mode: sleep window shifted"
+                                    : "Recovery mode: hold wake window")
+                                 : "Max adjustments reached — following safe defaults")
+                                .font(.caption)
+                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(16)
+                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .stroke(Color.semanticWarningAmber.opacity(0.3), lineWidth: 1)
                         )
+                        .padding(.horizontal, 0)
                         .padding(.top, 16)
 
                         VStack(alignment: .leading, spacing: 2) {

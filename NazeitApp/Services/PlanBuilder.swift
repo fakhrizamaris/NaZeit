@@ -30,9 +30,12 @@ struct PlanBuilder {
         method: InputMethod
     ) -> TripPlan {
         
+        // Use departure as the single reference date for both timezone offsets
+        // to prevent DST-related discrepancies when departure and arrival
+        // fall in different DST periods.
         let (gap, direction) = Circadian.effectiveGap(
             fromOffset: fromZone.secondsFromGMT(for: departure),
-            toOffset: toZone.secondsFromGMT(for: arrival)
+            toOffset: toZone.secondsFromGMT(for: departure)
         )
         let days = Circadian.prepDays(departure: departure)
         let shift = Circadian.dailyShift(gap: gap, days: days, profile: profile)

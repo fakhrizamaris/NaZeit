@@ -12,6 +12,7 @@ struct AdaptationProgressView: View {
     @EnvironmentObject var appState: AppState
     @State private var ringProgress: Double = 0
     @State private var appeared = false
+    @State private var showCancelConfirmation = false
     
     var body: some View {
         ZStack {
@@ -169,11 +170,32 @@ struct AdaptationProgressView: View {
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(role: .destructive) {
+                        showCancelConfirmation = true
+                    } label: {
+                        Label("Cancel Trip", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .foregroundStyle(Color.nazeitTeal)
+                }
+            }
+        }
+        .alert("Cancel This Trip?", isPresented: $showCancelConfirmation) {
+            Button("Cancel Trip", role: .destructive) {
+                withAnimation { appState.resetForNewTrip() }
+            }
+            Button("Keep Going", role: .cancel) { }
+        } message: {
+            Text("This will erase your entire adaptation plan and all progress. This action cannot be undone.")
+        }
         .onAppear {
             // Auto-detect fully adapted status
             if appState.isFullyAdapted && appState.adaptationPercent < 1.0 {
                 appState.adaptationPercent = 1.0
-                appState.circadianLevel = 1.0
             }
             withAnimation(.spring(response: 0.7).delay(0.1)) { appeared = true }
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2)) { ringProgress = appState.adaptationPercent }
@@ -190,74 +212,159 @@ struct AdaptationProgressView: View {
 // MARK: - Fully Adapted
 struct FullyAdaptedView: View {
     @EnvironmentObject var appState: AppState
-    @State private var showCheck  = false
-    @State private var showText   = false
-    @State private var ringScale: CGFloat = 0.4
+
+    // MARK: Animation States
+    @State private var ringProgress: Double = 0.0
+    @State private var countedPercent: Int = 0
+    @State private var showCheckmark = false
+    @State private var checkmarkScale: CGFloat = 0.0
+    @State private var showText = false
+    @State private var showStats = false
+    @State private var showCTA = false
     @State private var particlesOn = false
+    @State private var pulseGlow = false
+    @State private var outerRingScale: CGFloat = 0.6
+    @State private var confettiBurst = false
+
+    private let ringSize: CGFloat = 160
+    private let ringLineWidth: CGFloat = 10
 
     private var totalAdaptationDays: Int {
         let loading = appState.tripPlan?.loadingPhase.count ?? 0
         let recovery = appState.tripPlan?.recoveryPhase.count ?? 0
-        return loading + recovery + 1 // +1 for the flight day
+        return loading + recovery + 1
     }
-    
+
+    private var gapHours: String {
+        guard let plan = appState.tripPlan else { return "—" }
+        return String(format: "%.0f", plan.totalGapHours)
+    }
+
     var body: some View {
         ZStack {
+            // Background glow
+            RadialGradient(
+                colors: [Color.nazeitTeal.opacity(pulseGlow ? 0.18 : 0.0), .clear],
+                center: .center,
+                startRadius: 10,
+                endRadius: 300
+            )
+            .ignoresSafeArea()
+            .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: pulseGlow)
+
+            // Confetti particles
             if particlesOn { SuccessParticles() }
-            
+
+            // Confetti burst circles
+            if confettiBurst {
+                ConfettiBurst()
+                    .transition(.opacity)
+            }
+
             VStack(spacing: 0) {
                 Spacer()
-                
+
+                // MARK: Ring + Percentage / Checkmark
                 ZStack {
+                    // Outer pulse ring
                     Circle()
-                        .fill(Color.nazeitTeal.opacity(0.15))
-                        .frame(width: 140)
-                        .scaleEffect(ringScale)
-                        .animation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.1), value: ringScale)
-                    
+                        .stroke(Color.nazeitTeal.opacity(0.12), lineWidth: 2)
+                        .frame(width: ringSize + 40, height: ringSize + 40)
+                        .scaleEffect(outerRingScale)
+
+                    // Track ring
                     Circle()
-                        .fill(Color.nazeitTeal.opacity(0.25))
-                        .frame(width: 104)
-                        .scaleEffect(showCheck ? 1.0 : 0.2)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.65), value: showCheck)
-                    
-                    Image(systemName: "checkmark")
-                        .font(.system(.largeTitle).weight(.semibold))
-                        .foregroundStyle(Color.nazeitTeal)
-                        .scaleEffect(showCheck ? 1.0 : 0.0)
-                        .opacity(showCheck ? 1 : 0)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.5, blendDuration: 0).delay(0.15), value: showCheck)
+                        .stroke(Color(uiColor: .quaternaryLabel), lineWidth: ringLineWidth)
+                        .frame(width: ringSize, height: ringSize)
+
+                    // Progress ring
+                    Circle()
+                        .trim(from: 0, to: ringProgress)
+                        .stroke(
+                            AngularGradient(
+                                colors: [Color.nazeitTeal, Color.cyan, Color.nazeitTeal],
+                                center: .center
+                            ),
+                            style: StrokeStyle(lineWidth: ringLineWidth, lineCap: .round)
+                        )
+                        .frame(width: ringSize, height: ringSize)
+                        .rotationEffect(.degrees(-90))
+
+                    // Inner glow when full
+                    if showCheckmark {
+                        Circle()
+                            .fill(Color.nazeitTeal.opacity(0.15))
+                            .frame(width: ringSize - 20, height: ringSize - 20)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+
+                    // Percentage counter → Checkmark transition
+                    if showCheckmark {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.nazeitTeal)
+                            .scaleEffect(checkmarkScale)
+                            .transition(.scale(scale: 0.3).combined(with: .opacity))
+                    } else {
+                        VStack(spacing: 2) {
+                            Text("\(countedPercent)%")
+                                .font(.system(size: 42, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color(uiColor: .label))
+                                .contentTransition(.numericText(value: Double(countedPercent)))
+
+                            Text(countedPercent < 50 ? "Syncing..." : countedPercent < 100 ? "Almost there" : "Synced!")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        }
+                    }
                 }
-                .padding(.bottom, 32)
-                
-                VStack(spacing: 8) {
-                    Text("Fully adapted!")
+                .padding(.bottom, 36)
+
+                // MARK: Title & Subtitle
+                VStack(spacing: 10) {
+                    Text("Fully Adapted! 🎉")
                         .font(.system(.title, design: .rounded).weight(.bold))
                         .foregroundStyle(Color(uiColor: .label))
-                        .opacity(showText ? 1 : 0).offset(y: showText ? 0 : 12)
-                        .animation(.spring(response: 0.5).delay(0.25), value: showText)
-                    
-                    Text("Body clock is in sync with local time zone")
-                        .font(.subheadline).foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .opacity(showText ? 1 : 0)
+                        .offset(y: showText ? 0 : 16)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.05), value: showText)
+
+                    Text("Your body clock is fully synced\nwith the local time zone")
+                        .font(.subheadline)
+                        .foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.center)
-                        .opacity(showText ? 1 : 0).offset(y: showText ? 0 : 8)
-                        .animation(.spring(response: 0.5).delay(0.35), value: showText)
-                    
-                    HStack(spacing: 14) {
-                        Label("\(totalAdaptationDays) days", systemImage: "calendar").font(.caption2)
-                        Divider().frame(height: 12)
-                        Label("\(appState.inputMethod == .watch ? "Watch" : "Manual") tracking", systemImage: "checkmark.circle").font(.caption2)
-                    }
-                    .foregroundStyle(Color(uiColor: .secondaryLabel))
-                    .padding(.horizontal, 16).padding(.vertical, 8)
-                    .background(Color(uiColor: .secondarySystemBackground)).clipShape(Capsule())
-                    .opacity(showText ? 1 : 0).offset(y: showText ? 0 : 6)
-                    .animation(.spring(response: 0.5).delay(0.45), value: showText)
+                        .opacity(showText ? 1 : 0)
+                        .offset(y: showText ? 0 : 10)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.15), value: showText)
                 }
                 .padding(.horizontal, 32)
-                
+                .padding(.bottom, 20)
+
+                // MARK: Stats Row
+                HStack(spacing: 0) {
+                    StatPill(icon: "calendar", value: "\(totalAdaptationDays)", label: "Days")
+                    StatDivider()
+                    StatPill(icon: "globe.americas.fill", value: "\(gapHours)h", label: "Shifted")
+                    StatDivider()
+                    StatPill(icon: appState.inputMethod == .watch ? "applewatch" : "hand.tap.fill",
+                             value: appState.inputMethod == .watch ? "Watch" : "Manual",
+                             label: "Tracked")
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5)
+                )
+                .padding(.horizontal, 32)
+                .opacity(showStats ? 1 : 0)
+                .scaleEffect(showStats ? 1.0 : 0.9)
+                .animation(.spring(response: 0.5, dampingFraction: 0.75).delay(0.1), value: showStats)
+
                 Spacer()
-                
+
+                // MARK: CTA
                 NavigationLink {
                     YourTrip()
                         .environmentObject(appState)
@@ -268,18 +375,128 @@ struct FullyAdaptedView: View {
                     PrimaryBtn(title: "Plan Next Trip")
                 }
                 .padding(.horizontal, 24)
-                .opacity(showText ? 1 : 0)
-                .animation(.easeOut.delay(0.6), value: showText)
+                .opacity(showCTA ? 1 : 0)
+                .offset(y: showCTA ? 0 : 20)
+                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: showCTA)
                 .padding(.bottom, 32)
             }
         }
         .navigationTitle("").navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .onAppear { startCelebrationSequence() }
+    }
+
+    // MARK: - Celebration Animation Sequence
+    private func startCelebrationSequence() {
+        // Phase 1: Outer ring scales in
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+            outerRingScale = 1.0
+        }
+
+        // Phase 2: Ring fills 0→100% over 1.8s with counting number
+        withAnimation(.easeInOut(duration: 1.8)) {
+            ringProgress = 1.0
+        }
+
+        // Count from 0 to 100
+        let totalSteps = 50
+        let interval = 1.8 / Double(totalSteps)
+        for step in 0...totalSteps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + interval * Double(step)) {
+                withAnimation(.linear(duration: interval)) {
+                    countedPercent = Int(Double(step) / Double(totalSteps) * 100)
+                }
+                // Haptic ticks at milestones
+                if countedPercent == 25 || countedPercent == 50 || countedPercent == 75 {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                }
+            }
+        }
+
+        // Phase 3: At 100% → checkmark morphs in + confetti + haptic
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
+                showCheckmark = true
+                checkmarkScale = 1.0
+            }
+            withAnimation(.easeOut(duration: 0.3)) {
+                confettiBurst = true
+            }
+            particlesOn = true
+            pulseGlow = true
+        }
+
+        // Phase 4: Text fades in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
+            withAnimation { showText = true }
+        }
+
+        // Phase 5: Stats appear
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
+            withAnimation { showStats = true }
+        }
+
+        // Phase 6: CTA slides up
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) {
+            withAnimation { showCTA = true }
+        }
+    }
+}
+
+// MARK: - Supporting Views
+private struct StatPill: View {
+    let icon: String
+    let value: String
+    let label: String
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption)
+                .foregroundStyle(Color.nazeitTeal)
+            Text(value)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(Color(uiColor: .label))
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(Color(uiColor: .tertiaryLabel))
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private struct StatDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color(uiColor: .quaternaryLabel))
+            .frame(width: 1, height: 32)
+    }
+}
+
+private struct ConfettiBurst: View {
+    @State private var animate = false
+
+    private let colors: [Color] = [.nazeitTeal, .cyan, .mint, .orange, .indigo, .yellow]
+    private let count = 24
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<count, id: \.self) { i in
+                Circle()
+                    .fill(colors[i % colors.count])
+                    .frame(width: CGFloat.random(in: 4...8), height: CGFloat.random(in: 4...8))
+                    .offset(
+                        x: animate ? CGFloat.random(in: -160...160) : 0,
+                        y: animate ? CGFloat.random(in: -200...200) : 0
+                    )
+                    .opacity(animate ? 0 : 1)
+                    .scaleEffect(animate ? 0.3 : 1.0)
+            }
+        }
         .onAppear {
-            withAnimation { showCheck = true; ringScale = 1.0 }
-            withAnimation(.easeOut(duration: 0.4).delay(0.2)) { showText = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { particlesOn = true }
+            withAnimation(.easeOut(duration: 1.2)) { animate = true }
         }
     }
 }

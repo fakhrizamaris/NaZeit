@@ -79,7 +79,9 @@ final class AppState: ObservableObject {
     @Published var travelPhase: TravelPhase = .preflight {
         didSet { scheduleSave() }
     }
-    @Published var circadianLevel: Double = 0.0
+    /// Single source of truth for adaptation progress.
+    /// `circadianLevel` is a convenience alias — always reads from `adaptationPercent`.
+    var circadianLevel: Double { adaptationPercent }
     @Published var adaptationPercent: Double = 0.0
     @Published var daysRemaining: Int = 0
     @Published var recalcCount: Int = 0 {
@@ -109,7 +111,6 @@ final class AppState: ObservableObject {
         guard !completedInflightSteps.contains(stepId) else { return false }
         completedInflightSteps.insert(stepId)
         adaptationPercent = min(1.0, adaptationPercent + credit)
-        circadianLevel = adaptationPercent
         return true
     }
 
@@ -126,10 +127,12 @@ final class AppState: ObservableObject {
     }
 
     /// Effective timezone gap and flight direction (with 12-Hour Rule)
+    /// Uses departureDate as the single reference point for both timezones
+    /// to avoid DST-related discrepancies.
     var effectiveGap: (hours: Double, direction: FlightDirection) {
         Circadian.effectiveGap(
             fromOffset: fromTimeZone.secondsFromGMT(for: departureDate),
-            toOffset: toTimeZone.secondsFromGMT(for: arrivalDate)
+            toOffset: toTimeZone.secondsFromGMT(for: departureDate)
         )
     }
 
@@ -137,7 +140,7 @@ final class AppState: ObservableObject {
     var timezoneShiftHours: Int {
         Circadian.timezoneGap(
             fromOffset: fromTimeZone.secondsFromGMT(for: departureDate),
-            toOffset: toTimeZone.secondsFromGMT(for: arrivalDate)
+            toOffset: toTimeZone.secondsFromGMT(for: departureDate)
         )
     }
 
@@ -184,7 +187,6 @@ final class AppState: ObservableObject {
         )
         tripPlan = plan
         daysRemaining = plan.estimatedRecoveryDays
-        circadianLevel = 0.0
         adaptationPercent = 0.0
         recalcCount = 0
         loadingPhaseDayIndex = 0
@@ -243,7 +245,6 @@ final class AppState: ObservableObject {
         consecutiveGoodSleeps = 0
         tripPlan = nil
         travelPhase = .preflight
-        circadianLevel = 0.0
         isRestDayActive = false
         completedInflightSteps = []
         NotificationService.shared.cancelAll()
@@ -348,8 +349,7 @@ final class AppState: ObservableObject {
                 break
             }
 
-            // Keep circadianLevel in sync with adaptationPercent
-            circadianLevel = adaptationPercent
+            // circadianLevel is now a computed property — always reads adaptationPercent
         }
 
         travelPhase = phase
@@ -434,7 +434,6 @@ final class AppState: ObservableObject {
             completedInflightSteps = Set(snapshot.completedInflightSteps)
             completedProtocolSteps = Set(snapshot.completedProtocolSteps ?? [])
             adaptationPercent = snapshot.adaptationPercent
-            circadianLevel = snapshot.adaptationPercent
             tripPlan = snapshot.tripPlan
 
             if let plan = tripPlan {

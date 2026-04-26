@@ -31,8 +31,9 @@ struct YourTrip: View {
     }
     
     private var timezoneShift: Int {
-        let fromSeconds = appState.fromTimeZone.secondsFromGMT(for: appState.departureDate)
-        let toSeconds = appState.toTimeZone.secondsFromGMT(for: appState.arrivalDate)
+        let ref = appState.departureDate
+        let fromSeconds = appState.fromTimeZone.secondsFromGMT(for: ref)
+        let toSeconds = appState.toTimeZone.secondsFromGMT(for: ref)
         return (toSeconds - fromSeconds) / 3600
     }
     
