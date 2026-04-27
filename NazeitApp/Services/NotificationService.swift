@@ -10,7 +10,7 @@ import Combine
 import UserNotifications
 
 @MainActor
-final class NotificationService: ObservableObject {
+final class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationService()
 
     @Published var isAuthorized = false
@@ -19,6 +19,18 @@ final class NotificationService: ObservableObject {
     var hoursBefore: Double = 1.0
 
     private let center = UNUserNotificationCenter.current()
+
+    private override init() {
+        super.init()
+        center.delegate = self
+    }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // Force notifications to show as banners even if the app is currently open
+        completionHandler([.banner, .sound])
+    }
+
+
 
     // MARK: - Authorization
 
@@ -58,8 +70,16 @@ final class NotificationService: ObservableObject {
     // MARK: - Individual Instruction
 
     private func schedule(_ instruction: Instruction, phase: TravelPhase, day: Int) async {
-        let notifyTime = instruction.scheduledTime.addingTimeInterval(-hoursBefore * 3600)
-        guard notifyTime > Date() else { return }
+        var notifyTime = instruction.scheduledTime.addingTimeInterval(-hoursBefore * 3600)
+        
+        // If the 1-hour mark has passed but the event hasn't happened yet, fire almost immediately
+        if notifyTime <= Date() {
+            if instruction.scheduledTime > Date() {
+                notifyTime = Date().addingTimeInterval(5)
+            } else {
+                return // Event has completely passed
+            }
+        }
 
         let timeText = hoursBefore == 1.0 ? "1 hour" : "\(hoursBefore) hours"
         let engagingPrefixes = [
@@ -77,7 +97,7 @@ final class NotificationService: ObservableObject {
         content.categoryIdentifier = "circadian_\(instruction.type.rawValue)"
         content.userInfo = ["type": instruction.type.rawValue, "phase": phase.rawValue, "day": day]
 
-        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: notifyTime)
+        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: notifyTime)
         let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
         let id = "nazeit_\(phase.rawValue)_d\(day)_\(instruction.type.rawValue)_\(instruction.id.uuidString.prefix(8))"
 
@@ -91,8 +111,16 @@ final class NotificationService: ObservableObject {
     // MARK: - Sleep Reminder
 
     private func scheduleSleepReminder(_ window: SleepWindow, day: Int, phase: TravelPhase) async {
-        let notifyTime = window.bedtime.addingTimeInterval(-hoursBefore * 3600)
-        guard notifyTime > Date() else { return }
+        var notifyTime = window.bedtime.addingTimeInterval(-hoursBefore * 3600)
+        
+        // If the 1-hour mark has passed but bedtime hasn't happened yet, fire almost immediately
+        if notifyTime <= Date() {
+            if window.bedtime > Date() {
+                notifyTime = Date().addingTimeInterval(5)
+            } else {
+                return // Bedtime has completely passed
+            }
+        }
 
         let timeText = hoursBefore == 1.0 ? "1 hour" : "\(hoursBefore) hours"
 
@@ -101,7 +129,7 @@ final class NotificationService: ObservableObject {
         content.body = "Bedtime is in \(timeText). Dim the lights, put away screens, and let your body clock sync up. You've got this!"
         content.sound = .default
 
-        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: notifyTime)
+        let comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: notifyTime)
         let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
 
         do {
