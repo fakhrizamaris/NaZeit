@@ -159,7 +159,7 @@ struct LoadingPhaseView: View {
 
                                             Spacer()
 
-                                            CurrentTimeBadge(title: "Now", timeZone: appState.fromTimeZone, accentColor: Color.nazeitTeal, isProminent: true)
+                                            CurrentTimeBadge(title: "Local Now", timeZone: appState.fromTimeZone, accentColor: Color.nazeitTeal, isProminent: true)
                                         }
 
                                         Text("Complete these tasks to begin syncing your circadian rhythm even before your flight.")
@@ -173,23 +173,34 @@ struct LoadingPhaseView: View {
                                         if appState.isRestDayActive {
                                             // Rest Day UI
                                             VStack(spacing: 16) {
-                                                Image(systemName: "powersleep")
+                                                Image(systemName: "moon.zzz.fill")
                                                     .font(.system(size: 48))
-                                                    .foregroundStyle(Color.nazeitTeal)
+                                                    .foregroundStyle(.orange)
                                                 
                                                 Text("Rest Mode Active")
                                                     .font(.title2.weight(.bold))
-                                                    .foregroundStyle(Color(uiColor: .label))
+                                                    .foregroundStyle(.white)
                                                 
                                                 Text("You've chosen to rest today. Take it easy and let your body recover without circadian pressure. You can resume tomorrow.")
                                                     .font(.body)
-                                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                                    .foregroundStyle(.white.opacity(0.8))
                                                     .multilineTextAlignment(.center)
                                                     .padding(.horizontal, 24)
                                             }
                                             .padding(.vertical, 32)
                                             .frame(maxWidth: .infinity)
-                                            .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
+                                            .background(
+                                                ZStack {
+                                                    Color.black
+                                                    Color.orange.opacity(0.1)
+                                                }
+                                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                            )
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 24)
+                                                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                                            )
+                                            .colorScheme(.dark)
                                         } else if let day = currentDay {
                                             ForEach(day.instructions) { instruction in
                                                 ProtocolCard(

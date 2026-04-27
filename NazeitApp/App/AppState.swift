@@ -187,7 +187,7 @@ final class AppState: ObservableObject {
         )
         tripPlan = plan
         daysRemaining = plan.estimatedRecoveryDays
-        adaptationPercent = 0.0
+        adaptationPercent = plan.totalGapHours == 0 ? 1.0 : 0.0
         recalcCount = 0
         loadingPhaseDayIndex = 0
         recoveryPhaseDayIndex = 0
@@ -300,7 +300,13 @@ final class AppState: ObservableObject {
 
     /// Combined check for fully adapted status (both modes)
     var isFullyAdapted: Bool {
-        adaptationPercent >= 1.0 || isHRVFullyAdapted || isTimeBasedFullyAdapted
+        guard travelPhase == .postflight else { return false }
+        
+        if let plan = tripPlan, plan.estimatedRecoveryDays == 0 {
+            return true
+        }
+        
+        return adaptationPercent >= 1.0 || isHRVFullyAdapted || isTimeBasedFullyAdapted
     }
 
     /// Update phase and calculate adaptation progress based on completed work.
@@ -344,6 +350,10 @@ final class AppState: ObservableObject {
                     remaining: adjustedRemaining,
                     direction: plan.direction
                 )
+                
+                if daysRemaining == 0 {
+                    adaptationPercent = 1.0
+                }
 
             default:
                 break

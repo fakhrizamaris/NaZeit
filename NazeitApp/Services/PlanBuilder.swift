@@ -80,7 +80,16 @@ struct PlanBuilder {
             )
             let window = SleepWindow(bedtime: bed, wakeTime: wake)
             let total = shift * Double(i + 1)
-            let label = String(format: "-%.\(total.truncatingRemainder(dividingBy: 1) == 0 ? "0" : "1")f Hour Shift", total)
+            let isInteger = total.truncatingRemainder(dividingBy: 1) == 0
+            let formattedTotal = String(format: "%.\(isInteger ? "0" : "1")f", abs(total))
+            let label: String
+            if total == 0 {
+                label = "0 Hour Shift"
+            } else {
+                // Eastward is advance (earlier, usually denoted with -), Westward is delay (later, usually denoted with +)
+                let sign = direction == .eastward ? "-" : "+"
+                label = "\(sign)\(formattedTotal) Hour Shift"
+            }
             
             let cutoff = Circadian.caffeineCutoff(bedtime: bed, profile: profile)
             

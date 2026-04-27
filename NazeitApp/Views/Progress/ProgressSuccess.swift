@@ -193,10 +193,6 @@ struct AdaptationProgressView: View {
             Text("This will erase your entire adaptation plan and all progress. This action cannot be undone.")
         }
         .onAppear {
-            // Auto-detect fully adapted status
-            if appState.isFullyAdapted && appState.adaptationPercent < 1.0 {
-                appState.adaptationPercent = 1.0
-            }
             withAnimation(.spring(response: 0.7).delay(0.1)) { appeared = true }
             withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2)) { ringProgress = appState.adaptationPercent }
         }
@@ -300,7 +296,7 @@ struct FullyAdaptedView: View {
 
                     // Percentage counter → Checkmark transition
                     if showCheckmark {
-                        Image(systemName: "checkmark")
+                        Image(systemName: appState.adaptationPercent >= 1.0 ? "checkmark" : "flag.fill")
                             .font(.system(size: 48, weight: .bold, design: .rounded))
                             .foregroundStyle(Color.nazeitTeal)
                             .scaleEffect(checkmarkScale)
@@ -312,7 +308,8 @@ struct FullyAdaptedView: View {
                                 .foregroundStyle(Color(uiColor: .label))
                                 .contentTransition(.numericText(value: Double(countedPercent)))
 
-                            Text(countedPercent < 50 ? "Syncing..." : countedPercent < 100 ? "Almost there" : "Synced!")
+                            let targetPercent = Int(appState.adaptationPercent * 100)
+                            Text(countedPercent < targetPercent ? "Syncing..." : (appState.adaptationPercent >= 1.0 ? "Synced!" : "Completed"))
                                 .font(.caption2.weight(.semibold))
                                 .foregroundStyle(Color(uiColor: .secondaryLabel))
                         }
@@ -322,14 +319,16 @@ struct FullyAdaptedView: View {
 
                 // MARK: Title & Subtitle
                 VStack(spacing: 10) {
-                    Text("Fully Adapted! 🎉")
+                    Text(appState.adaptationPercent >= 1.0 ? "Fully Adapted! 🎉" : "Journey Complete 🚩")
                         .font(.system(.title, design: .rounded).weight(.bold))
                         .foregroundStyle(Color(uiColor: .label))
                         .opacity(showText ? 1 : 0)
                         .offset(y: showText ? 0 : 16)
                         .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.05), value: showText)
 
-                    Text("Your body clock is fully synced\nwith the local time zone")
+                    Text(appState.adaptationPercent >= 1.0 
+                         ? "Your body clock is fully synced\nwith the local time zone" 
+                         : "You've finished the adaptation timeline,\nwith an adherence score of \(Int(appState.adaptationPercent * 100))%.")
                         .font(.subheadline)
                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.center)
@@ -394,21 +393,23 @@ struct FullyAdaptedView: View {
             outerRingScale = 1.0
         }
 
-        // Phase 2: Ring fills 0→100% over 1.8s with counting number
+        let targetPercent = Int(appState.adaptationPercent * 100)
+        
+        // Phase 2: Ring fills 0→targetPercent over 1.8s with counting number
         withAnimation(.easeInOut(duration: 1.8)) {
-            ringProgress = 1.0
+            ringProgress = appState.adaptationPercent
         }
 
-        // Count from 0 to 100
+        // Count from 0 to targetPercent
         let totalSteps = 50
         let interval = 1.8 / Double(totalSteps)
         for step in 0...totalSteps {
             DispatchQueue.main.asyncAfter(deadline: .now() + interval * Double(step)) {
                 withAnimation(.linear(duration: interval)) {
-                    countedPercent = Int(Double(step) / Double(totalSteps) * 100)
+                    countedPercent = Int(Double(step) / Double(totalSteps) * Double(targetPercent))
                 }
                 // Haptic ticks at milestones
-                if countedPercent == 25 || countedPercent == 50 || countedPercent == 75 {
+                if countedPercent == targetPercent / 4 || countedPercent == targetPercent / 2 || countedPercent == (targetPercent * 3) / 4 {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 }
             }

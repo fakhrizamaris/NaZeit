@@ -2,7 +2,6 @@
 //  AvoidBrightLight.swift
 //  NazeitApp
 //
-//  In-flight instruction: Avoid Bright Light — driven by tripPlan light windows.
 //
 
 import SwiftUI
@@ -128,7 +127,9 @@ struct AvoidBrightLightView: View {
                                 .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                                 NavigationLink {
-                                    RecoveryPhaseView().environmentObject(appState)
+                                    AdaptationProgressView()
+                                        .environmentObject(appState)
+                                        .onAppear { appState.transitionPhase(to: .postflight) }
                                 } label: {
                                     HStack(spacing: 7) {
                                         Text("Continue")

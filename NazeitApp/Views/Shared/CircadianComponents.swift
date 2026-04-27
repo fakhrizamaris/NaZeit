@@ -347,6 +347,7 @@ struct ProtocolCard: View {
     var accentColor: Color = Color(uiColor: .nazeitTeal)
     
     @EnvironmentObject var appState: AppState
+    @State private var showReasoning = false
     
     var isCompleted: Bool {
         appState.completedProtocolSteps.contains(instructionId)
@@ -359,8 +360,10 @@ struct ProtocolCard: View {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 if isCompleted {
                     appState.completedProtocolSteps.remove(instructionId)
+                    appState.adaptationPercent = max(0.0, appState.adaptationPercent - 0.05)
                 } else {
                     appState.completedProtocolSteps.insert(instructionId)
+                    appState.adaptationPercent = min(1.0, appState.adaptationPercent + 0.05)
                 }
             }
         } label: {
@@ -387,32 +390,34 @@ struct ProtocolCard: View {
                         .foregroundStyle(Color(uiColor: .secondaryLabel))
                         .multilineTextAlignment(.leading)
                     
-                    HStack(alignment: .top, spacing: 4) {
-                        Image(systemName: "info.circle.fill")
-                            .font(.caption2)
-                            .padding(.top, 2)
-                        Text(reasoning)
-                            .font(.caption)
-                    }
-                    .foregroundStyle(accentColor)
-                    .padding(.top, 4)
                 }
                 
                 Spacer(minLength: 0)
                 
-                ZStack {
-                    Circle()
-                        .stroke(isCompleted ? .clear : Color(uiColor: .quaternaryLabel), lineWidth: 2)
-                        .frame(width: 28, height: 28)
+                VStack(spacing: 16) {
+                    Image(systemName: "info.circle")
+                        .font(.title3)
+                        .foregroundStyle(accentColor)
+                        .padding(4)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            showReasoning = true
+                        }
                     
-                    if isCompleted {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(accentColor)
-                            .transition(.scale(scale: 0.5).combined(with: .opacity))
+                    ZStack {
+                        Circle()
+                            .stroke(isCompleted ? .clear : Color(uiColor: .quaternaryLabel), lineWidth: 2)
+                            .frame(width: 28, height: 28)
+                        
+                        if isCompleted {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(accentColor)
+                                .transition(.scale(scale: 0.5).combined(with: .opacity))
+                        }
                     }
+                    .frame(width: 28, height: 28)
                 }
-                .frame(width: 28, height: 28)
             }
             .padding(14)
             .background(Color(uiColor: .secondarySystemBackground))
@@ -423,6 +428,11 @@ struct ProtocolCard: View {
             )
         }
         .buttonStyle(.plain)
+        .alert("Why this matters", isPresented: $showReasoning) {
+            Button("Got it", role: .cancel) { }
+        } message: {
+            Text(reasoning)
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title), \(time)")
         .accessibilityValue(isCompleted ? "Completed" : "Not completed")

@@ -183,7 +183,9 @@ struct ScreenNewB_RecalculatedInstruction: View {
                                     .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
                                     NavigationLink {
-                                        RecoveryPhaseView().environmentObject(appState)
+                                        AdaptationProgressView()
+                                            .environmentObject(appState)
+                                            .onAppear { appState.transitionPhase(to: .postflight) }
                                     } label: {
                                         HStack(spacing: 7) {
                                             Text("Continue")
@@ -276,7 +278,9 @@ struct ScreenNewB_RecalculatedInstruction: View {
                                     .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
                                     NavigationLink {
-                                        RecoveryPhaseView().environmentObject(appState)
+                                        AdaptationProgressView()
+                                            .environmentObject(appState)
+                                            .onAppear { appState.transitionPhase(to: .postflight) }
                                     } label: {
                                         HStack(spacing: 7) {
                                             Text("Continue")
@@ -305,7 +309,9 @@ struct ScreenNewB_RecalculatedInstruction: View {
                             }
 
                             NavigationLink {
-                                RecoveryPhaseView().environmentObject(appState)
+                                AdaptationProgressView()
+                                    .environmentObject(appState)
+                                    .onAppear { appState.transitionPhase(to: .postflight) }
                             } label: {
                                 Text("Can't do this now")
                                     .appInteractiveTextStyle()

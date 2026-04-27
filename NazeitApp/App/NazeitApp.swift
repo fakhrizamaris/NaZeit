@@ -23,7 +23,10 @@ struct NazeitApp: App {
                 } else {
                     if appState.hasSavedTrip {
                         NavigationStack {
-                            if appState.travelPhase == .preflight {
+                            if appState.isFullyAdapted {
+                                FullyAdaptedView()
+                                    .environmentObject(appState)
+                            } else if appState.travelPhase == .preflight {
                                 LoadingPhaseView()
                                     .environmentObject(appState)
                             } else if appState.travelPhase == .inflight {

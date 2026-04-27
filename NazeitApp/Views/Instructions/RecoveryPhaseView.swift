@@ -119,7 +119,7 @@ struct RecoveryPhaseView: View {
 
                                         Spacer()
 
-                                        CurrentTimeBadge(title: "Now", timeZone: appState.toTimeZone, accentColor: Color.nazeitTeal, isProminent: true)
+                                        CurrentTimeBadge(title: "Local Now", timeZone: appState.toTimeZone, accentColor: Color.nazeitTeal, isProminent: true)
                                     }
 
                                     Text("Strict adherence to these daily tasks will rapidly clear your sleep debt and adjust your body clock.")
@@ -152,23 +152,34 @@ struct RecoveryPhaseView: View {
                                     if appState.isRestDayActive {
                                         // Rest Day UI
                                         VStack(spacing: 16) {
-                                            Image(systemName: "powersleep")
+                                            Image(systemName: "moon.zzz.fill")
                                                 .font(.system(size: 48))
-                                                .foregroundStyle(Color.nazeitTeal)
+                                                .foregroundStyle(.orange)
                                             
                                             Text("Rest Mode Active")
                                                 .font(.title2.weight(.bold))
-                                                .foregroundStyle(Color(uiColor: .label))
+                                                .foregroundStyle(.white)
                                             
                                             Text("You've chosen to rest today. Take it easy and let your body recover without circadian pressure. You can resume tomorrow.")
                                                 .font(.body)
-                                                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                                                .foregroundStyle(.white.opacity(0.8))
                                                 .multilineTextAlignment(.center)
                                                 .padding(.horizontal, 24)
                                         }
                                         .padding(.vertical, 32)
                                         .frame(maxWidth: .infinity)
-                                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
+                                        .background(
+                                            ZStack {
+                                                Color.black
+                                                Color.orange.opacity(0.1)
+                                            }
+                                            .clipShape(RoundedRectangle(cornerRadius: 24))
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 24)
+                                                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                                        )
+                                        .colorScheme(.dark)
                                     } else if appState.isConservativeMode, let day = currentDay {
                                         // Conservative: only 3 essential instructions
                                         let conservative = PlanBuilder.conservativeInstructions(
@@ -264,13 +275,10 @@ struct RecoveryPhaseView: View {
                                 movingForward = true
                                 appState.recoveryPhaseDayIndex += 1
                                 appState.isRestDayActive = false
-                                // Update adaptation progressively per day
-                                appState.adaptationPercent = currentAdaptation
                                 // §4.1: Completing a day without deviation resets recalcCount
                                 appState.completeSuccessfulDay()
                             } else {
                                 // Last day — fully adapted
-                                appState.adaptationPercent = 1.0
                                 navigateToFullyAdapted = true
                             }
                         }
@@ -353,7 +361,6 @@ struct RecoveryPhaseView: View {
         .onAppear {
             // Auto-detect if user is already fully adapted (§4)
             if appState.isFullyAdapted {
-                appState.adaptationPercent = 1.0
                 navigateToFullyAdapted = true
             }
         }

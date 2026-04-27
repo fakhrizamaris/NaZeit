@@ -14,6 +14,20 @@ struct YourTrip: View {
     @State private var isGeocodingTo   = false
     @State private var isGeocodingFrom = false
 
+    // MARK: - Timezone Cache
+    // Prevents MKGeocodingRequest non-determinism from returning different
+    // timezones for the same city name on repeated lookups. Once resolved,
+    // the mapping is stable for the lifetime of the app session.
+    private static var timezoneCache: [String: TimeZone] = [:]
+
+    private static func cachedTimezone(for city: String) -> TimeZone? {
+        timezoneCache[city.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)]
+    }
+
+    private static func cacheTimezone(_ tz: TimeZone, for city: String) {
+        timezoneCache[city.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)] = tz
+    }
+
     private static let baseFormat = Date.FormatStyle.dateTime.year().month(.abbreviated).day().hour().minute()
     
     private var isValid: Bool { !appState.fromCity.isEmpty && !appState.toCity.isEmpty }
@@ -74,9 +88,12 @@ struct YourTrip: View {
                     
                     // MARK: From
                     SearchableTripField(label: "From (City Name)", placeholder: "e.g. Batam", text: $localFromCity, tintColor: Color.nazeitTeal)
-                    .onAppear{
-                        localFromCity = appState.fromCity
-                    }
+                        .onAppear {
+                            localFromCity = appState.fromCity
+                        }
+                        .onChange(of: appState.fromCity) { _, newValue in
+                            if newValue.isEmpty { localFromCity = "" }
+                        }
                         .onChange(of: localFromCity) { oldValue, newValue in
                             Task {
                                 try? await Task.sleep(for: .seconds(0.5))
@@ -90,6 +107,9 @@ struct YourTrip: View {
                     SearchableTripField(label: "To (City Name)", placeholder: "e.g. Los Angeles", text: $localToCity, tintColor: Color.nazeitTeal)
                         .onAppear {
                             localToCity = appState.toCity
+                        }
+                        .onChange(of: appState.toCity) { _, newValue in
+                            if newValue.isEmpty { localToCity = "" }
                         }
                         .onChange(of: localToCity) { oldValue, newValue in
                             Task {
@@ -196,58 +216,7 @@ struct YourTrip: View {
                     .padding(.bottom, 16)
                     .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
                     
-                    // MARK: Transit Option
-                    VStack(alignment: .leading, spacing: 12) {
-                        Toggle(isOn: $appState.hasTransit.animation(.spring(response: 0.4))) {
-                            Text("Add Transit / Layover")
-                                .font(.footnote).fontWeight(.semibold)
-                                .foregroundStyle(Color(uiColor: .label))
-                        }
-                        .tint(Color.nazeitTeal)
-                        .padding(.horizontal, 28)
-                        .onChange(of: appState.hasTransit) { _, _ in
-                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        }
-                        
-                        if appState.hasTransit {
-                            VStack(spacing: 12) {
-                                SearchableTripField(label: "", placeholder: "Transit City (e.g. Dubai)", text: $localTransitCity, tintColor: Color.mint, icon: "building.2")
-                                    .onAppear {
-                                        localTransitCity = appState.transitCity
-                                    }
-                                    .onChange(of: localTransitCity) { oldValue, newValue in
-                                        Task {
-                                            try? await Task.sleep(for: .seconds(0.5))
-                                            appState.transitCity = newValue
-                                        }
-                                    }
-                                
-                                HStack {
-                                    Image(systemName: "hourglass").font(.title3).foregroundStyle(Color.mint)
-                                        .frame(width: 32)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Layover")
-                                            .font(.body).foregroundStyle(Color(uiColor: .label))
-                                        Text("\(appState.layoverDuration) hours")
-                                            .font(.footnote.weight(.medium)).foregroundStyle(Color(uiColor: .secondaryLabel))
-                                    }
-                                    Spacer()
-                                    Stepper("", value: $appState.layoverDuration, in: 1...24)
-                                        .labelsHidden()
-                                        .accessibilityLabel("Layover duration")
-                                        .accessibilityValue("\(appState.layoverDuration) hours")
-                                }
-                                .padding(.horizontal, 16).padding(.vertical, 10)
-                                .background(Color(uiColor: .secondarySystemBackground))
-                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color(uiColor: .quaternaryLabel), lineWidth: 0.5))
-                            }
-                            .padding(.horizontal, 24)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                        }
-                    }
-                    .padding(.bottom, 16)
-                    .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
+
                     
                     if timezoneShift != 0 && !appState.toCity.isEmpty {
                         HStack(spacing: 16) {
@@ -326,13 +295,26 @@ struct YourTrip: View {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.1)) { appeared = true }
         }
         .task(id: appState.fromCity) {
-            guard !appState.fromCity.isEmpty else { appState.fromTimeZone = .current; return }
+            let currentCity = appState.fromCity
+            guard !currentCity.isEmpty else { appState.fromTimeZone = .current; return }
+            
+            // Cache hit → use immediately, skip network call
+            if let cached = Self.cachedTimezone(for: currentCity) {
+                appState.fromTimeZone = cached
+                return
+            }
+            
             isGeocodingFrom = true
             do {
                 try await Task.sleep(for: .milliseconds(400))
-                if let request = MKGeocodingRequest(addressString: appState.fromCity) {
+                try Task.checkCancellation() // IMPORTANT: Prevents lagging requests from overwriting newer ones
+                
+                if let request = MKGeocodingRequest(addressString: currentCity) {
                     let mapItems = try await request.mapItems
+                    try Task.checkCancellation()
+                    
                     if let tz = mapItems.first?.timeZone {
+                        Self.cacheTimezone(tz, for: currentCity)
                         await MainActor.run { appState.fromTimeZone = tz }
                     }
                 }
@@ -340,13 +322,26 @@ struct YourTrip: View {
             isGeocodingFrom = false
         }
         .task(id: appState.toCity) {
-            guard !appState.toCity.isEmpty else { return }
+            let currentCity = appState.toCity
+            guard !currentCity.isEmpty else { return }
+            
+            // Cache hit → use immediately, skip network call
+            if let cached = Self.cachedTimezone(for: currentCity) {
+                appState.toTimeZone = cached
+                return
+            }
+            
             isGeocodingTo = true
             do {
                 try await Task.sleep(for: .milliseconds(400))
-                if let request = MKGeocodingRequest(addressString: appState.toCity) {
+                try Task.checkCancellation() // IMPORTANT: Prevents lagging requests from overwriting newer ones
+                
+                if let request = MKGeocodingRequest(addressString: currentCity) {
                     let mapItems = try await request.mapItems
+                    try Task.checkCancellation()
+                    
                     if let tz = mapItems.first?.timeZone {
+                        Self.cacheTimezone(tz, for: currentCity)
                         await MainActor.run { appState.toTimeZone = tz }
                     }
                 }
@@ -354,12 +349,25 @@ struct YourTrip: View {
             isGeocodingTo = false
         }
         .task(id: appState.transitCity) {
-            guard !appState.transitCity.isEmpty && appState.hasTransit else { return }
+            let currentCity = appState.transitCity
+            guard !currentCity.isEmpty && appState.hasTransit else { return }
+            
+            // Cache hit → use immediately, skip network call
+            if let cached = Self.cachedTimezone(for: currentCity) {
+                appState.transitTimeZone = cached
+                return
+            }
+            
             do {
                 try await Task.sleep(for: .milliseconds(400))
-                if let request = MKGeocodingRequest(addressString: appState.transitCity) {
+                try Task.checkCancellation() // IMPORTANT: Prevents lagging requests from overwriting newer ones
+                
+                if let request = MKGeocodingRequest(addressString: currentCity) {
                     let mapItems = try await request.mapItems
+                    try Task.checkCancellation()
+                    
                     if let tz = mapItems.first?.timeZone {
+                        Self.cacheTimezone(tz, for: currentCity)
                         await MainActor.run { appState.transitTimeZone = tz }
                     }
                 }
@@ -417,6 +425,11 @@ private struct SearchableTripField: View {
                 .accessibilityHint("Enter city name")
                 .onChange(of: searchService.searchQuery) { _, newValue in
                     text = geocodingQuery(from: newValue)
+                }
+                .onChange(of: text) { _, newValue in
+                    if newValue.isEmpty && !searchService.searchQuery.isEmpty {
+                        searchService.searchQuery = ""
+                    }
                 }
                 .onAppear {
                     searchService.searchQuery = text
