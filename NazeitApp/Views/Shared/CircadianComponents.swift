@@ -428,10 +428,59 @@ struct ProtocolCard: View {
             )
         }
         .buttonStyle(.plain)
-        .alert("Why this matters", isPresented: $showReasoning) {
-            Button("Got it", role: .cancel) { }
-        } message: {
-            Text(reasoning)
+        .sheet(isPresented: $showReasoning) {
+            VStack(spacing: 0) {
+                // Handle
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color(uiColor: .tertiaryLabel))
+                    .frame(width: 36, height: 5)
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
+
+                // Icon + Title
+                VStack(spacing: 10) {
+                    ZStack {
+                        Circle()
+                            .fill(accentColor.opacity(0.15))
+                            .frame(width: 56, height: 56)
+                        Image(systemName: icon)
+                            .font(.title2.weight(.semibold))
+                            .foregroundStyle(accentColor)
+                    }
+
+                    Text("Why this matters")
+                        .font(.system(.headline, design: .rounded).weight(.bold))
+                        .foregroundStyle(Color(uiColor: .label))
+                }
+                .padding(.bottom, 20)
+
+                // Reasoning text
+                Text(reasoning)
+                    .font(.body)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 24)
+
+                Spacer()
+
+                // Dismiss button
+                Button {
+                    showReasoning = false
+                } label: {
+                    Text("Got it")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(accentColor, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
+            }
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.hidden)
+            .presentationCornerRadius(28)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title), \(time)")

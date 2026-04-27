@@ -245,7 +245,8 @@ final class AppState: ObservableObject {
         consecutiveGoodSleeps = 0
         tripPlan = nil
         travelPhase = .preflight
-        isRestDayActive = false
+        restedLoadingDays.removeAll()
+        restedRecoveryDays.removeAll()
         completedInflightSteps = []
         NotificationService.shared.cancelAll()
     }
@@ -255,13 +256,35 @@ final class AppState: ObservableObject {
         resetTripFields()
     }
 
-    /// Safety Override state for current day
-    @Published var isRestDayActive: Bool = false
+    /// Track which days have been rested
+    @Published var restedLoadingDays: Set<Int> = []
+    @Published var restedRecoveryDays: Set<Int> = []
 
-    /// Skip today's adaptation load. Activates rest mode for today
-    /// instead of advancing the day, giving user a break.
-    func skipTodayAdaptation() {
-        isRestDayActive = true
+    /// Safety Override state for current day
+    var isRestDayActive: Bool {
+        if travelPhase == .preflight {
+            return restedLoadingDays.contains(loadingPhaseDayIndex)
+        } else if travelPhase == .postflight {
+            return restedRecoveryDays.contains(recoveryPhaseDayIndex)
+        }
+        return false
+    }
+
+    /// Toggle rest mode for the current day, allowing users to resume schedule
+    func toggleRestMode() {
+        if travelPhase == .preflight {
+            if restedLoadingDays.contains(loadingPhaseDayIndex) {
+                restedLoadingDays.remove(loadingPhaseDayIndex)
+            } else {
+                restedLoadingDays.insert(loadingPhaseDayIndex)
+            }
+        } else if travelPhase == .postflight {
+            if restedRecoveryDays.contains(recoveryPhaseDayIndex) {
+                restedRecoveryDays.remove(recoveryPhaseDayIndex)
+            } else {
+                restedRecoveryDays.insert(recoveryPhaseDayIndex)
+            }
+        }
     }
 
     // MARK: - HRV-based "Fully Adapted"

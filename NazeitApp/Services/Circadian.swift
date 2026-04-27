@@ -146,6 +146,9 @@ struct Circadian {
     static func prepDays(departure: Date, from now: Date = Date()) -> Int {
         let cal = Calendar.current
         let days = cal.dateComponents([.day], from: cal.startOfDay(for: now), to: cal.startOfDay(for: departure)).day ?? 0
-        return min(max(0, days), 3)
+        // Always provide at least 3 loading days to maximize pre-flight adaptation
+        // and minimize recovery time at the destination. Cap at 5 for very early planners.
+        guard days > 0 else { return 0 }
+        return min(max(days, 3), 5)
     }
 }

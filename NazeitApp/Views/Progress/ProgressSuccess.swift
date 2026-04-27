@@ -361,6 +361,57 @@ struct FullyAdaptedView: View {
                 .scaleEffect(showStats ? 1.0 : 0.9)
                 .animation(.spring(response: 0.5, dampingFraction: 0.75).delay(0.1), value: showStats)
 
+                // MARK: Misalignment Disclaimer
+                if appState.adaptationPercent < 0.85 && showStats {
+                    let isSevere = appState.adaptationPercent < 0.60
+                    let disclaimerColor: Color = isSevere ? .orange : .yellow
+                    let disclaimerIcon = isSevere ? "exclamationmark.triangle.fill" : "info.circle.fill"
+                    let disclaimerTitle = isSevere
+                        ? "Still Significantly Misaligned"
+                        : "Partially Aligned"
+                    let disclaimerBody = isSevere
+                        ? "Your circadian rhythm is still significantly out of sync. Maintain consistent sleep/wake times at your destination for the next few days to reduce residual jetlag."
+                        : "Your body clock is partially aligned. You may still experience mild symptoms like daytime drowsiness or disrupted sleep for 1–2 more days."
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 10) {
+                            Image(systemName: disclaimerIcon)
+                                .font(.title3)
+                                .foregroundStyle(disclaimerColor)
+
+                            Text(disclaimerTitle)
+                                .font(.system(.subheadline, design: .rounded).weight(.bold))
+                                .foregroundStyle(Color(uiColor: .label))
+                        }
+
+                        Text(disclaimerBody)
+                            .font(.footnote)
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        // Adherence score badge
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(disclaimerColor)
+                                .frame(width: 8, height: 8)
+                            Text("Adherence: \(Int(appState.adaptationPercent * 100))%")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(disclaimerColor)
+                        }
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(disclaimerColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(disclaimerColor.opacity(0.25), lineWidth: 1)
+                    )
+                    .padding(.horizontal, 32)
+                    .padding(.top, 16)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.2), value: showStats)
+                }
+
                 Spacer()
 
                 // MARK: CTA

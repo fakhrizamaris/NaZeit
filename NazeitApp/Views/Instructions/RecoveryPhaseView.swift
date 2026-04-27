@@ -149,38 +149,7 @@ struct RecoveryPhaseView: View {
                                         .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                                     }
 
-                                    if appState.isRestDayActive {
-                                        // Rest Day UI
-                                        VStack(spacing: 16) {
-                                            Image(systemName: "moon.zzz.fill")
-                                                .font(.system(size: 48))
-                                                .foregroundStyle(.orange)
-                                            
-                                            Text("Rest Mode Active")
-                                                .font(.title2.weight(.bold))
-                                                .foregroundStyle(.white)
-                                            
-                                            Text("You've chosen to rest today. Take it easy and let your body recover without circadian pressure. You can resume tomorrow.")
-                                                .font(.body)
-                                                .foregroundStyle(.white.opacity(0.8))
-                                                .multilineTextAlignment(.center)
-                                                .padding(.horizontal, 24)
-                                        }
-                                        .padding(.vertical, 32)
-                                        .frame(maxWidth: .infinity)
-                                        .background(
-                                            ZStack {
-                                                Color.black
-                                                Color.orange.opacity(0.1)
-                                            }
-                                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                                        )
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 24)
-                                                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-                                        )
-                                        .colorScheme(.dark)
-                                    } else if appState.isConservativeMode, let day = currentDay {
+                                    if appState.isConservativeMode, let day = currentDay {
                                         // Conservative: only 3 essential instructions
                                         let conservative = PlanBuilder.conservativeInstructions(
                                             bedtime: day.sleepWindow.bedtime,
@@ -214,6 +183,35 @@ struct RecoveryPhaseView: View {
                                         }
                                     }
                                 }
+                                .saturation(appState.isRestDayActive ? 0.15 : 1.0)
+                                .brightness(appState.isRestDayActive ? -0.08 : 0)
+                                .allowsHitTesting(!appState.isRestDayActive)
+                                .overlay {
+                                    if appState.isRestDayActive {
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                                .fill(Color.black.opacity(0.55))
+
+                                            VStack(spacing: 12) {
+                                                Image(systemName: "moon.zzz.fill")
+                                                    .font(.largeTitle)
+                                                    .foregroundStyle(.orange.opacity(0.9))
+
+                                                Text("Rest Mode")
+                                                    .font(.system(.title3, design: .rounded).weight(.bold))
+                                                    .foregroundStyle(.white)
+
+                                                Text("Your schedule is paused for today.\nResume tomorrow to continue adapting.")
+                                                    .font(.subheadline)
+                                                    .foregroundStyle(.white.opacity(0.7))
+                                                    .multilineTextAlignment(.center)
+                                            }
+                                            .padding(24)
+                                        }
+                                        .transition(.opacity)
+                                    }
+                                }
+                                .animation(.easeInOut(duration: 0.5), value: appState.isRestDayActive)
                                 .padding(.horizontal, 24)
                             }
                         }
@@ -224,15 +222,15 @@ struct RecoveryPhaseView: View {
                         ))
 
                         // MARK: Safety Override (§5.3/§6.2)
-                        if appState.inputMethod == .manual && !appState.isRestDayActive {
+                        if appState.inputMethod == .manual {
                             Button {
                                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                    appState.skipTodayAdaptation()
+                                    appState.toggleRestMode()
                                 }
                             } label: {
                                 HStack(spacing: 6) {
-                                    Image(systemName: "battery.25percent")
-                                    Text("I'm too tired today")
+                                    Image(systemName: appState.isRestDayActive ? "battery.100percent" : "battery.25percent")
+                                    Text(appState.isRestDayActive ? "Resume Schedule" : "I'm too tired today")
                                 }
                                 .font(.subheadline.weight(.medium))
                                 .foregroundStyle(Color(uiColor: .secondaryLabel))
@@ -254,7 +252,6 @@ struct RecoveryPhaseView: View {
                             if appState.recoveryPhaseDayIndex > 0 { 
                                 movingForward = false
                                 appState.recoveryPhaseDayIndex -= 1 
-                                appState.isRestDayActive = false
                             }
                         }
                     } label: {
@@ -274,7 +271,6 @@ struct RecoveryPhaseView: View {
                             if appState.recoveryPhaseDayIndex < dayCount - 1 {
                                 movingForward = true
                                 appState.recoveryPhaseDayIndex += 1
-                                appState.isRestDayActive = false
                                 // §4.1: Completing a day without deviation resets recalcCount
                                 appState.completeSuccessfulDay()
                             } else {

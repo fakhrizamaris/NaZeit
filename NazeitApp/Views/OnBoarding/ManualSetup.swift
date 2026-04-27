@@ -85,7 +85,7 @@ struct ManualSetup: View {
                         }
                     }
                     .padding(.horizontal, 24).padding(.bottom, 16)
-                    .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
+                    .opacity(appeared ? 1 : 0)
                     
                     // MARK: Wake Time Picker
                     SectionCard(title: "Usual Wake Time", icon: "sun.horizon.fill", iconColor: Color.cyan) {
@@ -107,7 +107,7 @@ struct ManualSetup: View {
                         }
                     }
                     .padding(.horizontal, 24).padding(.bottom, 16)
-                    .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
+                    .opacity(appeared ? 1 : 0)
                     
                     // MARK: Sleep Hours
                     SectionCard(title: "Calculated Sleep", icon: "clock.fill", iconColor: Color(uiColor: .nazeitTeal)) {
@@ -131,7 +131,7 @@ struct ManualSetup: View {
                         .padding(.vertical, 4)
                     }
                     .padding(.horizontal, 24).padding(.bottom, 40)
-                    .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 20)
+                    .opacity(appeared ? 1 : 0)
                     
                     // MARK: CTA
                     NavigationLink {

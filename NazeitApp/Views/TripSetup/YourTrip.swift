@@ -124,7 +124,7 @@ struct YourTrip: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Departure Date & Time")
                             .font(.footnote).fontWeight(.semibold)
-                            .foregroundStyle(Color(uiColor: .label))
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
                             .padding(.horizontal, 28)
                         
                         Button {
@@ -172,7 +172,7 @@ struct YourTrip: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Arrival Date & Time (Local)")
                             .font(.footnote).fontWeight(.semibold)
-                            .foregroundStyle(Color(uiColor: .label))
+                            .foregroundStyle(Color(uiColor: .secondaryLabel))
                             .padding(.horizontal, 28)
                         
                         Button {
@@ -239,6 +239,12 @@ struct YourTrip: View {
                                 Text("\(sign)\(timezoneShift) Hours Difference")
                                     .font(.headline)
                                     .foregroundStyle(Color(uiColor: .label))
+                                
+                                let fromAbbr = appState.fromTimeZone.abbreviation() ?? "?"
+                                let toAbbr = appState.toTimeZone.abbreviation() ?? "?"
+                                Text("\(fromAbbr) → \(toAbbr)")
+                                    .font(.caption2.weight(.medium))
+                                    .foregroundStyle(Color(uiColor: .tertiaryLabel))
                             }
                             Spacer()
                         }
@@ -314,6 +320,7 @@ struct YourTrip: View {
                     try Task.checkCancellation()
                     
                     if let tz = mapItems.first?.timeZone {
+                        print("[Nazeit] Geocoded FROM '\(currentCity)' → \(tz.identifier) (UTC\(tz.secondsFromGMT()/3600 >= 0 ? "+" : "")\(tz.secondsFromGMT()/3600))")
                         Self.cacheTimezone(tz, for: currentCity)
                         await MainActor.run { appState.fromTimeZone = tz }
                     }
@@ -341,6 +348,7 @@ struct YourTrip: View {
                     try Task.checkCancellation()
                     
                     if let tz = mapItems.first?.timeZone {
+                        print("[Nazeit] Geocoded TO '\(currentCity)' → \(tz.identifier) (UTC\(tz.secondsFromGMT()/3600 >= 0 ? "+" : "")\(tz.secondsFromGMT()/3600))")
                         Self.cacheTimezone(tz, for: currentCity)
                         await MainActor.run { appState.toTimeZone = tz }
                     }
@@ -393,7 +401,7 @@ private struct SearchableTripField: View {
             if !label.isEmpty {
                 Text(label)
                     .font(.footnote).fontWeight(.semibold)
-                    .foregroundStyle(Color(uiColor: .label))
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
                     .padding(.horizontal, 4)
             }
             
@@ -413,6 +421,7 @@ private struct SearchableTripField: View {
                     .frame(minHeight: 52)
                     .padding(.horizontal, icon == nil ? 16 : 8)
             }
+            .background(Color(uiColor: .secondarySystemBackground))
             .background(Color(uiColor: .secondarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
